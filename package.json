@@ -1,0 +1,18 @@
+{
+  "name": "template-react-typescript",
+  "description": "Project Template for TypeScript",
+  "scripts": {
+    "test": "npm test --workspaces"
+  },
+  "author": {
+    "name": "Yuichiro Kikura",
+    "email": "y.kikura@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "github:Kiikurage/Template-React-Typescript"
+  },
+  "workspaces": [
+    "workspaces/*"
+  ]
+}

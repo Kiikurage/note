@@ -1,4 +1,4 @@
-import { assert, dataclass, throwError } from '../lib';
+import { dataclass, isNotNullish } from '../lib';
 import { Cursor } from './Cursor';
 import { binarySearch } from '../lib/binarySearch';
 
@@ -25,87 +25,124 @@ export class EditorState extends dataclass<{
         return this.value.length;
     }
 
-    insertText(text: string) {
-        let newState = this;
-        for (const cursor of this.cursors) {
-            newState = newState.insertTextAtCursor(cursor.id, text);
-        }
-        return newState;
+    updateCursor(cursor: Cursor) {
+        const newCursors = this.cursors
+            .map((c) => {
+                if (c.id === cursor.id) {
+                    // Ignore and add later since it may be modified by overlapping
+                    return null;
+                }
+
+                if (cursor.isOverlapped(c)) {
+                    if (cursor.direction === c.direction) {
+                        // Merge
+                        cursor =
+                            cursor.direction === 'forward'
+                                ? c.copy({
+                                      anchor: Math.min(cursor.anchor, c.anchor),
+                                      focus: Math.max(cursor.focus, c.focus),
+                                  })
+                                : c.copy({
+                                      anchor: Math.max(cursor.anchor, c.anchor),
+                                      focus: Math.min(cursor.focus, c.focus),
+                                  });
+                    }
+
+                    return null;
+                }
+
+                return c;
+            })
+            .filter(isNotNullish);
+        newCursors.push(cursor);
+
+        return this.copy({ cursors: newCursors });
     }
 
-    setCompositionValue(value: string) {
-        let newState = this;
-        for (const cursor of this.cursors) {
-            newState = newState.removeByRange(cursor.from, cursor.to);
-        }
-        return newState.copy({ compositionValue: value });
+    reduceWithEachCursor(predicate: (state: EditorState, cursor: Cursor) => EditorState) {
+        return this.cursors
+            .map((cursor) => cursor.id)
+            .reduce((state: EditorState, cursorId) => {
+                const cursor = state.cursors.find((c) => c.id === cursorId);
+                if (cursor === undefined) {
+                    // This cursor has been removed during update
+                    return state;
+                }
+
+                return predicate(state, cursor);
+            }, this);
     }
 
-    insertTextAtCursor(cursorId: string, text: string) {
-        const cursor = this.cursors.find((c) => c.id === cursorId) ?? throwError(`Cursor(id=${cursorId}) is not found`);
-        const newValue = this.value.slice(0, cursor.from) + text + this.value.slice(cursor.to);
-
-        const newCursors = this.cursors.map((c) =>
-            c.copy({
-                anchor: c.anchor < cursor.from ? c.anchor : c.anchor + text.length - cursor.size,
-                focus: c.focus < cursor.from ? c.focus : c.focus + text.length - cursor.size,
-            }),
+    insertAt(at: number, text: string) {
+        return this.copy({
+            value: this.value.slice(0, at) + text + this.value.slice(at),
+        }).reduceWithEachCursor((state, cursor) =>
+            state.updateCursor(
+                cursor.copy({
+                    anchor: cursor.anchor < at ? cursor.anchor : cursor.anchor + text.length,
+                    focus: cursor.focus < at ? cursor.focus : cursor.focus + text.length,
+                }),
+            ),
         );
-
-        return this.copy({ value: newValue, cursors: newCursors });
-    }
-
-    removeBackward() {
-        let newState = this;
-        for (const cursor of this.cursors) {
-            if (cursor.from === 0 && cursor.to === 0) continue;
-
-            newState = newState.removeByRange(cursor.from === cursor.to ? cursor.from - 1 : cursor.from, cursor.to);
-        }
-        return newState;
-    }
-
-    removeForward() {
-        let newState = this;
-        for (const cursor of this.cursors) {
-            if (cursor.from === this.length && cursor.to === this.length) continue;
-
-            newState = newState.removeByRange(cursor.from, cursor.to === cursor.from ? cursor.to + 1 : cursor.to);
-        }
-        return newState;
     }
 
     removeByRange(from: number, to: number) {
-        assert(from <= to, `from(${from}) <= to(${to})`);
-
-        const newValue = this.value.slice(0, from) + this.value.slice(to);
-
-        const newCursors = this.cursors.map((c) =>
-            c.copy({
-                anchor: c.anchor < from ? c.anchor : c.anchor < to ? from : c.anchor - (to - from),
-                focus: c.focus < from ? c.focus : c.focus < to ? from : c.focus - (to - from),
-            }),
+        return this.copy({
+            value: this.value.slice(0, from) + this.value.slice(to),
+        }).reduceWithEachCursor((state, cursor) =>
+            state.updateCursor(
+                cursor.copy({
+                    anchor: cursor.anchor < to ? Math.min(cursor.anchor, from) : cursor.anchor - (to - from),
+                    focus: cursor.focus < to ? Math.min(cursor.focus, from) : cursor.focus - (to - from),
+                }),
+            ),
         );
+    }
 
-        return this.copy({ value: newValue, cursors: newCursors });
+    insertText(text: string) {
+        return this.reduceWithEachCursor((state, cursor) => {
+            return state.removeByRange(cursor.from, cursor.to).insertAt(cursor.from, text);
+        });
+    }
+
+    setCompositionValue(value: string) {
+        return this.reduceWithEachCursor((state, cursor) => {
+            return state.removeByRange(cursor.from, cursor.to);
+        }).copy({
+            compositionValue: value,
+        });
+    }
+
+    removeBackward() {
+        return this.reduceWithEachCursor((state, cursor) => {
+            if (cursor.from === 0 && cursor.to === 0) return state;
+
+            return state.removeByRange(cursor.from === cursor.to ? cursor.from - 1 : cursor.from, cursor.to);
+        });
+    }
+
+    removeForward() {
+        return this.reduceWithEachCursor((state, cursor) => {
+            if (cursor.from === this.length && cursor.to === this.length) return state;
+
+            return state.removeByRange(cursor.from, cursor.to === cursor.from ? cursor.to + 1 : cursor.to);
+        });
     }
 
     moveBackward() {
-        return this.copy({
-            cursors: this.cursors.map((cursor) => {
-                if (cursor.size > 0) return cursor.copy({ anchor: cursor.from, focus: cursor.from });
-                if (cursor.anchor === 0) return cursor;
+        return this.reduceWithEachCursor((state, cursor) => {
+            if (cursor.size > 0) return state.updateCursor(cursor.copy({ anchor: cursor.from, focus: cursor.from }));
+            if (cursor.focus === 0) return state;
 
-                return cursor.copy({ anchor: cursor.anchor - 1, focus: cursor.focus - 1 });
-            }),
+            return state.updateCursor(cursor.copy({ anchor: cursor.anchor - 1, focus: cursor.focus - 1 }));
         });
     }
 
     moveBackwardWithSelect() {
-        return this.copy({
-            cursors: this.cursors.map((cursor) =>
-                cursor.focus === 0 ? cursor : cursor.copy({ focus: cursor.focus - 1 }),
-            ),
+        return this.reduceWithEachCursor((state, cursor) => {
+            if (cursor.focus === 0) return state;
+
+            return state.updateCursor(cursor.copy({ focus: cursor.focus - 1 }));
         });
     }
 
@@ -116,13 +153,11 @@ export class EditorState extends dataclass<{
             lineBeginOffsets.push(r.lastIndex);
         }
 
-        return this.copy({
-            cursors: this.cursors.map((cursor) => {
-                const lineIndex = binarySearch(lineBeginOffsets, cursor.focus);
-                const lineBeginOffset = lineBeginOffsets[lineIndex];
+        return this.reduceWithEachCursor((state, cursor) => {
+            const lineIndex = binarySearch(lineBeginOffsets, cursor.focus);
+            const lineBeginOffset = lineBeginOffsets[lineIndex];
 
-                return cursor.copy({ anchor: lineBeginOffset, focus: lineBeginOffset });
-            }),
+            return state.updateCursor(cursor.copy({ anchor: lineBeginOffset, focus: lineBeginOffset }));
         });
     }
 
@@ -133,32 +168,28 @@ export class EditorState extends dataclass<{
             lineBeginOffsets.push(r.lastIndex);
         }
 
-        return this.copy({
-            cursors: this.cursors.map((cursor) => {
-                const lineIndex = binarySearch(lineBeginOffsets, cursor.focus);
-                const lineBeginOffset = lineBeginOffsets[lineIndex];
+        return this.reduceWithEachCursor((state, cursor) => {
+            const lineIndex = binarySearch(lineBeginOffsets, cursor.focus);
+            const lineBeginOffset = lineBeginOffsets[lineIndex];
 
-                return cursor.copy({ focus: lineBeginOffset });
-            }),
+            return state.updateCursor(cursor.copy({ focus: lineBeginOffset }));
         });
     }
 
     moveForward() {
-        return this.copy({
-            cursors: this.cursors.map((cursor) => {
-                if (cursor.size > 0) return cursor.copy({ anchor: cursor.to, focus: cursor.to });
-                if (cursor.anchor === this.length) return cursor;
+        return this.reduceWithEachCursor((state, cursor) => {
+            if (cursor.size > 0) return state.updateCursor(cursor.copy({ anchor: cursor.to, focus: cursor.to }));
+            if (cursor.focus === this.length) return state;
 
-                return cursor.copy({ anchor: cursor.anchor + 1, focus: cursor.focus + 1 });
-            }),
+            return state.updateCursor(cursor.copy({ anchor: cursor.anchor + 1, focus: cursor.focus + 1 }));
         });
     }
 
     moveForwardWithSelect() {
-        return this.copy({
-            cursors: this.cursors.map((cursor) =>
-                cursor.focus === this.length ? cursor : cursor.copy({ focus: cursor.focus + 1 }),
-            ),
+        return this.reduceWithEachCursor((state, cursor) => {
+            if (cursor.focus === this.length) return state;
+
+            return state.updateCursor(cursor.copy({ focus: cursor.focus + 1 }));
         });
     }
 
@@ -172,13 +203,11 @@ export class EditorState extends dataclass<{
         }
         lineEndOffsets.push(this.length);
 
-        return this.copy({
-            cursors: this.cursors.map((cursor) => {
-                const lineIndex = binarySearch(lineBeginOffsets, cursor.focus);
-                const lineEndOffset = lineEndOffsets[lineIndex];
+        return this.reduceWithEachCursor((state, cursor) => {
+            const lineIndex = binarySearch(lineBeginOffsets, cursor.focus);
+            const lineEndOffset = lineEndOffsets[lineIndex];
 
-                return cursor.copy({ anchor: lineEndOffset, focus: lineEndOffset });
-            }),
+            return state.updateCursor(cursor.copy({ anchor: lineEndOffset, focus: lineEndOffset }));
         });
     }
 
@@ -192,19 +221,17 @@ export class EditorState extends dataclass<{
         }
         lineEndOffsets.push(this.length);
 
-        return this.copy({
-            cursors: this.cursors.map((cursor) => {
-                const lineIndex = binarySearch(lineBeginOffsets, cursor.focus);
-                const lineEndOffset = lineEndOffsets[lineIndex];
+        return this.reduceWithEachCursor((state, cursor) => {
+            const lineIndex = binarySearch(lineBeginOffsets, cursor.focus);
+            const lineEndOffset = lineEndOffsets[lineIndex];
 
-                return cursor.copy({ focus: lineEndOffset });
-            }),
+            return state.updateCursor(cursor.copy({ focus: lineEndOffset }));
         });
     }
 
     selectAll() {
-        return this.copy({
-            cursors: this.cursors.map((cursor) => cursor.copy({ anchor: 0, focus: this.length })),
+        return this.reduceWithEachCursor((state, cursor) => {
+            return state.updateCursor(cursor.copy({ anchor: 0, focus: this.length }));
         });
     }
 }

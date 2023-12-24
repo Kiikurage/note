@@ -16,4 +16,8 @@ export class Cursor extends dataclass<{ id: string; anchor: number; focus: numbe
     get size() {
         return Math.abs(this.focus - this.anchor);
     }
+
+    isOverlapped(other: Cursor) {
+        return other.from < this.to && other.to > this.from;
+    }
 }

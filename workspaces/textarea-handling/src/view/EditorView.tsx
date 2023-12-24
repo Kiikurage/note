@@ -1,59 +1,76 @@
 import { ReactNode, useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
 import { Editor } from './Editor';
-import { assert } from '../lib';
 import { keyframes } from '@emotion/react';
 
 export const EditorView = () => {
     const [editor, editorState] = useEditor();
 
     const content = useMemo<ReactNode>(() => {
-        assert(editorState.cursors.length === 1, 'Only one cursor is supported');
-
-        const cursorFrom = editorState.cursors[0].from;
-        const cursorTo = editorState.cursors[0].to;
-        const cursorDirection = editorState.cursors[0].direction;
-
-        const rows: ReactNode[] = [];
+        const lines: ReactNode[] = [];
         let lineFrom = 0;
         for (const line of editorState.value.split('\n')) {
-            const lineTo = Math.min(editorState.length, lineFrom + line.length + 1);
-            const cursorFromInLine = Math.max(0, Math.min(cursorFrom - lineFrom, line.length));
-            const cursorToInLine = Math.max(0, Math.min(cursorTo - lineFrom, line.length));
+            const lineTo = lineFrom + line.length + 1;
 
-            rows.push(
-                <p key={`${lineFrom}-${lineTo}`}>
-                    <span>{line.slice(0, cursorFromInLine)}</span>
-                    {editorState.focused &&
-                        cursorDirection === 'backward' &&
-                        lineFrom + cursorFromInLine === cursorFrom && <Cursor />}
-                    <span
-                        css={{
-                            background: 'rgba(100,157,255,0.21)',
-                        }}
-                    >
-                        {line.slice(cursorFromInLine, cursorToInLine)}
-                    </span>
-                    {editorState.focused && cursorDirection === 'forward' && lineFrom + cursorToInLine === cursorTo && (
-                        <>
-                            <span
-                                css={{
-                                    textDecoration: 'underline',
-                                    textDecorationStyle: 'dotted',
-                                }}
-                            >
-                                {editorState.compositionValue}
-                            </span>
-                            <Cursor key={editorState.timestamp} />
-                        </>
-                    )}
-                    <span>{line.slice(cursorToInLine)}</span>
-                </p>,
-            );
+            const ranges = editorState.cursors
+                .filter((cursor) => cursor.to >= lineFrom && cursor.from < lineTo)
+                .map((cursor) => {
+                    return {
+                        cursor,
+                        from: Math.max(0, Math.min(cursor.from - lineFrom, line.length)),
+                        to: Math.max(0, Math.min(cursor.to - lineFrom, line.length)),
+                        direction: cursor.direction,
+                    };
+                })
+                .sort((r1, r2) => r1.from - r2.from);
+
+            const fragments: ReactNode[] = [];
+
+            let offset = 0;
+            for (const range of ranges) {
+                if (offset < range.from) {
+                    fragments.push(<span key={`[${offset}, ${range.from})`}>{line.slice(offset, range.from)}</span>);
+                    offset = range.from;
+                }
+
+                if (editorState.focused && range.direction === 'backward' && lineFrom + offset === range.cursor.focus) {
+                    fragments.push(<Cursor key={`cursor-${range.cursor.focus}`} />);
+                }
+
+                if (range.from < range.to) {
+                    fragments.push(
+                        <span key={`sel-[${range.from}, ${range.to})`} css={{ background: 'rgba(100,157,255,0.21)' }}>
+                            {line.slice(range.from, range.to)}
+                        </span>,
+                    );
+                    offset = range.to;
+                }
+
+                if (editorState.focused && range.direction === 'forward' && lineFrom + offset === range.cursor.focus) {
+                    fragments.push(
+                        <span
+                            key={`cmp-${range.cursor.focus}`}
+                            css={{
+                                textDecoration: 'underline',
+                                textDecorationStyle: 'dotted',
+                            }}
+                        >
+                            {editorState.compositionValue}
+                        </span>,
+                    );
+                    fragments.push(<Cursor key={`cursor-${range.cursor.focus}`} />);
+                }
+            }
+            if (offset < line.length) {
+                fragments.push(<span key={`[${offset}, ${line.length})`}>{line.slice(offset, line.length)}</span>);
+                offset = line.length;
+            }
+
+            lines.push(<p key={`${lineFrom}-${lineTo}`}>{fragments}</p>);
 
             lineFrom = lineTo;
         }
 
-        return rows;
+        return lines;
     }, [editorState]);
 
     return (

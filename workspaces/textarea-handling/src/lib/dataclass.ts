@@ -2,7 +2,11 @@ export function dataclass<OwnProps extends Record<string, unknown>>() {
     class Dataclass {
         constructor(props: OwnProps) {
             Object.assign(this, props);
+            this.init(props);
         }
+
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        protected init(props: OwnProps) {}
 
         copy(props: Partial<OwnProps> = {}): this {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -8,7 +8,7 @@ export interface KeyBindingEntry {
 }
 
 export interface IKeyBindingService {
-    register(entry: KeyBindingEntry): this;
+    registerBinding(entry: KeyBindingEntry): this;
 
     handleKeyDown(ev: IKeyboardEvent): void;
 }
@@ -18,7 +18,7 @@ class KeyBindingService implements IKeyBindingService {
 
     constructor(private readonly commandService = getCommandService()) {}
 
-    register(entry: KeyBindingEntry): this {
+    registerBinding(entry: KeyBindingEntry): this {
         this.bindings.push(KeyBindingService.canonicalizeEntry(entry));
         return this;
     }
@@ -39,7 +39,7 @@ class KeyBindingService implements IKeyBindingService {
         const command = this.bindings.find((binding) => binding.key === keyPattern)?.command;
         if (command === undefined) return;
 
-        this.commandService.exec(command);
+        this.commandService.execCommand(command);
         ev.preventDefault();
     }
 

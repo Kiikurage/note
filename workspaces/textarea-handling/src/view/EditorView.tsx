@@ -1,11 +1,14 @@
-import { ReactNode, useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
+import { ReactNode, useMemo } from 'react';
 import { Editor } from '../core/Editor';
 import { keyframes } from '@emotion/react';
-import { getKeyBindingService } from '../core/KeyBindingService';
 import { initKeyBindingService } from './bootstrap';
+import { InputReceiver } from './InputReceiver';
+import { useEditor } from './useEditor';
+import { useEditorState } from './useEditorState';
 
 export const EditorView = () => {
-    const [editor, editorState] = useEditor();
+    const editor = useEditor();
+    const editorState = useEditorState(editor);
 
     const content = useMemo<ReactNode>(() => {
         const lines: ReactNode[] = [];
@@ -35,7 +38,7 @@ export const EditorView = () => {
                 }
 
                 if (editorState.focused && range.direction === 'backward' && lineFrom + offset === range.cursor.focus) {
-                    fragments.push(<Cursor key={`cursor-${range.cursor.focus}`} />);
+                    fragments.push(<Cursor key={`cursor-${range.cursor.focus}`} editor={editor} />);
                 }
 
                 if (range.from < range.to) {
@@ -59,7 +62,7 @@ export const EditorView = () => {
                             {editorState.compositionValue}
                         </span>,
                     );
-                    fragments.push(<Cursor key={`cursor-${range.cursor.focus}`} />);
+                    fragments.push(<Cursor key={`cursor-${range.cursor.focus}`} editor={editor} />);
                 }
             }
             if (offset < line.length) {
@@ -73,7 +76,7 @@ export const EditorView = () => {
         }
 
         return lines;
-    }, [editorState]);
+    }, [editor, editorState]);
 
     return (
         <div
@@ -99,49 +102,29 @@ export const EditorView = () => {
             >
                 {content}
             </pre>
+            {!editorState.focused && <InputReceiver editor={editor} />}
         </div>
     );
 };
-
-function useEditor() {
-    const editorRef = useRef<Editor | null>(null);
-    if (editorRef.current === null) {
-        editorRef.current = new Editor();
-    }
-    const editor = editorRef.current;
-
-    useEffect(() => {
-        return () => {
-            editor.dispose();
-            editorRef.current = null;
-        };
-    }, [editor]);
-
-    const state = useSyncExternalStore(
-        (callback) => {
-            editor.onChange.addListener(callback);
-            return () => editor.onChange.removeListener(callback);
-        },
-        () => editor.state,
+const Cursor = ({ editor }: { editor?: Editor }) => {
+    return (
+        <span css={{ display: 'inline-block' }}>
+            <span
+                css={{
+                    background: 'black',
+                    display: 'inline-block',
+                    width: 0,
+                    outline: '1px solid black',
+                    height: '1em',
+                    verticalAlign: 'text-bottom',
+                    lineHeight: 1,
+                    animation: `${blink} 0.5s steps(2, jump-none) infinite alternate`,
+                }}
+            />
+            {editor && <InputReceiver editor={editor} />}
+        </span>
     );
-
-    return [editor, state] as const;
-}
-
-const Cursor = () => (
-    <span
-        css={{
-            background: 'black',
-            display: 'inline-block',
-            width: 0,
-            outline: '1px solid black',
-            height: '1em',
-            verticalAlign: 'text-bottom',
-            lineHeight: 1,
-            animation: `${blink} 0.5s steps(2, jump-none) infinite alternate`,
-        }}
-    />
-);
+};
 
 const blink = keyframes`
     0% {

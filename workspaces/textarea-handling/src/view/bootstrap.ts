@@ -16,28 +16,28 @@ export function initKeyBindingService() {
     });
 
     keyBindingService
-        .register({ key: 'backspace', command: 'deleteLeft' })
-        .register({ key: 'delete', command: 'deleteRight' })
-        .register({ key: 'left', command: 'cursorLeft' })
-        .register({ key: 'shift+left', command: 'cursorLeftSelect' })
-        .register({ key: 'right', command: 'cursorRight' })
-        .register({ key: 'shift+right', command: 'cursorRightSelect' });
+        .registerBinding({ key: 'backspace', command: 'deleteLeft' })
+        .registerBinding({ key: 'delete', command: 'deleteRight' })
+        .registerBinding({ key: 'left', command: 'cursorLeft' })
+        .registerBinding({ key: 'shift+left', command: 'cursorLeftSelect' })
+        .registerBinding({ key: 'right', command: 'cursorRight' })
+        .registerBinding({ key: 'shift+right', command: 'cursorRightSelect' });
 
     if (isMac()) {
         keyBindingService
-            .register({ key: 'cmd+a', command: 'editor.action.selectAll' })
-            .register({ key: 'cmd+left', command: 'cursorHome' })
-            .register({ key: 'cmd+shift+left', command: 'cursorHomeSelect' })
-            .register({ key: 'cmd+right', command: 'cursorEnd' })
-            .register({ key: 'cmd+shift+right', command: 'cursorEndSelect' });
+            .registerBinding({ key: 'cmd+a', command: 'editor.action.selectAll' })
+            .registerBinding({ key: 'cmd+left', command: 'cursorHome' })
+            .registerBinding({ key: 'cmd+shift+left', command: 'cursorHomeSelect' })
+            .registerBinding({ key: 'cmd+right', command: 'cursorEnd' })
+            .registerBinding({ key: 'cmd+shift+right', command: 'cursorEndSelect' });
     }
 
     if (isWin()) {
         keyBindingService
-            .register({ key: 'ctrl+a', command: 'editor.action.selectAll' })
-            .register({ key: 'ctrl+left', command: 'cursorHome' })
-            .register({ key: 'ctrl+shift+left', command: 'cursorHomeSelect' })
-            .register({ key: 'ctrl+right', command: 'cursorEnd' })
-            .register({ key: 'ctrl+shift+right', command: 'cursorEndSelect' });
+            .registerBinding({ key: 'ctrl+a', command: 'editor.action.selectAll' })
+            .registerBinding({ key: 'ctrl+left', command: 'cursorHome' })
+            .registerBinding({ key: 'ctrl+shift+left', command: 'cursorHomeSelect' })
+            .registerBinding({ key: 'ctrl+right', command: 'cursorEnd' })
+            .registerBinding({ key: 'ctrl+shift+right', command: 'cursorEndSelect' });
     }
 }

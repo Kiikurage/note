@@ -1,30 +1,31 @@
 import { Channel, Disposable } from '../lib';
 import { EditorState } from './EditorState';
-import { InputReceiver } from '../view/InputReceiver';
 import { getCommandService } from './CommandService';
+import { InputReceiverChannels } from './InputReceiverChannels';
 
 export class Editor extends Disposable {
     readonly onChange = this.register(new Channel<EditorState>());
+    readonly inputReceiver: InputReceiverChannels;
 
-    #state: EditorState = EditorState.create();
-    private readonly inputReceiver = this.register(new InputReceiver());
+    private _state: EditorState = EditorState.create();
 
-    constructor(private readonly commandService = getCommandService()) {
+    constructor(commandService = getCommandService()) {
         super();
 
-        this.commandService
-            .register('editor.action.selectAll', () => this.selectAll())
-            .register('deleteLeft', () => this.removeBackward())
-            .register('deleteRight', () => this.removeForward())
-            .register('cursorLeft', () => this.moveBackward())
-            .register('cursorLeftSelect', () => this.moveBackwardWithSelect())
-            .register('cursorHome', () => this.moveToLineBegin())
-            .register('cursorHomeSelect', () => this.moveToLineBeginWithSelect())
-            .register('cursorRight', () => this.moveForward())
-            .register('cursorRightSelect', () => this.moveForwardWithSelect())
-            .register('cursorEnd', () => this.moveToLineEnd())
-            .register('cursorEndSelect', () => this.moveToLineEndWithSelect());
+        commandService
+            .registerCommandHandler('editor.action.selectAll', () => this.selectAll())
+            .registerCommandHandler('deleteLeft', () => this.removeBackward())
+            .registerCommandHandler('deleteRight', () => this.removeForward())
+            .registerCommandHandler('cursorLeft', () => this.moveBackward())
+            .registerCommandHandler('cursorLeftSelect', () => this.moveBackwardWithSelect())
+            .registerCommandHandler('cursorHome', () => this.moveToLineBegin())
+            .registerCommandHandler('cursorHomeSelect', () => this.moveToLineBeginWithSelect())
+            .registerCommandHandler('cursorRight', () => this.moveForward())
+            .registerCommandHandler('cursorRightSelect', () => this.moveForwardWithSelect())
+            .registerCommandHandler('cursorEnd', () => this.moveToLineEnd())
+            .registerCommandHandler('cursorEndSelect', () => this.moveToLineEndWithSelect());
 
+        this.inputReceiver = this.register(new InputReceiverChannels());
         this.inputReceiver.onInsert.addListener((text) => {
             this.state = this.state.insertText(text);
         });
@@ -34,35 +35,29 @@ export class Editor extends Disposable {
         this.inputReceiver.onCompositionEnd.addListener(() => {
             this.state = this.state.insertText(this.state.compositionValue).setCompositionValue('');
         });
-        this.inputReceiver.onFocus.addListener(() => {
-            this.state = this.state.copy({ focused: true });
-        });
-        this.inputReceiver.onBlur.addListener(() => {
-            this.state = this.state.copy({ focused: false });
-        });
-        this.inputReceiver.onActivate.addListener(() => {
-            this.state = this.state.copy({ active: true });
-        });
-        this.inputReceiver.onDeactivate.addListener(() => {
-            this.state = this.state.copy({ active: false });
+        this.inputReceiver.onFocusStateUpdate.addListener(({ active, rootFocused }) => {
+            this.state = this.state.copy({
+                active,
+                focused: active && rootFocused,
+            });
         });
     }
 
     get state() {
-        return this.#state;
+        return this._state;
     }
 
     private set state(state: EditorState) {
-        this.#state = state;
+        this._state = state;
         this.onChange.fire(state);
     }
 
     focus() {
-        this.inputReceiver.focus();
+        this.state = this.state.copy({ active: true });
     }
 
     blur() {
-        this.inputReceiver.blur();
+        this.state = this.state.copy({ active: false });
     }
 
     insertText(text: string) {

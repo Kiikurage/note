@@ -1,9 +1,9 @@
 import { Disposable } from './Disposable';
 
-export class EventTargetWrapper extends Disposable {
+export class EventTargetHolder<T extends EventTarget> extends Disposable {
     private readonly callbacksMap = new Map<string, Set<(ev: Event) => void>>();
 
-    constructor(private readonly target: EventTarget) {
+    constructor(readonly target: T) {
         super();
     }
 
@@ -48,6 +48,6 @@ export class EventTargetWrapper extends Disposable {
     }
 }
 
-export function eventTarget<T extends EventTarget>(eventTarget: T): EventTargetWrapper {
-    return new EventTargetWrapper(eventTarget);
+export function eventTarget<T extends EventTarget>(eventTarget: T): EventTargetHolder<T> {
+    return new EventTargetHolder(eventTarget);
 }

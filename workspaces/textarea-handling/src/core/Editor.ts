@@ -1,7 +1,7 @@
 import { Channel, Disposable } from '../lib';
 import { EditorState } from './EditorState';
-import { InputReceiver } from './InputReceiver';
-import { Logger } from '../lib/logger';
+import { InputReceiver } from '../view/InputReceiver';
+import { getCommandService } from './CommandService';
 
 export class Editor extends Disposable {
     readonly onChange = this.register(new Channel<EditorState>());
@@ -9,8 +9,21 @@ export class Editor extends Disposable {
     #state: EditorState = EditorState.create();
     private readonly inputReceiver = this.register(new InputReceiver());
 
-    constructor() {
+    constructor(private readonly commandService = getCommandService()) {
         super();
+
+        this.commandService
+            .register('editor.action.selectAll', () => this.selectAll())
+            .register('deleteLeft', () => this.removeBackward())
+            .register('deleteRight', () => this.removeForward())
+            .register('cursorLeft', () => this.moveBackward())
+            .register('cursorLeftSelect', () => this.moveBackwardWithSelect())
+            .register('cursorHome', () => this.moveToLineBegin())
+            .register('cursorHomeSelect', () => this.moveToLineBeginWithSelect())
+            .register('cursorRight', () => this.moveForward())
+            .register('cursorRightSelect', () => this.moveForwardWithSelect())
+            .register('cursorEnd', () => this.moveToLineEnd())
+            .register('cursorEndSelect', () => this.moveToLineEndWithSelect());
 
         this.inputReceiver.onInsert.addListener((text) => {
             this.state = this.state.insertText(text);
@@ -20,69 +33,6 @@ export class Editor extends Disposable {
         });
         this.inputReceiver.onCompositionEnd.addListener(() => {
             this.state = this.state.insertText(this.state.compositionValue).setCompositionValue('');
-        });
-        this.inputReceiver.onKeyDown.addListener((ev) => {
-            switch (ev.key) {
-                case 'a':
-                    if (ev.metaKey) {
-                        this.selectAll();
-                        ev.preventDefault();
-                    }
-                    break;
-
-                case 'Backspace':
-                    this.removeBackward();
-                    ev.preventDefault();
-                    break;
-
-                case 'Delete':
-                    this.removeForward();
-                    ev.preventDefault();
-                    break;
-
-                case 'ArrowLeft':
-                    if (ev.shiftKey) {
-                        if (ev.metaKey) {
-                            this.moveToLineBeginWithSelect();
-                            ev.preventDefault();
-                        } else {
-                            this.moveBackwardWithSelect();
-                            ev.preventDefault();
-                        }
-                    } else {
-                        if (ev.metaKey) {
-                            this.moveToLineBegin();
-                            ev.preventDefault();
-                        } else {
-                            this.moveBackward();
-                            ev.preventDefault();
-                        }
-                    }
-                    break;
-
-                case 'ArrowRight':
-                    if (ev.shiftKey) {
-                        if (ev.metaKey) {
-                            this.moveToLineEndWithSelect();
-                            ev.preventDefault();
-                        } else {
-                            this.moveForwardWithSelect();
-                            ev.preventDefault();
-                        }
-                    } else {
-                        if (ev.metaKey) {
-                            this.moveToLineEnd();
-                            ev.preventDefault();
-                        } else {
-                            this.moveForward();
-                            ev.preventDefault();
-                        }
-                    }
-                    break;
-
-                default:
-                    logger.log(`onKeyDown key=${ev.key}`);
-            }
         });
         this.inputReceiver.onFocus.addListener(() => {
             this.state = this.state.copy({ focused: true });
@@ -163,5 +113,3 @@ export class Editor extends Disposable {
         this.state = this.state.selectAll();
     }
 }
-
-const logger = new Logger(Editor.name);

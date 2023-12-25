@@ -9,8 +9,6 @@ export class EditorState extends dataclass<{
     focused: boolean;
     compositionValue: string;
 }>() {
-    readonly timestamp = Date.now();
-
     static create(value: string = '') {
         return new EditorState({
             value,

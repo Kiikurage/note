@@ -1,6 +1,8 @@
 import { ReactNode, useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
-import { Editor } from './Editor';
+import { Editor } from '../core/Editor';
 import { keyframes } from '@emotion/react';
+import { getKeyBindingService } from '../core/KeyBindingService';
+import { initKeyBindingService } from './bootstrap';
 
 export const EditorView = () => {
     const [editor, editorState] = useEditor();
@@ -149,3 +151,7 @@ const blink = keyframes`
         opacity: 0;
     }
 `;
+
+window.addEventListener('DOMContentLoaded', () => {
+    initKeyBindingService();
+});

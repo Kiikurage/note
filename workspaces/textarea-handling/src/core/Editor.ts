@@ -1,11 +1,9 @@
 import { Channel, Disposable } from '../lib';
 import { EditorState } from './EditorState';
 import { getCommandService } from './CommandService';
-import { InputReceiverChannels } from './InputReceiverChannels';
 
 export class Editor extends Disposable {
     readonly onChange = this.register(new Channel<EditorState>());
-    readonly inputReceiver: InputReceiverChannels;
 
     private _state: EditorState = EditorState.create();
 
@@ -24,23 +22,6 @@ export class Editor extends Disposable {
             .registerCommandHandler('cursorRightSelect', () => this.moveForwardWithSelect())
             .registerCommandHandler('cursorEnd', () => this.moveToLineEnd())
             .registerCommandHandler('cursorEndSelect', () => this.moveToLineEndWithSelect());
-
-        this.inputReceiver = this.register(new InputReceiverChannels());
-        this.inputReceiver.onInsert.addListener((text) => {
-            this.state = this.state.insertText(text);
-        });
-        this.inputReceiver.onCompositionChange.addListener((text) => {
-            this.state = this.state.setCompositionValue(text);
-        });
-        this.inputReceiver.onCompositionEnd.addListener(() => {
-            this.state = this.state.insertText(this.state.compositionValue).setCompositionValue('');
-        });
-        this.inputReceiver.onFocusStateUpdate.addListener(({ active, rootFocused }) => {
-            this.state = this.state.copy({
-                active,
-                focused: active && rootFocused,
-            });
-        });
     }
 
     get state() {
@@ -60,8 +41,27 @@ export class Editor extends Disposable {
         this.state = this.state.copy({ active: false });
     }
 
+    setFocusState({ active, rootFocused }: { active: boolean; rootFocused: boolean }) {
+        this.state = this.state.copy({
+            active,
+            focused: active && rootFocused,
+        });
+    }
+
     insertText(text: string) {
         this.state = this.state.insertText(text);
+    }
+
+    updateCompositionText(text: string, newSelectionAnchorOffset: number, newSelectionFocusOffset: number) {
+        this.state = this.state.updateComposingText(text, newSelectionAnchorOffset, newSelectionFocusOffset);
+    }
+
+    startComposition() {
+        this.state = this.state.startComposition();
+    }
+
+    endComposition() {
+        this.state = this.state.endComposition();
     }
 
     removeBackward() {

@@ -1,4 +1,4 @@
-import { Disposable } from './Disposable';
+import { Disposable, IDisposable } from './Disposable';
 
 export class EventTargetHolder<T extends EventTarget> extends Disposable {
     private readonly callbacksMap = new Map<string, Set<(ev: Event) => void>>();
@@ -50,4 +50,36 @@ export class EventTargetHolder<T extends EventTarget> extends Disposable {
 
 export function eventTarget<T extends EventTarget>(eventTarget: T): EventTargetHolder<T> {
     return new EventTargetHolder(eventTarget);
+}
+
+/**
+ * Helper function to add channel listener safely in Disposable.
+ *
+ * @example
+ *
+ *     class MyDisposable extends Disposable {
+ *         constructor() {
+ *             super();
+ *             this.register(addListener(channel, (value) => console.log(value)));
+ *         }
+ *     }
+ */
+export function addListener<K extends keyof WindowEventHandlersEventMap>(
+    target: Window,
+    type: K,
+    handler: (ev: WindowEventHandlersEventMap[K]) => void,
+): IDisposable;
+export function addListener<K extends keyof ElementEventMap>(
+    target: HTMLElement,
+    type: K,
+    handler: (ev: HTMLElementEventMap[K]) => void,
+): IDisposable;
+export function addListener<E extends Event>(target: EventTarget, type: string, handler: (ev: E) => void): IDisposable;
+export function addListener(target: EventTarget, type: string, handler: (ev: Event) => void): IDisposable {
+    target.addEventListener(type, handler);
+    return {
+        dispose() {
+            target.removeEventListener(type, handler);
+        },
+    };
 }

@@ -1,89 +1,117 @@
 import { Logger } from '../lib/logger';
-import {
-    CompositionEventHandler,
-    FocusEventHandler,
-    KeyboardEventHandler,
-    UIEventHandler,
-    useCallback,
-    useEffect,
-    useLayoutEffect,
-    useRef,
-    useState,
-} from 'react';
 import { Editor } from '../core/Editor';
-import { useEditorState } from './useEditorState';
+import { addListener, Disposable } from '../lib';
+import { EditorState } from '../core/EditorState';
 
-export function InputReceiver({ editor }: { editor: Editor }) {
-    const editorState = useEditorState(editor);
+export class InputReceiver extends Disposable {
+    readonly textarea: HTMLTextAreaElement;
+    private compositionStartOffset: number = 0;
 
-    const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
-    const updateFocusState = useCallback(() => {
-        const textarea = textAreaRef.current;
-        editor.inputReceiver.onFocusStateUpdate.fire({
-            active: textarea !== null && textarea.ownerDocument.activeElement === textarea,
-            rootFocused: textarea !== null && textarea.ownerDocument.hasFocus(),
-        });
-    }, [editor.inputReceiver]);
+    constructor(readonly editor: Editor) {
+        super();
 
-    useEffect(() => {
-        window.addEventListener('focus', updateFocusState);
-        window.addEventListener('blur', updateFocusState);
-        return () => {
-            window.removeEventListener('focus', updateFocusState);
-            window.removeEventListener('blur', updateFocusState);
-        };
-    }, [updateFocusState]);
+        this.register(editor.onChange.addListener((state) => this.syncStateToDOM(state)));
+        this.register(addListener(window, 'focus', this.handleWindowFocus));
+        this.register(addListener(window, 'blur', this.handleWindowBlur));
 
-    useLayoutEffect(() => {
-        const textArea = textAreaRef.current;
-        if (textArea === null) return;
+        this.textarea = InputReceiver.createTextElement(document);
+        this.register(addListener(this.textarea, 'focus', this.handleTextAreaFocus));
+        this.register(addListener(this.textarea, 'blur', this.handleTextAreaBlur));
+        this.register(addListener(this.textarea, 'compositionstart', this.handleTextAreaCompositionStart));
+        this.register(addListener(this.textarea, 'compositionend', this.handleTextAreaCompositionEnd));
+        this.register(addListener(this.textarea, 'input', this.handleTextAreaInput));
+    }
 
-        if (editorState.active && textArea.ownerDocument.activeElement !== textArea) {
-            requestAnimationFrame(() => textArea.focus());
+    get active() {
+        return this.textarea.ownerDocument.activeElement === this.textarea;
+    }
+
+    get rootFocused() {
+        return this.textarea.ownerDocument.hasFocus();
+    }
+
+    private updateFocusState() {
+        this.editor.setFocusState({ active: this.active, rootFocused: this.rootFocused });
+    }
+
+    private syncStateToDOM(state: EditorState) {
+        if (state.active && !this.active) {
+            this.textarea.focus();
         }
-        if (!editorState.active && textArea.ownerDocument.activeElement === textArea) {
-            requestAnimationFrame(() => textArea.blur());
+        if (!state.active && this.active) {
+            this.textarea.blur();
         }
-    }, [editorState.active]);
 
-    const handleTextAreaFocus: FocusEventHandler = () => {
-        updateFocusState();
+        // Updating textarea value/selection will abort the composition session
+        if (!state.inComposition) {
+            this.textarea.value = state.value;
+
+            const cursor = state.cursors[0];
+            if (cursor !== undefined) {
+                this.textarea.selectionStart = cursor.from;
+                this.textarea.selectionEnd = cursor.to;
+                this.textarea.selectionDirection = cursor.direction;
+            }
+        }
+    }
+
+    private readonly handleWindowFocus = () => {
+        this.updateFocusState();
     };
 
-    const handleTextAreaBlur: FocusEventHandler = () => {
-        updateFocusState();
+    private readonly handleWindowBlur = () => {
+        this.updateFocusState();
     };
 
-    const handleTextAreaCompositionEnd: CompositionEventHandler = (ev) => {
-        editor.inputReceiver.onCompositionEnd.fire(ev.data ?? '');
+    private readonly handleTextAreaFocus = () => {
+        this.updateFocusState();
     };
 
-    const handleTextAreaInput: UIEventHandler<HTMLTextAreaElement> = (ev) => {
-        const inputEvent = ev.nativeEvent as InputEvent;
+    private readonly handleTextAreaBlur = () => {
+        this.updateFocusState();
+    };
+
+    private readonly handleTextAreaCompositionStart = () => {
+        this.compositionStartOffset = this.textarea.selectionStart;
+        this.editor.startComposition();
+    };
+
+    private readonly handleTextAreaCompositionEnd = () => {
+        this.compositionStartOffset = 0;
+        this.editor.endComposition();
+    };
+
+    private readonly handleTextAreaInput = (ev: Event) => {
+        const inputEvent = ev as InputEvent;
 
         // List of well-known inputTypes: https://www.w3.org/TR/input-events-1/#interface-InputEvent-Attributes
         switch (inputEvent.inputType) {
             case 'insertText':
+                this.editor.insertText(inputEvent.data ?? '');
+                break;
+
             case 'insertLineBreak':
-                editor.inputReceiver.onInsert.fire(ev.currentTarget.value);
-                ev.currentTarget.value = '';
+                this.editor.insertText('\n');
                 break;
 
             case 'insertCompositionText':
-                editor.inputReceiver.onCompositionChange.fire(inputEvent.data ?? '');
+                this.editor.updateCompositionText(
+                    inputEvent.data ?? '',
+                    this.textarea.selectionStart - this.compositionStartOffset,
+                    this.textarea.selectionEnd - this.compositionStartOffset,
+                );
                 break;
 
             // Overridden by application
             case 'historyUndo':
             case 'historyRedo':
             case 'insertFromPaste':
-                ev.currentTarget.value = '';
-                ev.preventDefault();
+            case 'deleteByCut':
+                inputEvent.preventDefault();
                 break;
 
             case 'deleteContentForward':
             case 'deleteContentBackward':
-            case 'deleteByCut':
             case 'insertReplacementText':
             case 'insertParagraph':
             case 'insertOrderedList':
@@ -125,31 +153,22 @@ export function InputReceiver({ editor }: { editor: Editor }) {
                 logger.warn(`Unsupported input type: ${inputEvent.inputType}`);
         }
     };
+    private static createTextElement(document: Document) {
+        const textarea = document.createElement('textarea');
+        textarea.style.padding = '0';
+        textarea.style.margin = '0';
+        textarea.style.border = 'none';
+        textarea.style.outline = 'none';
+        textarea.style.resize = 'none';
+        textarea.style.overflow = 'hidden';
+        textarea.style.position = 'absolute';
+        textarea.style.top = '0';
+        textarea.style.left = '0';
+        textarea.style.height = '1em';
+        textarea.style.width = '1px';
 
-    const handleTextAreaKeyDown: KeyboardEventHandler = (ev) => {
-        editor.inputReceiver.onKeyDown.fire(ev.nativeEvent);
-    };
-
-    return (
-        <textarea
-            ref={textAreaRef}
-            onFocus={handleTextAreaFocus}
-            onBlur={handleTextAreaBlur}
-            onCompositionEnd={handleTextAreaCompositionEnd}
-            onInput={handleTextAreaInput}
-            onKeyDown={handleTextAreaKeyDown}
-            defaultValue=""
-            css={{
-                pointerEvents: 'none',
-                width: '0',
-                height: '1em',
-                border: 'none',
-                padding: '0',
-                margin: '0',
-                verticalAlign: 'baseline',
-            }}
-        />
-    );
+        return textarea;
+    }
 }
 
 const logger = new Logger(InputReceiver.name);

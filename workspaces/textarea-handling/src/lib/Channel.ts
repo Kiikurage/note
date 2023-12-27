@@ -29,25 +29,3 @@ export class Channel<T = void> extends Disposable {
         this.callbacks.forEach((callback) => callback(value));
     }
 }
-
-/**
- * Helper function to add channel listener safely in Disposable.
- *
- * @example
- *
- *     class MyDisposable extends Disposable {
- *         constructor() {
- *             super();
- *             this.register(addListener(channel, (value) => console.log(value)));
- *         }
- *     }
- */
-export function addListener<T>(channel: Channel<T>, callback: (value: T) => void): IDisposable {
-    channel.addListener(callback);
-
-    return {
-        dispose() {
-            channel.removeListener(callback);
-        },
-    };
-}

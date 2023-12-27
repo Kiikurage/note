@@ -1,4 +1,4 @@
-import { dataclass, isNotNullish } from '../lib';
+import { assert, dataclass, isNotNullish } from '../lib';
 import { Cursor } from './Cursor';
 import { binarySearch } from '../lib/binarySearch';
 
@@ -7,7 +7,7 @@ export class EditorState extends dataclass<{
     cursors: Cursor[];
     active: boolean;
     focused: boolean;
-    compositionValue: string;
+    compositionRanges: { cursorId: string; from: number; to: number }[];
 }>() {
     static create(value: string = '') {
         return new EditorState({
@@ -15,12 +15,16 @@ export class EditorState extends dataclass<{
             cursors: [new Cursor({ id: '1', anchor: 0, focus: 0 })],
             active: false,
             focused: false,
-            compositionValue: '',
+            compositionRanges: [],
         });
     }
 
     get length() {
         return this.value.length;
+    }
+
+    get inComposition(): boolean {
+        return this.compositionRanges.length > 0;
     }
 
     updateCursor(cursor: Cursor) {
@@ -98,17 +102,52 @@ export class EditorState extends dataclass<{
     }
 
     insertText(text: string) {
-        return this.reduceWithEachCursor((state, cursor) => {
-            return state.removeByRange(cursor.from, cursor.to).insertAt(cursor.from, text);
+        return this.removeSelectedRanges().reduceWithEachCursor((state, cursor) => state.insertAt(cursor.from, text));
+    }
+
+    updateComposingText(text: string, newSelectionAnchorOffset: number, newSelectionFocusOffset: number) {
+        assert(this.inComposition, 'updateCompositionText should be called only in composition mode');
+
+        let value = this.value;
+        const compositionRanges: { cursorId: string; from: number; to: number }[] = [];
+        const cursors: Cursor[] = [];
+        for (const range of this.compositionRanges.sort((a, b) => -(a.from - b.from))) {
+            value = value.substring(0, range.from) + text + value.substring(range.to);
+            compositionRanges.push({ cursorId: range.cursorId, from: range.from, to: range.from + text.length });
+            cursors.push(
+                new Cursor({
+                    id: range.cursorId,
+                    anchor: range.from + newSelectionAnchorOffset,
+                    focus: range.from + newSelectionFocusOffset,
+                }),
+            );
+        }
+
+        return this.copy({
+            value,
+            compositionRanges,
+            cursors,
         });
     }
 
-    setCompositionValue(value: string) {
-        return this.reduceWithEachCursor((state, cursor) => {
-            return state.removeByRange(cursor.from, cursor.to);
-        }).copy({
-            compositionValue: value,
+    startComposition() {
+        const nextState = this.removeSelectedRanges();
+
+        return nextState.copy({
+            compositionRanges: nextState.cursors.map((cursor) => ({
+                cursorId: cursor.id,
+                from: cursor.from,
+                to: cursor.to,
+            })),
         });
+    }
+
+    endComposition() {
+        return this.copy({ compositionRanges: [] });
+    }
+
+    removeSelectedRanges() {
+        return this.reduceWithEachCursor((state, cursor) => state.removeByRange(cursor.from, cursor.to));
     }
 
     removeBackward() {

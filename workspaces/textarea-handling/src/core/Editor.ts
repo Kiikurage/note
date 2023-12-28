@@ -64,6 +64,10 @@ export class Editor extends Disposable {
         this.state = this.state.endComposition();
     }
 
+    removeSelectedRanges() {
+        this.state = this.state.removeSelectedRanges();
+    }
+
     removeBackward() {
         this.state = this.state.removeBackward();
     }

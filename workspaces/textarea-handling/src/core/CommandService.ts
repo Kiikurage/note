@@ -17,6 +17,11 @@ class CommandService implements ICommandService {
         return this;
     }
 
+    unregisterCommandHandler(name: string): this {
+        this.commands.delete(name);
+        return this;
+    }
+
     hasCommand(name: string): boolean {
         return this.commands.has(name);
     }

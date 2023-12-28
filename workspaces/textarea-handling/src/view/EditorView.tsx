@@ -33,7 +33,7 @@ export const EditorView = () => {
             }
 
             if (range.cursor?.from === range.from && range.cursor?.direction === 'backward' && editorState.focused) {
-                fragments.push(<CursorView />);
+                fragments.push(<CursorView key={`cursor-${range.cursor.cursor.id}`} />);
             }
 
             fragments.push(
@@ -50,7 +50,7 @@ export const EditorView = () => {
             );
 
             if (range.cursor?.to === range.to && range.cursor?.direction === 'forward' && editorState.focused) {
-                fragments.push(<CursorView />);
+                fragments.push(<CursorView key={`cursor-${range.cursor.cursor.id}`} />);
             }
         }
 
@@ -93,10 +93,6 @@ export const EditorView = () => {
 };
 
 window.addEventListener('DOMContentLoaded', () => {
-    initKeyBindings();
-});
-
-function initKeyBindings() {
     const keyBindingService = getKeyBindingService();
 
     keyBindingService
@@ -113,7 +109,10 @@ function initKeyBindings() {
             .registerBinding({ key: 'cmd+left', command: 'cursorHome' })
             .registerBinding({ key: 'cmd+shift+left', command: 'cursorHomeSelect' })
             .registerBinding({ key: 'cmd+right', command: 'cursorEnd' })
-            .registerBinding({ key: 'cmd+shift+right', command: 'cursorEndSelect' });
+            .registerBinding({ key: 'cmd+shift+right', command: 'cursorEndSelect' })
+            .registerBinding({ key: 'cmd+c', command: 'editor.action.clipboardCopyAction' })
+            .registerBinding({ key: 'cmd+x', command: 'editor.action.clipboardCutAction' })
+            .registerBinding({ key: 'cmd+v', command: 'editor.action.clipboardPasteAction' });
     }
 
     if (isWin()) {
@@ -122,6 +121,9 @@ function initKeyBindings() {
             .registerBinding({ key: 'ctrl+left', command: 'cursorHome' })
             .registerBinding({ key: 'ctrl+shift+left', command: 'cursorHomeSelect' })
             .registerBinding({ key: 'ctrl+right', command: 'cursorEnd' })
-            .registerBinding({ key: 'ctrl+shift+right', command: 'cursorEndSelect' });
+            .registerBinding({ key: 'ctrl+shift+right', command: 'cursorEndSelect' })
+            .registerBinding({ key: 'ctrl+c', command: 'editor.action.clipboardCopyAction' })
+            .registerBinding({ key: 'ctrl+x', command: 'editor.action.clipboardCutAction' })
+            .registerBinding({ key: 'ctrl+v', command: 'editor.action.clipboardPasteAction' });
     }
-}
+});

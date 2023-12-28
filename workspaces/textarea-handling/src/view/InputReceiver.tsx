@@ -2,6 +2,7 @@ import { Logger } from '../lib/logger';
 import { Editor } from '../core/Editor';
 import { addListener, Disposable } from '../lib';
 import { EditorState } from '../core/EditorState';
+import { getCommandService } from '../core/CommandService';
 
 export class InputReceiver extends Disposable {
     readonly textarea: HTMLTextAreaElement;
@@ -19,6 +20,36 @@ export class InputReceiver extends Disposable {
         this.register(addListener(this.textarea, 'compositionstart', this.handleTextAreaCompositionStart));
         this.register(addListener(this.textarea, 'compositionend', this.handleTextAreaCompositionEnd));
         this.register(addListener(this.textarea, 'input', this.handleTextAreaInput));
+
+        const commandService = getCommandService();
+        commandService.registerCommandHandler('editor.action.clipboardCopyAction', () => {
+            const text = editor.state.cursors
+                .map((cursor) => editor.state.value.substring(cursor.from, cursor.to))
+                .join('');
+
+            navigator.clipboard.writeText(text);
+        });
+        commandService.registerCommandHandler('editor.action.clipboardCutAction', () => {
+            const text = editor.state.cursors
+                .map((cursor) => editor.state.value.substring(cursor.from, cursor.to))
+                .join('');
+
+            navigator.clipboard.writeText(text);
+            editor.removeSelectedRanges();
+        });
+        commandService.registerCommandHandler('editor.action.clipboardPasteAction', async () => {
+            const text = await navigator.clipboard.readText();
+            editor.insertText(text);
+        });
+    }
+
+    dispose() {
+        getCommandService()
+            .unregisterCommandHandler('editor.action.clipboardCopyAction')
+            .unregisterCommandHandler('editor.action.clipboardCutAction')
+            .unregisterCommandHandler('editor.action.clipboardPasteAction');
+
+        super.dispose();
     }
 
     get active() {

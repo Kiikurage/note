@@ -266,6 +266,10 @@ export class EditorState extends dataclass<{
         });
     }
 
+    setCursorPosition(offset: number) {
+        return this.copy({ cursors: [new Cursor({ id: '' + Math.random(), anchor: offset, focus: offset })] });
+    }
+
     selectAll() {
         return this.reduceWithEachCursor((state, cursor) => {
             return state.updateCursor(cursor.copy({ anchor: 0, focus: this.length }));

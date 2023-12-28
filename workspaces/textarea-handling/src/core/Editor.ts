@@ -108,6 +108,10 @@ export class Editor extends Disposable {
         this.state = this.state.moveToLineEndWithSelect();
     }
 
+    setCursorPosition(offset: number) {
+        this.state = this.state.setCursorPosition(offset);
+    }
+
     selectAll() {
         this.state = this.state.selectAll();
     }

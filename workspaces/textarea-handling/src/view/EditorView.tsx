@@ -1,169 +1,17 @@
 import { ReactNode, useLayoutEffect, useMemo, useRef } from 'react';
-import { keyframes } from '@emotion/react';
-import { initKeyBindingService } from './bootstrap';
-import { useEditor, useInputReceiver } from './useEditor';
+import { useEditor } from './useEditor';
 import { useEditorState } from './useEditorState';
-import { EditorState } from '../core/EditorState';
-import { Cursor } from '../core/Cursor';
-import { noop } from '../lib';
-
-interface Marker {
-    offset: number;
-    line?: number;
-    selectionStart: string[];
-    selectionEnd: string[];
-    cursor: boolean;
-    compositionStart: string[];
-    compositionEnd: string[];
-}
-
-interface MarkerRange {
-    from: number;
-    to: number;
-    line: number;
-    selected: boolean;
-    composing: boolean;
-    endWithCursor: boolean;
-}
-
-class MarkerList {
-    markers = new Map<number, Marker>();
-
-    addSelectionRange(cursor: Cursor) {
-        this.setMarker(cursor.from, (marker) => marker.selectionStart.push(cursor.id));
-        this.setMarker(cursor.to, (marker) => marker.selectionEnd.push(cursor.id));
-        this.setMarker(cursor.focus, (marker) => (marker.cursor = true));
-    }
-
-    addCompositionRange(from: number, to: number, compositionId: string) {
-        this.setMarker(from, (marker) => marker.compositionStart.push(compositionId));
-        this.setMarker(to, (marker) => marker.compositionEnd.push(compositionId));
-    }
-
-    setMarker(offset: number, updater: (marker: Marker) => void) {
-        let marker = this.markers.get(offset);
-        if (marker === undefined) {
-            marker = {
-                offset,
-                selectionStart: [],
-                selectionEnd: [],
-                cursor: false,
-                compositionStart: [],
-                compositionEnd: [],
-            };
-            this.markers.set(offset, marker);
-        }
-
-        updater(marker);
-    }
-
-    toRanges(): MarkerRange[] {
-        const markers = Array.from(this.markers.entries())
-            .sort((a, b) => a[0] - b[0])
-            .map((entry) => entry[1]);
-
-        const ranges: MarkerRange[] = [];
-        const state = {
-            line: 0,
-            offset: 0,
-            selection: new Set<string>(),
-            composition: new Set<string>(),
-        };
-
-        for (const marker of markers) {
-            ranges.push({
-                from: state.offset,
-                to: marker.offset,
-                line: state.line,
-                selected: state.selection.size > 0,
-                composing: state.composition.size > 0,
-                endWithCursor: marker.cursor,
-            });
-            state.offset = marker.offset;
-
-            state.line = marker.line ?? state.line;
-
-            for (const selectionId of marker.selectionStart) {
-                state.selection.add(selectionId);
-            }
-            for (const selectionId of marker.selectionEnd) {
-                state.selection.delete(selectionId);
-            }
-            for (const compositionId of marker.compositionStart) {
-                state.composition.add(compositionId);
-            }
-            for (const compositionId of marker.compositionEnd) {
-                state.composition.delete(compositionId);
-            }
-        }
-
-        return ranges;
-    }
-
-    static create(editorState: EditorState) {
-        const markerList = new MarkerList();
-
-        let offset = 0;
-        editorState.value.split('\n').forEach((line, l) => {
-            markerList.setMarker(offset, (marker) => (marker.line = l));
-            offset = Math.min(editorState.length, offset + line.length + 1);
-        });
-
-        for (const cursor of editorState.cursors) markerList.addSelectionRange(cursor);
-
-        for (const range of editorState.compositionRanges) {
-            markerList.addCompositionRange(range.from, range.to, range.cursorId);
-        }
-
-        markerList.setMarker(0, noop);
-        markerList.setMarker(editorState.length, noop);
-
-        return markerList.toRanges();
-    }
-}
+import { AnnotationList } from '../core/Annotation';
+import { CursorView } from './CursorView';
+import { isMac, isWin } from '../lib/os';
+import { getKeyBindingService } from '../core/KeyBindingService';
+import { useInputReceiver } from './useInputReceiver';
 
 export const EditorView = () => {
     const editor = useEditor();
     const inputReceiver = useInputReceiver(editor);
     const editorState = useEditorState(editor);
-
-    const ranges = MarkerList.create(editorState);
-    console.log(ranges);
-
-    const content = useMemo<ReactNode>(() => {
-        const lines: ReactNode[] = [];
-        let fragments: ReactNode[] = [];
-        let line = 0;
-
-        for (const range of ranges) {
-            while (line < range.line) {
-                lines.push(<p key={`L${line}`}>{fragments}</p>);
-                line++;
-                fragments = [];
-            }
-
-            fragments.push(
-                <span
-                    key={`[${range.from},${range.to})`}
-                    css={{
-                        background: range.selected ? 'rgba(100,157,255,0.21)' : undefined,
-                        textDecoration: range.composing ? 'underline' : undefined,
-                        textDecorationStyle: 'dotted',
-                    }}
-                >
-                    {editorState.value.substring(range.from, range.to)}
-                    {range.endWithCursor && editorState.focused && <CursorView />}
-                </span>,
-            );
-        }
-
-        if (fragments.length > 0) {
-            lines.push(<p key={`L${line}`}>{fragments}</p>);
-            line++;
-        }
-
-        return lines;
-    }, [ranges, editorState.value, editorState.focused]);
+    const ranges = AnnotationList.create(editorState);
 
     const backgroundLayerRef = useRef<HTMLDivElement | null>(null);
     useLayoutEffect(() => {
@@ -174,6 +22,45 @@ export const EditorView = () => {
         backgroundLayer.appendChild(inputReceiver.textarea);
     }, [inputReceiver.textarea]);
 
+    const content = useMemo<ReactNode>(() => {
+        const lines: ReactNode[] = [];
+        let fragments: ReactNode[] = [];
+
+        for (const range of ranges) {
+            while (lines.length < (range.line?.line ?? 0)) {
+                lines.push(<p key={`L${lines.length}`}>{fragments}</p>);
+                fragments = [];
+            }
+
+            if (range.cursor?.from === range.from && range.cursor?.direction === 'backward' && editorState.focused) {
+                fragments.push(<CursorView />);
+            }
+
+            fragments.push(
+                <span
+                    key={`[${range.from},${range.to})`}
+                    css={{
+                        background: range.cursor ? 'rgba(100,157,255,0.21)' : undefined,
+                        textDecoration: range.composition ? 'underline' : undefined,
+                        textDecorationStyle: 'dotted',
+                    }}
+                >
+                    {editorState.value.substring(range.from, range.to)}
+                </span>,
+            );
+
+            if (range.cursor?.to === range.to && range.cursor?.direction === 'forward' && editorState.focused) {
+                fragments.push(<CursorView />);
+            }
+        }
+
+        if (fragments.length > 0) {
+            lines.push(<p key={`L${lines.length}`}>{fragments}</p>);
+        }
+
+        return lines;
+    }, [editorState.focused, editorState.value, ranges]);
+
     return (
         <div
             css={{ position: 'absolute', inset: 24, cursor: 'text', userSelect: 'none' }}
@@ -182,8 +69,8 @@ export const EditorView = () => {
                 editor.focus();
             }}
         >
-            <div css={{ position: 'absolute', inset: 0, background: '#fff' }} ref={backgroundLayerRef} />
-            <div css={{ position: 'absolute', inset: 0, background: '#fff' }}>
+            <div css={{ position: 'absolute', inset: 0, width: 0, overflow: 'hidden' }} ref={backgroundLayerRef} />
+            <div css={{ position: 'absolute', inset: 0 }}>
                 <pre
                     css={{
                         margin: 0,
@@ -204,32 +91,37 @@ export const EditorView = () => {
         </div>
     );
 };
-const CursorView = () => {
-    return (
-        <span
-            css={{
-                background: 'black',
-                display: 'inline-block',
-                width: 0,
-                outline: '1px solid black',
-                height: '1em',
-                verticalAlign: 'text-bottom',
-                lineHeight: 1,
-                animation: `${blink} 0.5s steps(2, jump-none) infinite alternate`,
-            }}
-        />
-    );
-};
-
-const blink = keyframes`
-    0% {
-        opacity: 1;
-    }
-    100% {
-        opacity: 0;
-    }
-`;
 
 window.addEventListener('DOMContentLoaded', () => {
-    initKeyBindingService();
+    initKeyBindings();
 });
+
+function initKeyBindings() {
+    const keyBindingService = getKeyBindingService();
+
+    keyBindingService
+        .registerBinding({ key: 'backspace', command: 'deleteLeft' })
+        .registerBinding({ key: 'delete', command: 'deleteRight' })
+        .registerBinding({ key: 'left', command: 'cursorLeft' })
+        .registerBinding({ key: 'shift+left', command: 'cursorLeftSelect' })
+        .registerBinding({ key: 'right', command: 'cursorRight' })
+        .registerBinding({ key: 'shift+right', command: 'cursorRightSelect' });
+
+    if (isMac()) {
+        keyBindingService
+            .registerBinding({ key: 'cmd+a', command: 'editor.action.selectAll' })
+            .registerBinding({ key: 'cmd+left', command: 'cursorHome' })
+            .registerBinding({ key: 'cmd+shift+left', command: 'cursorHomeSelect' })
+            .registerBinding({ key: 'cmd+right', command: 'cursorEnd' })
+            .registerBinding({ key: 'cmd+shift+right', command: 'cursorEndSelect' });
+    }
+
+    if (isWin()) {
+        keyBindingService
+            .registerBinding({ key: 'ctrl+a', command: 'editor.action.selectAll' })
+            .registerBinding({ key: 'ctrl+left', command: 'cursorHome' })
+            .registerBinding({ key: 'ctrl+shift+left', command: 'cursorHomeSelect' })
+            .registerBinding({ key: 'ctrl+right', command: 'cursorEnd' })
+            .registerBinding({ key: 'ctrl+shift+right', command: 'cursorEndSelect' });
+    }
+}

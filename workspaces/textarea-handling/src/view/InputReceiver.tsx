@@ -5,7 +5,6 @@ import { EditorState } from '../core/EditorState';
 
 export class InputReceiver extends Disposable {
     readonly textarea: HTMLTextAreaElement;
-    private compositionStartOffset: number = 0;
 
     constructor(readonly editor: Editor) {
         super();
@@ -41,18 +40,6 @@ export class InputReceiver extends Disposable {
         if (!state.active && this.active) {
             this.textarea.blur();
         }
-
-        // Updating textarea value/selection will abort the composition session
-        if (!state.inComposition) {
-            this.textarea.value = state.value;
-
-            const cursor = state.cursors[0];
-            if (cursor !== undefined) {
-                this.textarea.selectionStart = cursor.from;
-                this.textarea.selectionEnd = cursor.to;
-                this.textarea.selectionDirection = cursor.direction;
-            }
-        }
     }
 
     private readonly handleWindowFocus = () => {
@@ -72,13 +59,12 @@ export class InputReceiver extends Disposable {
     };
 
     private readonly handleTextAreaCompositionStart = () => {
-        this.compositionStartOffset = this.textarea.selectionStart;
         this.editor.startComposition();
     };
 
     private readonly handleTextAreaCompositionEnd = () => {
-        this.compositionStartOffset = 0;
         this.editor.endComposition();
+        this.textarea.value = '';
     };
 
     private readonly handleTextAreaInput = (ev: Event) => {
@@ -88,17 +74,19 @@ export class InputReceiver extends Disposable {
         switch (inputEvent.inputType) {
             case 'insertText':
                 this.editor.insertText(inputEvent.data ?? '');
+                this.textarea.value = '';
                 break;
 
             case 'insertLineBreak':
                 this.editor.insertText('\n');
+                this.textarea.value = '';
                 break;
 
             case 'insertCompositionText':
                 this.editor.updateCompositionText(
                     inputEvent.data ?? '',
-                    this.textarea.selectionStart - this.compositionStartOffset,
-                    this.textarea.selectionEnd - this.compositionStartOffset,
+                    this.textarea.selectionStart,
+                    this.textarea.selectionEnd,
                 );
                 break;
 
@@ -153,6 +141,7 @@ export class InputReceiver extends Disposable {
                 logger.warn(`Unsupported input type: ${inputEvent.inputType}`);
         }
     };
+
     private static createTextElement(document: Document) {
         const textarea = document.createElement('textarea');
         textarea.style.padding = '0';
@@ -166,6 +155,12 @@ export class InputReceiver extends Disposable {
         textarea.style.left = '0';
         textarea.style.height = '1em';
         textarea.style.width = '1px';
+        //
+        // textarea.style.top = '50%';
+        // textarea.style.bottom = '0';
+        // textarea.style.right = '0';
+        // textarea.style.height = '50%';
+        // textarea.style.width = '100%';
 
         return textarea;
     }

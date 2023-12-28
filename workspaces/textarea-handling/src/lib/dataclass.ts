@@ -1,4 +1,4 @@
-export function dataclass<OwnProps extends Record<string, unknown>>() {
+export function dataclass<OwnProps>() {
     class Dataclass {
         constructor(props: OwnProps) {
             Object.assign(this, props);

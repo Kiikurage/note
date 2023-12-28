@@ -3,7 +3,11 @@ import { Editor } from '../core/Editor';
 
 export function useEditor() {
     const editor = useMemo(() => {
-        return new Editor();
+        const editor = new Editor();
+        editor.insertText(`サンプルテキスト
+0123456789
+ABCDEFGHIJKLMNOPQRSTUVWXYZ`);
+        return editor;
     }, []);
 
     useEffect(() => {

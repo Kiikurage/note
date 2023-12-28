@@ -136,10 +136,6 @@ export class AnnotationList {
             from = to;
         });
 
-        state.cursors.forEach((cursor) => {
-            list.add(new CursorAnnotation({ cursor }));
-        });
-
         state.compositionRanges.forEach((cursor) => {
             list.add(new CompositionAnnotation(cursor));
         });

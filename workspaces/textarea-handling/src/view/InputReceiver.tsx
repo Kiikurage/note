@@ -182,16 +182,7 @@ export class InputReceiver extends Disposable {
         textarea.style.resize = 'none';
         textarea.style.overflow = 'hidden';
         textarea.style.position = 'absolute';
-        textarea.style.top = '0';
-        textarea.style.left = '0';
-        textarea.style.height = '1em';
         textarea.style.width = '1px';
-        //
-        // textarea.style.top = '50%';
-        // textarea.style.bottom = '0';
-        // textarea.style.right = '0';
-        // textarea.style.height = '50%';
-        // textarea.style.width = '100%';
 
         return textarea;
     }

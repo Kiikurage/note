@@ -1,17 +1,18 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useRef } from 'react';
 import { Editor } from '../core/Editor';
 import { InputReceiver } from './InputReceiver';
 
 export function useInputReceiver(editor: Editor) {
-    const inputReceiver = useMemo(() => {
-        return new InputReceiver(editor);
-    }, [editor]);
+    const inputReceiverRef = useRef<InputReceiver>();
+    if (inputReceiverRef.current === undefined) {
+        inputReceiverRef.current = new InputReceiver(editor);
+    }
 
     useEffect(() => {
         return () => {
-            inputReceiver.dispose();
+            inputReceiverRef.current?.dispose();
         };
-    }, [inputReceiver]);
+    }, [inputReceiverRef]);
 
-    return inputReceiver;
+    return inputReceiverRef.current;
 }

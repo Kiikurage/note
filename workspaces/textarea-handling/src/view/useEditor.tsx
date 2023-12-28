@@ -1,20 +1,21 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useRef } from 'react';
 import { Editor } from '../core/Editor';
 
 export function useEditor() {
-    const editor = useMemo(() => {
+    const editorRef = useRef<Editor>();
+    if (editorRef.current === undefined) {
         const editor = new Editor();
         editor.insertText(`サンプルテキスト
 0123456789
 ABCDEFGHIJKLMNOPQRSTUVWXYZ`);
-        return editor;
-    }, []);
+        editorRef.current = editor;
+    }
 
     useEffect(() => {
         return () => {
-            editor.dispose();
+            editorRef.current?.dispose();
         };
-    }, [editor]);
+    }, [editorRef]);
 
-    return editor;
+    return editorRef.current;
 }

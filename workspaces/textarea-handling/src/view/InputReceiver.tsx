@@ -183,6 +183,11 @@ export class InputReceiver extends Disposable {
         textarea.style.overflow = 'hidden';
         textarea.style.position = 'absolute';
         textarea.style.width = '1px';
+        textarea.wrap = 'off';
+        textarea.autocapitalize = 'off';
+        textarea.autocomplete = 'off';
+        textarea.spellcheck = false;
+        textarea.tabIndex = 0;
 
         return textarea;
     }

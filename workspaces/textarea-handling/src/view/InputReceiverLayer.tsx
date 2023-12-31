@@ -1,13 +1,13 @@
 import { useLayoutEffect, useRef } from 'react';
 import { useEditorState } from './useEditorState';
 import { useInputReceiver } from './useInputReceiver';
-import { useLayoutManager, useLayoutManagerState } from './useLayoutManager';
+import { useLayoutManagerContext, useLayoutManagerState } from './useLayoutManager';
 import { Editor } from '../core/Editor';
 
 export const InputReceiverLayer = ({ editor }: { editor: Editor }) => {
     const inputReceiver = useInputReceiver(editor);
     const editorState = useEditorState(editor);
-    const layoutManager = useLayoutManager();
+    const layoutManager = useLayoutManagerContext();
     const layoutManagerState = useLayoutManagerState(layoutManager);
     const backgroundLayerRef = useRef<HTMLDivElement | null>(null);
 
@@ -22,6 +22,7 @@ export const InputReceiverLayer = ({ editor }: { editor: Editor }) => {
     if (firstCaretRect !== null) {
         inputReceiver.textarea.style.top = `${firstCaretRect.top ?? 0}px`;
         inputReceiver.textarea.style.left = `${firstCaretRect.left ?? 0}px`;
+        inputReceiver.textarea.style.height = `${firstCaretRect.height ?? 0}px`;
         inputReceiver.textarea.style.fontSize = `${firstCaretRect.height ?? 0}px`;
     }
 

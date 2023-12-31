@@ -13,7 +13,11 @@ export const EditorBaseView = ({ children, editor }: { children?: ReactNode; edi
 
             const offset = layoutManagerState.getOffsetFromPosition(ev.clientX, ev.clientY);
             if (offset !== null) {
-                editor.setCursorPosition(offset);
+                if (ev.altKey) {
+                    editor.addCursor(offset);
+                } else {
+                    editor.setCursorPosition(offset);
+                }
             }
         },
         [editor, layoutManagerState],

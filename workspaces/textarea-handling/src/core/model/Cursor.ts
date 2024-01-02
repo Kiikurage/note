@@ -1,4 +1,4 @@
-import { dataclass } from '../lib';
+import { dataclass } from '../../lib';
 
 export class Cursor extends dataclass<{ id: string; anchor: number; focus: number }>() {
     get from() {

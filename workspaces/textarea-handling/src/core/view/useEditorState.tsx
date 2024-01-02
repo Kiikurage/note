@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react';
-import { Editor } from '../core/Editor';
+import { Editor } from '../model/Editor';
 
 export function useEditorState(editor: Editor) {
     return useSyncExternalStore(

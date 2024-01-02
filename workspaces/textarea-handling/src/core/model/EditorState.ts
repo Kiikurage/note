@@ -1,30 +1,21 @@
-import { assert, dataclass, isNotNullish } from '../lib';
+import { dataclass, isNotNullish } from '../../lib';
 import { Cursor } from './Cursor';
-import { binarySearch } from '../lib/binarySearch';
+import { binarySearch } from '../../lib/binarySearch';
+import { clamp } from '../../lib/clamp';
 
 export class EditorState extends dataclass<{
     value: string;
     cursors: Cursor[];
-    active: boolean;
-    focused: boolean;
-    compositionRanges: { cursorId: string; from: number; to: number }[];
 }>() {
     static create(value: string = '') {
         return new EditorState({
             value,
             cursors: [new Cursor({ id: '1', anchor: 0, focus: 0 })],
-            active: false,
-            focused: false,
-            compositionRanges: [],
         });
     }
 
     get length() {
         return this.value.length;
-    }
-
-    get inComposition(): boolean {
-        return this.compositionRanges.length > 0;
     }
 
     updateCursor(cursor: Cursor) {
@@ -105,52 +96,11 @@ export class EditorState extends dataclass<{
         return this.removeSelectedRanges().reduceWithEachCursor((state, cursor) => state.insertAt(cursor.from, text));
     }
 
-    updateComposingText(text: string, newSelectionAnchorOffset: number, newSelectionFocusOffset: number) {
-        assert(this.inComposition, 'updateCompositionText should be called only in composition mode');
-
-        let value = this.value;
-        const compositionRanges: { cursorId: string; from: number; to: number }[] = [];
-        const cursors: Cursor[] = [];
-        for (const range of this.compositionRanges.sort((a, b) => -(a.from - b.from))) {
-            value = value.substring(0, range.from) + text + value.substring(range.to);
-            compositionRanges.push({ cursorId: range.cursorId, from: range.from, to: range.from + text.length });
-            cursors.push(
-                new Cursor({
-                    id: range.cursorId,
-                    anchor: range.from + newSelectionAnchorOffset,
-                    focus: range.from + newSelectionFocusOffset,
-                }),
-            );
-        }
-
-        return this.copy({
-            value,
-            compositionRanges,
-            cursors,
-        });
-    }
-
-    startComposition() {
-        const nextState = this.removeSelectedRanges();
-
-        return nextState.copy({
-            compositionRanges: nextState.cursors.map((cursor) => ({
-                cursorId: cursor.id,
-                from: cursor.from,
-                to: cursor.to,
-            })),
-        });
-    }
-
-    endComposition() {
-        return this.copy({ compositionRanges: [] });
-    }
-
     removeSelectedRanges() {
         return this.reduceWithEachCursor((state, cursor) => state.removeByRange(cursor.from, cursor.to));
     }
 
-    removeBackward() {
+    deleteBackward() {
         return this.reduceWithEachCursor((state, cursor) => {
             if (cursor.from === 0 && cursor.to === 0) return state;
 
@@ -158,7 +108,11 @@ export class EditorState extends dataclass<{
         });
     }
 
-    removeForward() {
+    deleteHardLineBackward() {
+        return this.moveToLineBeginWithSelect().deleteBackward();
+    }
+
+    deleteForward() {
         return this.reduceWithEachCursor((state, cursor) => {
             if (cursor.from === this.length && cursor.to === this.length) return state;
 
@@ -272,8 +226,16 @@ export class EditorState extends dataclass<{
         });
     }
 
-    setCursorPosition(offset: number) {
-        return this.copy({ cursors: [new Cursor({ id: '' + Math.random(), anchor: offset, focus: offset })] });
+    setCursorPosition(anchor: number, focus: number) {
+        return this.copy({
+            cursors: [
+                new Cursor({
+                    id: '' + Math.random(),
+                    anchor: clamp(anchor, 0, this.length),
+                    focus: clamp(focus, 0, this.length),
+                }),
+            ],
+        });
     }
 
     selectAll() {

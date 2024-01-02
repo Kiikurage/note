@@ -1,5 +1,5 @@
-import { Command } from '../Command';
-import { CommandService } from '../CommandService';
+import { Command } from '../../../core/common/Command';
+import { CommandService } from '../../../core/common/CommandService';
 import { Logger } from '../../../lib/logger';
 import { DeleteHardLineForward } from './DeleteHardLineForward';
 

@@ -1,7 +1,7 @@
 import { assert, Disposable } from '../../lib';
 import { Logger } from '../../lib/logger';
 import { Command, CommandFactory, ICommand } from './Command';
-import { DIContainer } from '../../lib/DIContainer';
+import { DIContainer } from './DIContainer';
 
 class CommandMap extends Disposable {
     static readonly default = new CommandMap();

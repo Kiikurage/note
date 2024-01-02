@@ -1,16 +1,16 @@
 export class Logger {
     constructor(private readonly className: string) {}
 
-    log(message: string) {
-        console.log(`${new Date().toISOString()} [${this.className}] ${message}`);
+    log(...messages: unknown[]) {
+        console.log(`${new Date().toISOString()} [${this.className}]`, ...messages);
     }
-    info(message: string) {
-        console.info(`${new Date().toISOString()} [${this.className}] ${message}`);
+    info(...messages: unknown[]) {
+        console.log(`${new Date().toISOString()} [${this.className}]`, ...messages);
     }
-    warn(message: string) {
-        console.warn(`${new Date().toISOString()} [${this.className}] ${message}`);
+    warn(...messages: unknown[]) {
+        console.log(`${new Date().toISOString()} [${this.className}]`, ...messages);
     }
-    error(message: string) {
-        console.error(`${new Date().toISOString()} [${this.className}] ${message}`);
+    error(...messages: unknown[]) {
+        console.log(`${new Date().toISOString()} [${this.className}]`, ...messages);
     }
 }

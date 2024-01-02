@@ -1,6 +1,6 @@
-import { Command } from '../Command';
-import { Editor } from '../Editor';
-import { CommandService } from '../CommandService';
+import { Command } from '../../../core/common/Command';
+import { Editor } from '../../../core/common/Editor';
+import { CommandService } from '../../../core/common/CommandService';
 
 export const DeleteHardLineForward = Command.define('contenteditable.deleteHardLineForward');
 

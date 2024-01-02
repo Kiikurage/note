@@ -1,27 +1,24 @@
 import { MutableRefObject, useCallback, useLayoutEffect, useRef, useState } from 'react';
-import { useEditor } from './EditorProvider';
-import { useEditorState } from './useEditorState';
-import { InsertText } from '../model/command/InsertText';
-import { DeleteContentBackward } from '../model/command/DeleteContentBackward';
-import { DeleteContentForward } from '../model/command/DeleteContentForward';
-import { Editor } from '../model/Editor';
-import { EditorState } from '../model/EditorState';
-import { DeleteHardLineBackward } from '../model/command/DeleteHardLineBackward';
 import { TextEntity } from './TextEntity';
 import { getFocusState, getRangeFromDOM, setRangeToDOM } from './positions';
-import { SetCursorPosition } from '../model/command/SetCursorPosition';
-import { DeleteSoftLineForward } from '../model/command/DeleteSoftLineForward';
-import { DeleteSoftLineBackward } from '../model/command/DeleteSoftLineBackward';
-import { InsertParagraph } from '../model/command/InsertParagraph';
-import { InsertLineBreak } from '../model/command/InsertLineBreak';
+import { Editor } from '../../core/common/Editor';
+import { InsertText } from '../common/command/InsertText';
+import { SetCursorPosition } from '../common/command/SetCursorPosition';
+import { EditorState } from '../../core/common/EditorState';
+import { useService } from '../../core/view/DIContainerProvider';
+import { useEditorState } from '../../core/view/useEditorState';
+import { ContentEditEventHub } from '../common/ContentEditEventHub';
+import { ClipboardService } from '../../clipboard/common/ClipboardService';
+import { CommandService } from '../../core/common/CommandService';
 
 export const EditableContentHost = () => {
-    const editor = useEditor();
+    const editor = useService(Editor.ServiceKey);
     const editorState = useEditorState(editor);
+    const commandService = useService(CommandService.ServiceKey);
 
     const ref = useRef<HTMLDivElement | null>(null);
-    useDOMInput(ref, editor);
-    useSyncCursorPositionWithDOMEffects(ref, editor, editorState);
+    useDOMInput(ref, commandService);
+    useSyncCursorPositionWithDOMEffects(ref, editorState, commandService);
 
     return (
         <>
@@ -57,73 +54,28 @@ export const EditableContentHost = () => {
     );
 };
 
-function useDOMInput(ref: MutableRefObject<HTMLDivElement | null>, editor: Editor) {
+function useDOMInput(ref: MutableRefObject<HTMLDivElement | null>, commandService: CommandService) {
+    const service = useService(ContentEditEventHub.ServiceKey);
+
     const handleBeforeInput = useCallback(
         (ev: InputEvent) => {
-            // List of well-known inputTypes: https://www.w3.org/TR/input-events-1/#interface-InputEvent-Attributes
-            switch (ev.inputType) {
-                case 'insertText':
-                    editor.execCommand(InsertText({ text: ev.data ?? '' }));
-                    ev.preventDefault();
-                    break;
-
-                case 'insertLineBreak':
-                    editor.execCommand(InsertLineBreak());
-                    ev.preventDefault();
-                    break;
-
-                case 'insertParagraph':
-                    editor.execCommand(InsertParagraph());
-                    ev.preventDefault();
-                    break;
-
-                case 'insertCompositionText':
-                    ev.preventDefault();
-                    break;
-
-                case 'deleteContentBackward':
-                    editor.execCommand(DeleteContentBackward());
-                    ev.preventDefault();
-                    break;
-
-                case 'deleteContentForward':
-                    editor.execCommand(DeleteContentForward());
-                    ev.preventDefault();
-                    break;
-
-                case 'deleteSoftLineBackward':
-                    editor.execCommand(DeleteSoftLineBackward());
-                    ev.preventDefault();
-                    break;
-
-                case 'deleteSoftLineForward':
-                    editor.execCommand(DeleteSoftLineForward());
-                    ev.preventDefault();
-                    break;
-
-                case 'deleteHardLineBackward':
-                    editor.execCommand(DeleteHardLineBackward());
-                    ev.preventDefault();
-                    break;
-
-                case 'deleteHardLineForward':
-                    editor.execCommand(DeleteHardLineBackward());
-                    ev.preventDefault();
-                    break;
-
-                default:
-                    ev.preventDefault();
+            if (ev.type === 'insertCompositionText') {
+                ev.preventDefault();
+                return;
             }
+
+            service.fire(ev.inputType, ev.data);
+            ev.preventDefault();
         },
-        [editor],
+        [service],
     );
 
     const handleCompositionEnd = useCallback(
         (ev: CompositionEvent) => {
-            editor.execCommand(InsertText({ text: ev.data ?? '' }));
+            commandService.exec(InsertText({ text: ev.data ?? '' }));
             ev.preventDefault();
         },
-        [editor],
+        [commandService],
     );
 
     useLayoutEffect(() => {
@@ -191,8 +143,8 @@ function useDOMFocusState(ref: MutableRefObject<HTMLDivElement | null>) {
 
 function useSyncCursorPositionWithDOMEffects(
     ref: MutableRefObject<HTMLDivElement | null>,
-    editor: Editor,
     editorState: EditorState,
+    commandService: CommandService,
 ) {
     const composing = useCompositionStatus(ref);
     const focused = useDOMFocusState(ref);
@@ -207,7 +159,7 @@ function useSyncCursorPositionWithDOMEffects(
             const range = getRangeFromDOM();
             if (range === null) return;
 
-            editor.execCommand(SetCursorPosition(range));
+            commandService.exec(SetCursorPosition(range));
         };
 
         const ownerDocument = element.ownerDocument;
@@ -216,7 +168,7 @@ function useSyncCursorPositionWithDOMEffects(
         return () => {
             ownerDocument.removeEventListener('selectionchange', handlerSelectionChange);
         };
-    }, [composing, editor, ref]);
+    }, [commandService, composing, ref]);
 
     useLayoutEffect(() => {
         if (composing) return;

@@ -1,5 +1,5 @@
 import { clamp } from '../../lib/clamp';
-import { Cursor } from '../model/Cursor';
+import { Cursor } from '../../core/common/Cursor';
 
 // TODO: Terminologyの整理
 

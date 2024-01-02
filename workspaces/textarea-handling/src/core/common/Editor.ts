@@ -1,21 +1,15 @@
 import { Channel, Disposable } from '../../lib';
 import { EditorState } from './EditorState';
-import { CommandService } from './CommandService';
-import { ICommand } from './Command';
-import { DIContainer } from '../../lib/DIContainer';
+import { DIContainer } from './DIContainer';
+import { Logger } from '../../lib/logger';
 
 export class Editor extends Disposable {
-    static readonly ServiceKey = DIContainer.register(
-        (container) => new Editor(container.get(CommandService.ServiceKey)),
-    );
+    static readonly ServiceKey = DIContainer.register(() => new Editor());
 
     readonly onChange = this.register(new Channel<EditorState>());
 
     private _state: EditorState = EditorState.create();
-
-    constructor(private readonly commandService: CommandService) {
-        super();
-    }
+    private readonly logger = new Logger(Editor.name);
 
     get state() {
         return this._state;
@@ -26,16 +20,16 @@ export class Editor extends Disposable {
         this.onChange.fire(state);
     }
 
-    execCommand(command: ICommand) {
-        this.commandService.exec(command);
-    }
-
     insertText(text: string) {
         this.state = this.state.insertText(text);
     }
 
     removeSelectedRanges() {
         this.state = this.state.removeSelectedRanges();
+    }
+
+    getSelectedText() {
+        return this.state.value.slice(this.state.cursors[0].from, this.state.cursors[0].to);
     }
 
     deleteBackward() {

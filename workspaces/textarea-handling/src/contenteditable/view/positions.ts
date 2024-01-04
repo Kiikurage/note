@@ -1,5 +1,7 @@
+import { Path } from '../../core/common/Node';
+import { Cursor, Position } from '../../core/common/Cursor';
 import { clamp } from '../../lib/clamp';
-import { Cursor } from '../../core/common/Cursor';
+import { assert } from '../../lib';
 
 // TODO: Terminologyの整理
 
@@ -11,108 +13,119 @@ export function getFocusState(element: Element | null) {
     return element === activeElement || element.contains(activeElement);
 }
 
-export function setRangeToDOM(root: HTMLElement, cursor: Cursor) {
-    const selection = document.getSelection();
+export function readPathFromDatasetAttr(node: Node): Path | null {
+    if (!(node instanceof HTMLElement)) return null;
+
+    const pathStr = node.dataset['path'];
+    if (pathStr === undefined) return null;
+
+    return Path.parse(pathStr);
+}
+
+export function isTextElement(node: Node): boolean {
+    return readPathFromDatasetAttr(node) !== null;
+}
+
+export function readLengthFromDatasetAttr(node: Node): number | null {
+    if (!(node instanceof HTMLElement)) return null;
+
+    const lengthStr = node.dataset['length'];
+    if (lengthStr === undefined) return null;
+
+    return +lengthStr;
+}
+
+export function getPath(node: Node): Path {
+    let nodeOrNull: Node | null = node;
+
+    while (nodeOrNull !== null) {
+        const path = readPathFromDatasetAttr(nodeOrNull);
+        if (path !== null) {
+            return path;
+        }
+        nodeOrNull = nodeOrNull.parentNode;
+    }
+
+    return Path.ROOT;
+}
+
+export function getPosition(node: Node, offset: number): Position {
+    const path = getPath(node);
+    if (node instanceof Text) {
+        const parent = node.parentElement;
+        if (parent !== null) {
+            const length = readLengthFromDatasetAttr(parent);
+            if (length !== null) {
+                return new Position({ path, offset: clamp(offset, 0, length) });
+            }
+        }
+    }
+
+    return new Position({ path, offset: 0 });
+}
+
+export function getElementByPath(root: HTMLElement, path: Path): Element | null {
+    return root.querySelector(`[data-path="${path}"]`) ?? root.querySelector(`[data-path="${path}"]`);
+}
+
+export function getElementByPosition(root: HTMLElement, position: Position): { node: Node; offset: number } | null {
+    const element = getElementByPath(root, position.path);
+    if (element === null) return null;
+
+    if (isTextElement(element)) {
+        if (element.hasChildNodes()) {
+            return { node: element.childNodes[0], offset: position.offset };
+        } else {
+            assert(position.offset === 0, 'offset must be 0');
+            return { node: element, offset: 0 };
+        }
+    } else {
+        const node = element.parentElement;
+        assert(node !== null, 'node must not be null');
+
+        const offset = Array.from(node.children).indexOf(element);
+        assert(offset !== -1, 'offset must not be -1');
+
+        return { node, offset };
+    }
+}
+
+export function getSelectionFromDOM(root: HTMLElement): { anchor: Position; focus: Position } | null {
+    const selection = root.ownerDocument.getSelection();
+    if (selection === null) return null;
+
+    const anchorNode = selection.anchorNode;
+    const focusNode = selection.focusNode;
+    if (anchorNode === null || focusNode === null) return null;
+
+    const anchor = getPosition(anchorNode, selection.anchorOffset);
+    const focus = getPosition(focusNode, selection.focusOffset);
+
+    console.group('getSelectionFromDOM');
+    console.log(selection.anchorNode, selection.anchorOffset, selection.focusNode, selection.focusOffset);
+    console.groupEnd();
+    return { anchor, focus };
+}
+
+export function setSelectionToDOM(root: HTMLElement, cursor: Cursor) {
+    const anchorElement = getElementByPosition(root, cursor.anchor);
+    const focusElement = getElementByPosition(root, cursor.focus);
+    if (anchorElement === null || focusElement === null) return;
+
+    const selection = root.ownerDocument.getSelection();
     if (selection === null) return;
 
-    const oldRange = selection.rangeCount === 0 ? null : selection.getRangeAt(0);
-
-    const anchor = getNodeByOffset(root, cursor.anchor);
-    const focus = getNodeByOffset(root, cursor.focus);
-    if (anchor === null || focus === null) return;
-
     if (
-        oldRange !== null &&
-        oldRange.startContainer === anchor.node &&
-        oldRange.startOffset === anchor.offset &&
-        oldRange.endContainer === focus.node &&
-        oldRange.endOffset === focus.offset
+        selection.anchorNode === anchorElement.node &&
+        selection.anchorOffset === anchorElement.offset &&
+        selection.focusNode === focusElement.node &&
+        selection.focusOffset === focusElement.offset
     ) {
         return;
     }
 
-    const newRange = document.createRange();
-    newRange.setStart(anchor.node, anchor.offset);
-    newRange.setEnd(focus.node, focus.offset);
-
-    selection.removeAllRanges();
-    selection.addRange(newRange);
-}
-
-export function getRangeFromDOM(): { anchor: number; focus: number } | null {
-    const selection = document.getSelection();
-    if (selection === null || selection.rangeCount === 0) return null;
-
-    const range = selection.getRangeAt(0);
-    const anchorOffset = getOffset(range.startContainer, range.startOffset);
-    const focusOffset = getOffset(range.endContainer, range.endOffset);
-    if (anchorOffset === null || focusOffset === null) return null;
-
-    return {
-        anchor: anchorOffset,
-        focus: focusOffset,
-    };
-}
-
-export function getRangeFromNode(node: Node): { from: number; to: number } | null {
-    if (!(node instanceof HTMLElement)) return null;
-
-    const rangeFromStr = node.dataset['from'];
-    const rangeToStr = node.dataset['to'];
-    if (rangeFromStr === undefined || rangeToStr === undefined) return null;
-
-    return { from: +rangeFromStr, to: +rangeToStr };
-}
-
-export function getOffset(node: Node, offset: number): number | null {
-    if (node instanceof Text) {
-        const element = node.parentElement;
-        if (element === null) return null;
-
-        const range = getRangeFromNode(element);
-        if (range === null) return null;
-
-        return clamp(range.from + offset, range.from, range.to);
-    }
-
-    if (node instanceof HTMLElement) {
-        if (offset < node.childNodes.length) {
-            return getOffset(node.childNodes[offset], 0);
-        }
-        const lastChild = node.lastChild;
-        if (lastChild === null) return null;
-
-        if (lastChild instanceof HTMLElement) {
-            const range = getRangeFromNode(lastChild);
-            if (range !== null) return range.to;
-
-            return getOffset(lastChild, lastChild.childNodes.length);
-        }
-        return null;
-    }
-
-    return null;
-}
-
-export function getNodeByOffset(root: HTMLElement, offset: number): { node: Node; offset: number } | null {
-    const range = getRangeFromNode(root);
-    if (range !== null) {
-        if (!(range.from <= offset && offset <= range.to)) return null;
-
-        const childNode = root.firstChild;
-        if (childNode === null && offset === range.from) {
-            return { node: root, offset: 0 };
-        }
-        if (!(childNode instanceof Text)) return null;
-
-        return { node: childNode, offset: clamp(offset - range.from, 0, range.to - range.from) };
-    }
-
-    for (const child of Array.from(root.children)) {
-        if (!(child instanceof HTMLElement)) continue;
-        const result = getNodeByOffset(child, offset);
-        if (result !== null) return result;
-    }
-
-    return null;
+    console.group('setSelectionToDOM');
+    console.log(anchorElement.node, anchorElement.offset, focusElement.node, focusElement.offset);
+    console.groupEnd();
+    selection.setBaseAndExtent(anchorElement.node, anchorElement.offset, focusElement.node, focusElement.offset);
 }

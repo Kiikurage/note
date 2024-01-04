@@ -1,21 +1,51 @@
-import { dataclass, isNotNullish } from '../../lib';
-import { Cursor } from './Cursor';
-import { binarySearch } from '../../lib/binarySearch';
-import { clamp } from '../../lib/clamp';
+import { assert, dataclass, isNotNullish } from '../../lib';
+import { Cursor, Position } from './Cursor';
+import { Node, Path, TextNode } from './Node';
 
 export class EditorState extends dataclass<{
-    value: string;
+    root: Node;
     cursors: Cursor[];
 }>() {
-    static create(value: string = '') {
+    static create() {
         return new EditorState({
-            value,
-            cursors: [new Cursor({ id: '1', anchor: 0, focus: 0 })],
+            root: {
+                type: 'root',
+                children: [
+                    // { type: 'block', children: [] },
+                    // { type: 'block', children: [] },
+                    // { type: 'block', children: [] },
+                    // {
+                    //     type: 'block',
+                    //     children: [
+                    //         { type: 'block', children: [] },
+                    //         { type: 'block', children: [] },
+                    //         { type: 'block', children: [] },
+                    //         { type: 'text', value: 'Text4', children: [] } as TextNode,
+                    //     ],
+                    // },
+                    { type: 'text', value: 'Text1', children: [] } as TextNode,
+                    { type: 'block', children: [{ type: 'text', value: 'Text2', children: [] } as TextNode] },
+                    { type: 'text', value: 'Text3', children: [] } as TextNode,
+                    { type: 'block', children: [{ type: 'text', value: 'Text4', children: [] } as TextNode] },
+                    { type: 'text', value: 'Text5', children: [] } as TextNode,
+                ],
+            },
+            cursors: [
+                new Cursor({
+                    id: '1',
+                    anchor: new Position({ path: Path.of(0), offset: 0 }),
+                    focus: new Position({ path: Path.of(0), offset: 0 }),
+                }),
+            ],
         });
     }
 
-    get length() {
-        return this.value.length;
+    get head(): Position {
+        return new Position({ path: Path.ROOT, offset: 0 });
+    }
+
+    get last(): Position {
+        return new Position({ path: Node.last(this.root), offset: 0 });
     }
 
     updateCursor(cursor: Cursor) {
@@ -32,12 +62,12 @@ export class EditorState extends dataclass<{
                         cursor =
                             cursor.direction === 'forward'
                                 ? c.copy({
-                                      anchor: Math.min(cursor.anchor, c.anchor),
-                                      focus: Math.max(cursor.focus, c.focus),
+                                      anchor: Position.min(cursor.anchor, c.anchor),
+                                      focus: Position.max(cursor.focus, c.focus),
                                   })
                                 : c.copy({
-                                      anchor: Math.max(cursor.anchor, c.anchor),
-                                      focus: Math.min(cursor.focus, c.focus),
+                                      anchor: Position.max(cursor.anchor, c.anchor),
+                                      focus: Position.min(cursor.focus, c.focus),
                                   });
                     }
 
@@ -66,181 +96,203 @@ export class EditorState extends dataclass<{
             }, this);
     }
 
-    insertAt(at: number, text: string) {
+    insertNodeAt(path: Path, node: Node) {
         return this.copy({
-            value: this.value.slice(0, at) + text + this.value.slice(at),
-        }).reduceWithEachCursor((state, cursor) =>
-            state.updateCursor(
+            root: Node.insertNode(this.root, path, node),
+        }).reduceWithEachCursor((state, cursor) => {
+            function getNewPosition(oldPosition: Position): Position {
+                const parentPath = path.parent();
+                if (!parentPath.includes(oldPosition.path)) return oldPosition;
+
+                if (oldPosition.path.compare(path) < 0) {
+                    return oldPosition;
+                } else {
+                    return oldPosition.copy({ path: oldPosition.path.nextSibling() });
+                }
+            }
+
+            return state.updateCursor(
                 cursor.copy({
-                    anchor: cursor.anchor < at ? cursor.anchor : cursor.anchor + text.length,
-                    focus: cursor.focus < at ? cursor.focus : cursor.focus + text.length,
+                    anchor: getNewPosition(cursor.anchor),
+                    focus: getNewPosition(cursor.focus),
                 }),
-            ),
-        );
+            );
+        });
     }
 
-    removeByRange(from: number, to: number) {
+    insertTextAt(position: Position, text: string): EditorState {
+        const node = Node.getNode(this.root, position.path);
+        assert(node !== null, 'node must not be undefined');
+        if (!TextNode.isTextNode(node)) {
+            const textNodePath = Path.of(...position.path.offsets, node.children.length);
+            return this.insertNodeAt(textNodePath, TextNode.create()).insertTextAt(
+                position.copy({ path: textNodePath, offset: 0 }),
+                text,
+            );
+        }
+        assert(position.offset <= node.value.length, 'offset must be less than or equal to node length');
+
         return this.copy({
-            value: this.value.slice(0, from) + this.value.slice(to),
-        }).reduceWithEachCursor((state, cursor) =>
-            state.updateCursor(
+            root: Node.updateNode(this.root, position.path, (node) => {
+                assert(TextNode.isTextNode(node), 'node must be TextNode');
+                return TextNode.setText(
+                    node,
+                    node.value.slice(0, position.offset) + text + node.value.slice(position.offset),
+                );
+            }),
+        }).reduceWithEachCursor((state, cursor) => {
+            function getNewPosition(oldPosition: Position): Position {
+                if (!oldPosition.path.equals(position.path)) return oldPosition;
+                if (oldPosition.offset < position.offset) return oldPosition;
+
+                return oldPosition.copy({ offset: oldPosition.offset + text.length });
+            }
+
+            return state.updateCursor(
                 cursor.copy({
-                    anchor: cursor.anchor < to ? Math.min(cursor.anchor, from) : cursor.anchor - (to - from),
-                    focus: cursor.focus < to ? Math.min(cursor.focus, from) : cursor.focus - (to - from),
+                    anchor: getNewPosition(cursor.anchor),
+                    focus: getNewPosition(cursor.focus),
                 }),
-            ),
-        );
+            );
+        });
     }
 
     insertText(text: string) {
-        return this.removeSelectedRanges().reduceWithEachCursor((state, cursor) => state.insertAt(cursor.from, text));
+        return this.deleteSelectedRanges().reduceWithEachCursor((state, cursor) => {
+            const node = Node.getNode(this.root, cursor.from.path);
+            assert(node !== null, 'node must not be null');
+
+            if (!TextNode.isTextNode(node)) {
+                const textNodePath = Path.of(...cursor.from.path.offsets, node.children.length);
+
+                state = this.insertNodeAt(textNodePath, TextNode.create());
+                cursor = cursor.copy({
+                    anchor: cursor.anchor.copy({ path: textNodePath, offset: 0 }),
+                    focus: cursor.focus.copy({ path: textNodePath, offset: 0 }),
+                });
+
+                state = state.copy({
+                    cursors: state.cursors.map((c) => (c.id === cursor.id ? cursor : c)),
+                });
+            }
+
+            return state.insertTextAt(cursor.from, text);
+        });
     }
 
-    removeSelectedRanges() {
-        return this.reduceWithEachCursor((state, cursor) => state.removeByRange(cursor.from, cursor.to));
+    deleteByRange(from: Position, to: Position) {
+        if (from.path.equals(to.path)) {
+            return this.copy({
+                root: Node.updateNode(this.root, from.path, (node) => {
+                    assert(TextNode.isTextNode(node), 'node must be TextNode');
+                    return TextNode.setText(node, node.value.slice(0, from.offset) + node.value.slice(to.offset));
+                }),
+            }).reduceWithEachCursor((state, cursor) => {
+                function getNewPosition(oldPosition: Position) {
+                    if (!oldPosition.path.equals(from.path)) return oldPosition;
+
+                    return oldPosition.copy({
+                        offset:
+                            oldPosition.offset < to.offset
+                                ? Math.min(from.offset, oldPosition.offset)
+                                : oldPosition.offset - (to.offset - from.offset),
+                    });
+                }
+                return state.updateCursor(
+                    cursor.copy({
+                        anchor: getNewPosition(cursor.anchor),
+                        focus: getNewPosition(cursor.focus),
+                    }),
+                );
+            });
+        }
+
+        const subTreeRoots = Node.computeSubTreesForRange(this.root, from.path, to.path);
+
+        let root = this.root;
+        if (from.offset > 0) {
+            root = Node.updateNode(root, from.path, (node) => {
+                assert(TextNode.isTextNode(node), 'node must be TextNode');
+                const newValue = node.value.slice(0, from.offset);
+                from = from.copy({ path: from.path.nextSibling(), offset: 0 });
+
+                return TextNode.setText(node, newValue);
+            });
+        }
+        if (to.offset > 0) {
+            root = Node.updateNode(root, to.path, (node) => {
+                assert(TextNode.isTextNode(node), 'node must be TextNode');
+                const newValue = node.value.slice(to.offset);
+                to = to.copy({ offset: 0 });
+
+                return TextNode.setText(node, newValue);
+            });
+        }
+
+        return this.copy({
+            root: Node.deleteByRange(root, from.path, to.path),
+        }).reduceWithEachCursor((state, cursor) => {
+            function getNewPath(oldPath: Path) {
+                if (oldPath.compare(from.path) < 0) return oldPath;
+
+                if (subTreeRoots.some((subTreeRoot) => subTreeRoot.includes(oldPath))) return from.path;
+
+                const newOffsets = oldPath.offsets.slice();
+                for (const removedPath of subTreeRoots) {
+                    if (removedPath.depth > oldPath.depth) continue;
+
+                    const oldSubPath = oldPath.slice(0, removedPath.depth);
+                    if (oldSubPath.isSibling(removedPath) && removedPath.compare(oldSubPath) < 0) {
+                        newOffsets[removedPath.depth - 1] -= 1;
+                    }
+                }
+
+                return Path.of(...newOffsets);
+            }
+
+            return state.updateCursor(
+                cursor.copy({
+                    anchor: cursor.anchor.copy({ path: getNewPath(cursor.anchor.path) }),
+                    focus: cursor.focus.copy({ path: getNewPath(cursor.focus.path) }),
+                }),
+            );
+        });
+    }
+
+    deleteSelectedRanges() {
+        return this.reduceWithEachCursor((state, cursor) => state.deleteByRange(cursor.from, cursor.to));
     }
 
     deleteBackward() {
         return this.reduceWithEachCursor((state, cursor) => {
-            if (cursor.from === 0 && cursor.to === 0) return state;
+            if (!cursor.collapsed) return state.deleteSelectedRanges();
 
-            return state.removeByRange(cursor.from === cursor.to ? cursor.from - 1 : cursor.from, cursor.to);
+            const prevPath = Node.getPrevPath(state.root, cursor.from.path);
+            if (prevPath === null) return state;
+
+            return state.deleteByRange(new Position({ path: prevPath, offset: 0 }), cursor.from);
         });
-    }
-
-    deleteHardLineBackward() {
-        return this.moveToLineBeginWithSelect().deleteBackward();
     }
 
     deleteForward() {
         return this.reduceWithEachCursor((state, cursor) => {
-            if (cursor.from === this.length && cursor.to === this.length) return state;
+            if (!cursor.collapsed) return state.deleteSelectedRanges();
 
-            return state.removeByRange(cursor.from, cursor.to === cursor.from ? cursor.to + 1 : cursor.to);
+            const nextPath = Node.getNextPath(state.root, cursor.from.path);
+            if (nextPath === null) return state;
+
+            return state.deleteByRange(new Position({ path: nextPath, offset: 0 }), cursor.from);
         });
     }
 
-    moveBackward() {
-        return this.reduceWithEachCursor((state, cursor) => {
-            if (cursor.size > 0) return state.updateCursor(cursor.copy({ anchor: cursor.from, focus: cursor.from }));
-            if (cursor.focus === 0) return state;
-
-            return state.updateCursor(cursor.copy({ anchor: cursor.anchor - 1, focus: cursor.focus - 1 }));
+    setCursorPosition(anchor: Position, focus: Position) {
+        const newCursor = this.cursors[0].copy({
+            anchor: Position.clamp(anchor, this.head, this.last),
+            focus: Position.clamp(focus, this.head, this.last),
         });
-    }
 
-    moveBackwardWithSelect() {
-        return this.reduceWithEachCursor((state, cursor) => {
-            if (cursor.focus === 0) return state;
+        if (this.cursors.length === 1 && newCursor.toString() === this.cursors[0].toString()) return this;
 
-            return state.updateCursor(cursor.copy({ focus: cursor.focus - 1 }));
-        });
-    }
-
-    moveToLineBegin() {
-        const r = /\n/g;
-        const lineBeginOffsets = [0];
-        while (r.exec(this.value)) {
-            lineBeginOffsets.push(r.lastIndex);
-        }
-
-        return this.reduceWithEachCursor((state, cursor) => {
-            const lineIndex = binarySearch(lineBeginOffsets, cursor.focus);
-            const lineBeginOffset = lineBeginOffsets[lineIndex];
-
-            return state.updateCursor(cursor.copy({ anchor: lineBeginOffset, focus: lineBeginOffset }));
-        });
-    }
-
-    moveToLineBeginWithSelect() {
-        const r = /\n/g;
-        const lineBeginOffsets = [0];
-        while (r.exec(this.value)) {
-            lineBeginOffsets.push(r.lastIndex);
-        }
-
-        return this.reduceWithEachCursor((state, cursor) => {
-            const lineIndex = binarySearch(lineBeginOffsets, cursor.focus);
-            const lineBeginOffset = lineBeginOffsets[lineIndex];
-
-            return state.updateCursor(cursor.copy({ focus: lineBeginOffset }));
-        });
-    }
-
-    moveForward() {
-        return this.reduceWithEachCursor((state, cursor) => {
-            if (cursor.size > 0) return state.updateCursor(cursor.copy({ anchor: cursor.to, focus: cursor.to }));
-            if (cursor.focus === this.length) return state;
-
-            return state.updateCursor(cursor.copy({ anchor: cursor.anchor + 1, focus: cursor.focus + 1 }));
-        });
-    }
-
-    moveForwardWithSelect() {
-        return this.reduceWithEachCursor((state, cursor) => {
-            if (cursor.focus === this.length) return state;
-
-            return state.updateCursor(cursor.copy({ focus: cursor.focus + 1 }));
-        });
-    }
-
-    moveToLineEnd() {
-        const r = /\n/g;
-        const lineBeginOffsets = [0];
-        const lineEndOffsets: number[] = [];
-        while (r.exec(this.value)) {
-            lineEndOffsets.push(r.lastIndex - 1);
-            lineBeginOffsets.push(r.lastIndex);
-        }
-        lineEndOffsets.push(this.length);
-
-        return this.reduceWithEachCursor((state, cursor) => {
-            const lineIndex = binarySearch(lineBeginOffsets, cursor.focus);
-            const lineEndOffset = lineEndOffsets[lineIndex];
-
-            return state.updateCursor(cursor.copy({ anchor: lineEndOffset, focus: lineEndOffset }));
-        });
-    }
-
-    moveToLineEndWithSelect() {
-        const r = /\n/g;
-        const lineBeginOffsets = [0];
-        const lineEndOffsets: number[] = [];
-        while (r.exec(this.value)) {
-            lineEndOffsets.push(r.lastIndex - 1);
-            lineBeginOffsets.push(r.lastIndex);
-        }
-        lineEndOffsets.push(this.length);
-
-        return this.reduceWithEachCursor((state, cursor) => {
-            const lineIndex = binarySearch(lineBeginOffsets, cursor.focus);
-            const lineEndOffset = lineEndOffsets[lineIndex];
-
-            return state.updateCursor(cursor.copy({ focus: lineEndOffset }));
-        });
-    }
-
-    addCursor(offset: number) {
-        return this.copy({
-            cursors: [...this.cursors, new Cursor({ id: '' + Math.random(), anchor: offset, focus: offset })],
-        });
-    }
-
-    setCursorPosition(anchor: number, focus: number) {
-        return this.copy({
-            cursors: [
-                new Cursor({
-                    id: '' + Math.random(),
-                    anchor: clamp(anchor, 0, this.length),
-                    focus: clamp(focus, 0, this.length),
-                }),
-            ],
-        });
-    }
-
-    selectAll() {
-        return this.reduceWithEachCursor((state, cursor) => {
-            return state.updateCursor(cursor.copy({ anchor: 0, focus: this.length }));
-        });
+        return this.copy({ cursors: [newCursor] });
     }
 }

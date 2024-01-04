@@ -61,7 +61,7 @@ export class ClipboardService {
 
     cut() {
         this.copy();
-        this.editor.removeSelectedRanges();
+        this.editor.deleteSelectedRanges();
     }
 
     paste() {

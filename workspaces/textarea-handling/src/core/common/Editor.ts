@@ -2,6 +2,7 @@ import { Channel, Disposable } from '../../lib';
 import { EditorState } from './EditorState';
 import { DIContainer } from './DIContainer';
 import { Logger } from '../../lib/logger';
+import { Position } from './Cursor';
 
 export class Editor extends Disposable {
     static readonly ServiceKey = DIContainer.register(() => new Editor());
@@ -16,6 +17,8 @@ export class Editor extends Disposable {
     }
 
     private set state(state: EditorState) {
+        if (this.state === state) return;
+
         this._state = state;
         this.onChange.fire(state);
     }
@@ -24,12 +27,13 @@ export class Editor extends Disposable {
         this.state = this.state.insertText(text);
     }
 
-    removeSelectedRanges() {
-        this.state = this.state.removeSelectedRanges();
+    deleteSelectedRanges() {
+        this.state = this.state.deleteSelectedRanges();
     }
 
     getSelectedText() {
-        return this.state.value.slice(this.state.cursors[0].from, this.state.cursors[0].to);
+        // return this.state.value.slice(this.state.cursors[0].from, this.state.cursors[0].to);
+        return '<getSelectedText() is temporarily disabled>';
     }
 
     deleteBackward() {
@@ -40,43 +44,7 @@ export class Editor extends Disposable {
         this.state = this.state.deleteForward();
     }
 
-    moveBackward() {
-        this.state = this.state.moveBackward();
-    }
-
-    moveBackwardWithSelect() {
-        this.state = this.state.moveBackwardWithSelect();
-    }
-
-    moveToLineBegin() {
-        this.state = this.state.moveToLineBegin();
-    }
-
-    moveToLineBeginWithSelect() {
-        this.state = this.state.moveToLineBeginWithSelect();
-    }
-
-    moveForward() {
-        this.state = this.state.moveForward();
-    }
-
-    moveForwardWithSelect() {
-        this.state = this.state.moveForwardWithSelect();
-    }
-
-    moveToLineEnd() {
-        this.state = this.state.moveToLineEnd();
-    }
-
-    moveToLineEndWithSelect() {
-        this.state = this.state.moveToLineEndWithSelect();
-    }
-
-    addCursor(offset: number) {
-        this.state = this.state.addCursor(offset);
-    }
-
-    setCursorPosition(anchor: number, focus: number = anchor) {
+    setCursorPosition(anchor: Position, focus: Position = anchor) {
         this.state = this.state.setCursorPosition(anchor, focus);
     }
 }

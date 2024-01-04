@@ -1,12 +1,7 @@
 import { DIContainer } from '../../core/common/DIContainer';
 import { InsertText } from './command/InsertText';
-import { InsertLineBreak } from './command/InsertLineBreak';
-import { InsertParagraph } from './command/InsertParagraph';
 import { DeleteContentBackward } from './command/DeleteContentBackward';
 import { DeleteContentForward } from './command/DeleteContentForward';
-import { DeleteSoftLineBackward } from './command/DeleteSoftLineBackward';
-import { DeleteSoftLineForward } from './command/DeleteSoftLineForward';
-import { DeleteHardLineBackward } from './command/DeleteHardLineBackward';
 import { CommandService } from '../../core/common/CommandService';
 import { Disposable } from '../../lib';
 import { Logger } from '../../lib/logger';
@@ -26,29 +21,11 @@ export class ContentEditEventHub extends Disposable {
         this.on('insertText', (data) => {
             commandService.exec(InsertText({ text: data ?? '' }));
         })
-            .on('insertLineBreak', () => {
-                commandService.exec(InsertLineBreak());
-            })
-            .on('insertParagraph', () => {
-                commandService.exec(InsertParagraph());
-            })
             .on('deleteContentBackward', () => {
                 commandService.exec(DeleteContentBackward());
             })
             .on('deleteContentForward', () => {
                 commandService.exec(DeleteContentForward());
-            })
-            .on('deleteSoftLineBackward', () => {
-                commandService.exec(DeleteSoftLineBackward());
-            })
-            .on('deleteSoftLineForward', () => {
-                commandService.exec(DeleteSoftLineForward());
-            })
-            .on('deleteHardLineBackward', () => {
-                commandService.exec(DeleteHardLineBackward());
-            })
-            .on('deleteHardLineForward', () => {
-                commandService.exec(DeleteHardLineBackward());
             });
     }
 

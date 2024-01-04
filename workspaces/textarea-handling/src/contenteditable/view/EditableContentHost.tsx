@@ -1,6 +1,5 @@
 import { MutableRefObject, useCallback, useLayoutEffect, useRef, useState } from 'react';
-import { TextEntity } from './TextEntity';
-import { getFocusState, getRangeFromDOM, setRangeToDOM } from './positions';
+import { getSelectionFromDOM } from './positions';
 import { Editor } from '../../core/common/Editor';
 import { InsertText } from '../common/command/InsertText';
 import { SetCursorPosition } from '../common/command/SetCursorPosition';
@@ -8,8 +7,9 @@ import { EditorState } from '../../core/common/EditorState';
 import { useService } from '../../core/view/DIContainerProvider';
 import { useEditorState } from '../../core/view/useEditorState';
 import { ContentEditEventHub } from '../common/ContentEditEventHub';
-import { ClipboardService } from '../../clipboard/common/ClipboardService';
 import { CommandService } from '../../core/common/CommandService';
+import { DefaultNodeView } from './DefaultNodeView';
+import { Node, Path, TextNode } from '../../core/common/Node';
 
 export const EditableContentHost = () => {
     const editor = useService(Editor.ServiceKey);
@@ -35,22 +35,77 @@ export const EditableContentHost = () => {
                 contentEditable
                 suppressContentEditableWarning
             >
-                <TextEntity offset={0}>{editorState.value}</TextEntity>
+                <DefaultNodeView node={editorState.root} path={Path.ROOT} />
             </div>
             <div
-                contentEditable={false}
                 css={{
                     position: 'absolute',
+                    right: 0,
+                    top: 0,
                     bottom: 0,
-                    left: 0,
+                    width: '400px',
+                    maxWidth: '50%',
                     padding: 16,
                     background: 'rgb(0 0 0 / 10%)',
                     fontFamily: 'monospace',
                 }}
             >
                 Rendered at {new Date().toISOString()}
+                <section css={{ marginTop: 32 }}>
+                    <h3 css={{ margin: 0 }}>Cursors</h3>
+                    <div>
+                        {editorState.cursors.map((cursor) => (
+                            <li key={cursor.id}>{cursor.toString()}</li>
+                        ))}
+                    </div>
+                </section>
+                <section css={{ marginTop: 16 }}>
+                    <h3 css={{ margin: 0 }}>Document</h3>
+                    <NodeTreeNode node={editorState.root} path={Path.ROOT} />
+                </section>
             </div>
         </>
+    );
+};
+
+const NodeTreeNode = ({ node, path }: { node: Node; path: Path }) => {
+    return (
+        <div
+            css={{
+                listStyle: 'none',
+            }}
+        >
+            <div css={{ margin: 0, lineHeight: 1.2 }}>
+                <span>
+                    {path.toString()} : {node.type}
+                </span>
+                {TextNode.isTextNode(node) && (
+                    <span css={{ marginLeft: 8, color: '#888' }}>
+                        &quot;
+                        <span
+                            css={{
+                                whiteSpace: 'pre',
+                                display: 'inline-block',
+                                maxWidth: '64px',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                verticalAlign: 'bottom',
+                            }}
+                        >
+                            {node.value}
+                        </span>
+                        &quot;
+                    </span>
+                )}
+            </div>
+            {node.children.length > 0 && (
+                <div css={{ margin: 0, padding: 0 }}>
+                    {node.children.map((child, i) => (
+                        <NodeTreeNode key={i} node={child} path={Path.of(...path.offsets, i)} />
+                    ))}
+                </div>
+            )}
+        </div>
     );
 };
 
@@ -112,34 +167,34 @@ function useCompositionStatus(ref: MutableRefObject<HTMLDivElement | null>) {
     return composing;
 }
 
-function useDOMFocusState(ref: MutableRefObject<HTMLDivElement | null>) {
-    const [focused, setFocused] = useState(() => getFocusState(ref.current));
-
-    useLayoutEffect(() => {
-        const element = ref.current;
-        if (element === null) return;
-
-        const ownerDocument = element.ownerDocument;
-
-        const handler = () => {
-            setFocused(getFocusState(ref.current));
-        };
-
-        element.addEventListener('focus', handler);
-        element.addEventListener('blur', handler);
-        ownerDocument.addEventListener('focus', handler);
-        ownerDocument.addEventListener('blur', handler);
-
-        return () => {
-            element.removeEventListener('focus', handler);
-            element.removeEventListener('blur', handler);
-            ownerDocument.removeEventListener('focus', handler);
-            ownerDocument.removeEventListener('blur', handler);
-        };
-    }, [ref]);
-
-    return focused;
-}
+// function useDOMFocusState(ref: MutableRefObject<HTMLDivElement | null>) {
+//     const [focused, setFocused] = useState(() => getFocusState(ref.current));
+//
+//     useLayoutEffect(() => {
+//         const element = ref.current;
+//         if (element === null) return;
+//
+//         const ownerDocument = element.ownerDocument;
+//
+//         const handler = () => {
+//             setFocused(getFocusState(ref.current));
+//         };
+//
+//         element.addEventListener('focus', handler);
+//         element.addEventListener('blur', handler);
+//         ownerDocument.addEventListener('focus', handler);
+//         ownerDocument.addEventListener('blur', handler);
+//
+//         return () => {
+//             element.removeEventListener('focus', handler);
+//             element.removeEventListener('blur', handler);
+//             ownerDocument.removeEventListener('focus', handler);
+//             ownerDocument.removeEventListener('blur', handler);
+//         };
+//     }, [ref]);
+//
+//     return focused;
+// }
 
 function useSyncCursorPositionWithDOMEffects(
     ref: MutableRefObject<HTMLDivElement | null>,
@@ -147,7 +202,6 @@ function useSyncCursorPositionWithDOMEffects(
     commandService: CommandService,
 ) {
     const composing = useCompositionStatus(ref);
-    const focused = useDOMFocusState(ref);
 
     useLayoutEffect(() => {
         const element = ref.current;
@@ -156,10 +210,10 @@ function useSyncCursorPositionWithDOMEffects(
         const handlerSelectionChange = () => {
             if (composing) return;
 
-            const range = getRangeFromDOM();
-            if (range === null) return;
+            const positions = getSelectionFromDOM(element);
+            if (positions === null) return;
 
-            commandService.exec(SetCursorPosition(range));
+            commandService.exec(SetCursorPosition(positions));
         };
 
         const ownerDocument = element.ownerDocument;
@@ -170,11 +224,10 @@ function useSyncCursorPositionWithDOMEffects(
         };
     }, [commandService, composing, ref]);
 
-    useLayoutEffect(() => {
-        if (composing) return;
-        if (!focused) return;
-        if (ref.current === null) return;
-
-        setRangeToDOM(ref.current, editorState.cursors[0]);
-    }, [composing, editorState.cursors, focused, ref]);
+    // useLayoutEffect(() => {
+    //     if (composing) return;
+    //     if (ref.current === null) return;
+    //
+    //     setSelectionToDOM(ref.current, editorState.cursors[0]);
+    // }, [composing, editorState.cursors, ref]);
 }

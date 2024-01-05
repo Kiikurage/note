@@ -108,7 +108,7 @@ export function getSelectionFromDOM(root: HTMLElement): { anchor: Position; focu
     if (anchor === null || focus === null) return null;
 
     console.group('getSelectionFromDOM');
-    console.log(selection.anchorNode, selection.anchorOffset, selection.focusNode, selection.focusOffset);
+    console.log(anchor.toString(), focus.toString());
     console.groupEnd();
     return { anchor, focus };
 }

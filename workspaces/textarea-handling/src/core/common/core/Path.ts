@@ -8,6 +8,7 @@ export class Path extends dataclass<{
     }
 
     static parse(pathStr: string): Path {
+        if (pathStr === 'root') return Path.of();
         return Path.of(...pathStr.split('.').map((str) => +str));
     }
 

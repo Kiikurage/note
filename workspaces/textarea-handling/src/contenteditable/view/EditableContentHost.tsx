@@ -11,6 +11,7 @@ import { DefaultNodeView } from './DefaultNodeView';
 import { Node } from '../../core/common/core/Node';
 import { Path } from '../../core/common/core/Path';
 import { TextNode } from '../../core/common/node/TextNode';
+import { SetCursorPosition } from '../common/command/SetCursorPosition';
 
 export const EditableContentHost = () => {
     const editor = useService(Editor.ServiceKey);
@@ -36,7 +37,7 @@ export const EditableContentHost = () => {
                 contentEditable
                 suppressContentEditableWarning
             >
-                <DefaultNodeView node={editorState.root} path={Path.of(editorState.root.id)} />
+                <DefaultNodeView node={editorState.root} path={Path.of()} />
             </div>
             <div
                 css={{
@@ -55,12 +56,12 @@ export const EditableContentHost = () => {
                 <section css={{ marginTop: 32 }}>
                     <h3 css={{ margin: 0 }}>Cursors</h3>
                     <div>
-                        <div key={editorState.cursor.id}>{editorState.cursor.toString()}</div>
+                        <div>{editorState.cursor.toString()}</div>
                     </div>
                 </section>
                 <section css={{ marginTop: 16 }}>
                     <h3 css={{ margin: 0 }}>Document</h3>
-                    <NodeTreeNode node={editorState.root} path={Path.of(editorState.root.id)} />
+                    <NodeTreeNode node={editorState.root} path={Path.of()} />
                 </section>
             </div>
         </>
@@ -212,7 +213,7 @@ function useSyncCursorPositionWithDOMEffects(
             const positions = getSelectionFromDOM(element);
             if (positions === null) return;
 
-            // commandService.exec(SetCursorPosition(positions));
+            commandService.exec(SetCursorPosition(positions));
         };
 
         const ownerDocument = element.ownerDocument;

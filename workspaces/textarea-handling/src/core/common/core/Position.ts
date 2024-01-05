@@ -6,6 +6,10 @@ export class Position extends dataclass<{ path: Path; offset: number }>() {
         return new Position({ path, offset });
     }
 
+    get depth() {
+        return this.path.depth;
+    }
+
     parent() {
         return Position.of(this.path.parent());
     }
@@ -16,5 +20,8 @@ export class Position extends dataclass<{ path: Path; offset: number }>() {
 
     toString() {
         return `${this.path}/${this.offset}`;
+    }
+    slice(start?: number, end?: number) {
+        return this.copy({ path: this.path.slice(start, end) });
     }
 }

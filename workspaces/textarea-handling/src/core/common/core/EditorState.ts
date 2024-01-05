@@ -9,6 +9,7 @@ import { Node } from './Node';
 export class EditorState extends dataclass<{
     root: Node;
     cursor: Cursor;
+    debug: boolean;
 }>() {
     static create() {
         const root = new RootNode({});
@@ -16,6 +17,7 @@ export class EditorState extends dataclass<{
         return new EditorState({
             root,
             cursor: Cursor.of(Path.of()),
+            debug: true,
         });
     }
 }

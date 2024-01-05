@@ -5,6 +5,7 @@ import { Disposable } from '../../lib';
 import { Logger } from '../../lib/logger';
 import { DeleteContentBackward } from './command/DeleteContentBackward';
 import { DeleteContentForward } from './command/DeleteContentForward';
+import { InsertParagraph } from './command/InsertParagraph';
 
 export class ContentEditEventHub extends Disposable {
     static readonly ServiceKey = DIContainer.register(
@@ -21,6 +22,9 @@ export class ContentEditEventHub extends Disposable {
         this.on('insertText', (data) => {
             commandService.exec(InsertText({ text: data ?? '' }));
         })
+            .on('insertParagraph', () => {
+                commandService.exec(InsertParagraph());
+            })
             .on('deleteContentBackward', () => {
                 commandService.exec(DeleteContentBackward());
             })

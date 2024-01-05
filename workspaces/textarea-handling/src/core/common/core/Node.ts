@@ -3,18 +3,17 @@ import { assert } from '../../../lib';
 import { Path } from './Path';
 import { Position } from './Position';
 
-const generateId = (() => {
-    let id = 0;
-    return () => id++;
-})();
-
 export class Node<Props extends Record<string, unknown> = Record<string, unknown>> {
+    static readonly generateId = (() => {
+        let id = 0;
+        return () => id++;
+    })();
     readonly isContainer: boolean = true;
 
     constructor(
         readonly props: Props,
         readonly children: readonly Node[] = [],
-        readonly id = generateId(),
+        readonly id = Node.generateId(),
     ) {}
 
     get type() {
@@ -29,9 +28,9 @@ export class Node<Props extends Record<string, unknown> = Record<string, unknown
         return this.children.length;
     }
 
-    copy(props: Partial<Props>, children: readonly Node[] = []): this {
+    copy(props: Partial<Props>, children: readonly Node[] = [], id = this.id): this {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return new (this as any).constructor({ ...this.props, ...props }, children, this.id);
+        return new (this as any).constructor({ ...this.props, ...props }, children, id);
     }
 
     get(nodeId: number): Node | null {
@@ -84,6 +83,16 @@ export class Node<Props extends Record<string, unknown> = Record<string, unknown
         return this.replace(path.nodeIds[0], newChild);
     }
 
+    splice(start: number, deleteCount: number, ...nodes: Node[]): Node {
+        const children = this.children.slice();
+        children.splice(start, deleteCount, ...nodes);
+        return this.copy({}, children);
+    }
+
+    spliceByPosition(start: Position, deleteCount: number, ...nodes: Node[]): Node {
+        return this.updateByPath(start.path, (node) => node.splice(start.offset, deleteCount, ...nodes));
+    }
+
     delete(nodeId: number): Node {
         const children = this.children.slice();
         const offset = children.findIndex((child) => child.id === nodeId);
@@ -131,10 +140,52 @@ export class Node<Props extends Record<string, unknown> = Record<string, unknown
         const oldChild = this.get(position.path.nodeIds[0]);
         if (oldChild === null) return this;
 
-        const newChild = oldChild.insertByPosition(Position.of(position.path.slice(1), position.offset), node);
+        const newChild = oldChild.insertByPosition(position.slice(1), node);
         if (newChild === oldChild) return this;
 
         return this.replace(position.path.nodeIds[0], newChild);
+    }
+
+    join(other: Node): Node[] {
+        return [this, other];
+    }
+
+    split(offset: number): [before: Node | null, after: Node | null] {
+        return [this, null];
+    }
+
+    splitByPosition(position: Position): [before: Node | null, after: Node | null] {
+        if (position.path.depth === 0) return this.split(position.offset);
+
+        const target = this.get(position.path.nodeIds[0]);
+        assert(target !== null, 'target !== null');
+
+        const targetOffset = this.children.findIndex((child) => child.id === target.id);
+        assert(targetOffset !== -1, 'targetOffset !== -1');
+
+        const [before, after] = target.splitByPosition(position.slice(1));
+        const children1 = this.children.slice(0, targetOffset);
+        const children2 = this.children.slice(targetOffset + 1);
+
+        if (before !== null) children1.push(before);
+        if (after !== null) children2.unshift(after);
+
+        return [this.copy({}, children1, Node.generateId()), this.copy({}, children2, Node.generateId())];
+    }
+
+    findAncestor(startNodePath: Path, predicate: (node: Node) => boolean): Path | null {
+        let path = startNodePath;
+        do {
+            const node = this.getByPath(path);
+            if (node === null) return null;
+
+            if (predicate(node)) return path;
+
+            if (path.depth === 0) return null;
+            path = path.parent();
+        } while (path.depth > 0);
+
+        return null;
     }
 }
 

@@ -23,89 +23,20 @@ export const EditableContentHost = () => {
     useSyncCursorPositionWithDOMEffects(ref, editorState, commandService);
 
     return (
-        <>
-            <div
-                ref={ref}
-                css={{
-                    border: '1px solid #000',
-                    position: 'absolute',
-                    inset: 0,
-                    padding: 16,
-                    whiteSpace: 'pre-wrap',
-                    wordBreak: 'break-all',
-                }}
-                contentEditable
-                suppressContentEditableWarning
-                data-content-editable-host="true"
-            >
-                <DefaultNodeView node={editorState.root} path={Path.of()} />
-            </div>
-            <div
-                css={{
-                    position: 'absolute',
-                    right: 0,
-                    top: 0,
-                    bottom: 0,
-                    width: '400px',
-                    maxWidth: '50%',
-                    padding: 16,
-                    background: 'rgb(0 0 0 / 10%)',
-                    fontFamily: 'monospace',
-                }}
-            >
-                Rendered at {new Date().toISOString()}
-                <section css={{ marginTop: 32 }}>
-                    <h3 css={{ margin: 0 }}>Cursors</h3>
-                    <div>
-                        <div>{editorState.cursor.toString()}</div>
-                    </div>
-                </section>
-                <section css={{ marginTop: 16 }}>
-                    <h3 css={{ margin: 0 }}>Document</h3>
-                    <NodeTreeNode node={editorState.root} path={Path.of()} />
-                </section>
-            </div>
-        </>
-    );
-};
-
-const NodeTreeNode = ({ node, path }: { node: Node; path: Path }) => {
-    return (
         <div
+            ref={ref}
             css={{
-                listStyle: 'none',
+                inset: 0,
+                padding: 16,
+                minHeight: '100%',
+                whiteSpace: 'pre-wrap',
+                wordBreak: 'break-all',
             }}
+            contentEditable
+            suppressContentEditableWarning
+            data-content-editable-host="true"
         >
-            <div css={{ margin: 0, lineHeight: 1.2 }}>
-                <span>
-                    {'-'.repeat(path.depth)}({node.id}){node.type}
-                </span>
-                {node instanceof TextNode && (
-                    <span css={{ marginLeft: 8, color: '#888' }}>
-                        &quot;
-                        <span
-                            css={{
-                                whiteSpace: 'pre',
-                                display: 'inline-block',
-                                maxWidth: '64px',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                verticalAlign: 'bottom',
-                            }}
-                        >
-                            {node.text}
-                        </span>
-                        &quot;
-                    </span>
-                )}
-            </div>
-            {node.length > 0 && (
-                <div css={{ margin: 0, padding: 0 }}>
-                    {node.children.map((child) => (
-                        <NodeTreeNode key={child.id} node={child} path={path.child(child.id)} />
-                    ))}
-                </div>
-            )}
+            <DefaultNodeView node={editorState.root} path={Path.of()} />
         </div>
     );
 };

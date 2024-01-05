@@ -54,8 +54,6 @@ export function getPath(node: Node): Path | null {
         nodeOrNull = nodeOrNull.parentNode;
     }
 
-    console.error('Failed to identify path');
-
     return null;
 }
 

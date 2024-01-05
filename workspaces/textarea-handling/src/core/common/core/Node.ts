@@ -3,6 +3,14 @@ import { assert } from '../../../lib';
 import { Path } from './Path';
 import { Position } from './Position';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type NodeConstructor = new (props: any, children?: Node[], id?: number) => Node<any>;
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type NodeTypeOf<T extends NodeConstructor> = T extends new (props: any, children: Node[], id: number) => infer R
+    ? R
+    : never;
+
 export class Node<Props extends Record<string, unknown> = Record<string, unknown>> {
     static readonly generateId = (() => {
         let id = 0;
@@ -16,12 +24,16 @@ export class Node<Props extends Record<string, unknown> = Record<string, unknown
         readonly id = Node.generateId(),
     ) {}
 
-    get type() {
-        if ('displayName' in this.constructor && typeof this.constructor.displayName === 'string') {
-            return this.constructor.displayName;
+    static getTypeName(nodeConstructor: NodeConstructor): string {
+        if ('displayName' in nodeConstructor && typeof nodeConstructor.displayName === 'string') {
+            return nodeConstructor.displayName;
         }
 
-        return this.constructor.name;
+        return nodeConstructor.name;
+    }
+
+    get type() {
+        return Node.getTypeName(this.constructor as NodeConstructor);
     }
 
     get length() {

@@ -1,13 +1,30 @@
-import { useService } from './DIContainerProvider';
-import { Editor } from '../common/core/Editor';
-import { useEditorState } from './useEditorState';
-import { Path } from '../common/core/Path';
-import { Node } from '../common/core/Node';
-import { TextNode } from '../common/node/TextNode';
+import { useService } from '../../core/view/DIContainerProvider';
+import { Editor } from '../../core/common/core/Editor';
+import { useEditorState } from '../../core/view/useEditorState';
+import { Node } from '../../core/common/core/Node';
+import { Path } from '../../core/common/core/Path';
+import { TextNode } from '../../core/common/node/TextNode';
+import { NodeSerializer } from '../../serialize/common/NodeSerializer';
+import { Cursor } from '../../core/common/core/Cursor';
+
+const LOCAL_STORAGE_KEY = 'textarea-handling-debug';
 
 export const DebugView = () => {
     const editor = useService(Editor.ServiceKey);
+    const nodeSerializer = useService(NodeSerializer.ServiceKey);
     const editorState = useEditorState(editor);
+
+    const handleSaveButtonClick = () => {
+        const serializedNodes = nodeSerializer.serialize(editorState.root);
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(serializedNodes));
+    };
+
+    const handleLoadButtonClick = () => {
+        const serializedNodes = localStorage.getItem(LOCAL_STORAGE_KEY);
+        if (serializedNodes === null) return;
+        const root = nodeSerializer.deserialize(JSON.parse(serializedNodes));
+        editor.updateState((state) => state.copy({ root, cursor: Cursor.of(Path.of()) }));
+    };
 
     return (
         <div
@@ -17,7 +34,7 @@ export const DebugView = () => {
             }}
         >
             <section css={{ marginBottom: 32 }}>
-                <div>
+                <div css={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                     <label css={{ display: 'flex', alignItems: 'center' }}>
                         <input
                             css={{ margin: '0 8px 0 0' }}
@@ -29,6 +46,8 @@ export const DebugView = () => {
                         />
                         Show debug info
                     </label>
+                    <button onClick={handleSaveButtonClick}>SAVE</button>
+                    <button onClick={handleLoadButtonClick}>LOAD</button>
                 </div>
             </section>
             <section css={{ marginBottom: 32 }}>

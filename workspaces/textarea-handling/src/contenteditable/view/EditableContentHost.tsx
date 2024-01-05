@@ -28,6 +28,7 @@ export const EditableContentHost = () => {
             css={{
                 inset: 0,
                 padding: 16,
+                boxSizing: 'border-box',
                 minHeight: '100%',
                 whiteSpace: 'pre-wrap',
                 wordBreak: 'break-all',

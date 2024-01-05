@@ -4,9 +4,10 @@ import { RootNode } from '../../../core/common/node/RootNode';
 import { TextNode } from '../../../core/common/node/TextNode';
 import { Cursor } from '../../../core/common/core/Cursor';
 import { Logger } from '../../../lib/logger';
+import { deleteSelectedRange } from './deleteSelectedRange';
 
 export function deleteContentForward(state: EditorState) {
-    assert(state.cursor.collapsed, 'Cursor must be collapsed');
+    if (!state.cursor.collapsed) return deleteSelectedRange(state);
 
     const caret = state.cursor.focus;
 

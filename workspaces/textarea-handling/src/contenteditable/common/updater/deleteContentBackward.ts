@@ -4,12 +4,11 @@ import { RootNode } from '../../../core/common/node/RootNode';
 import { Logger } from '../../../lib/logger';
 import { EditorState } from '../../../core/common/core/EditorState';
 import { Cursor } from '../../../core/common/core/Cursor';
-import { Position } from '../../../core/common/core/Position';
-import { moveCaretBeforeFocusNode } from './moveCaretBeforeFocusNode';
 import { joinFocusNodeToPrevious } from './joinFocusNodeToPrevious';
+import { deleteSelectedRange } from './deleteSelectedRange';
 
 export function deleteContentBackward(state: EditorState) {
-    assert(state.cursor.collapsed, 'Cursor must be collapsed');
+    if (!state.cursor.collapsed) return deleteSelectedRange(state);
 
     const caret = state.cursor.focus;
     logger.info(caret.toString());

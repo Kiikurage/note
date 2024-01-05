@@ -1,4 +1,5 @@
 import { Node } from '../core/Node';
+import { assert } from '../../../lib';
 
 export class TextNode extends Node<{ text: string }> {
     readonly isContainer = false;
@@ -31,6 +32,12 @@ export class TextNode extends Node<{ text: string }> {
         if (!(other instanceof TextNode)) return super.join(other);
 
         return [this.setText(this.text + other.text)];
+    }
+
+    splice(start: number, deleteCount: number, ...nodes: Node[]): Node {
+        assert(nodes.length === 0, 'TextNode.splice() must not have nodes');
+
+        return this.copy({ text: this.text.slice(0, start) + this.text.slice(start + deleteCount) });
     }
 
     split(offset: number): [before: Node | null, after: Node | null] {

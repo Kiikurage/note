@@ -4,9 +4,10 @@ import { ParagraphNode } from '../../../core/common/node/ParagraphNode';
 import { Logger } from '../../../lib/logger';
 import { Cursor } from '../../../core/common/core/Cursor';
 import { EditorState } from '../../../core/common/core/EditorState';
+import { deleteSelectedRange } from './deleteSelectedRange';
 
 export function insertText(state: EditorState, text: string) {
-    assert(state.cursor.collapsed, 'state.cursor.collapsed must be true');
+    if (!state.cursor.collapsed) state = deleteSelectedRange(state);
 
     const caret = state.cursor.focus;
 

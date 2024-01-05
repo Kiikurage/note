@@ -6,9 +6,10 @@ import { EditorState } from '../../../core/common/core/EditorState';
 import { Position } from '../../../core/common/core/Position';
 import { Path } from '../../../core/common/core/Path';
 import { splitNodeByCursor } from './splitContainerByCursor';
+import { deleteSelectedRange } from './deleteSelectedRange';
 
 export function insertParagraph(state: EditorState) {
-    assert(state.cursor.collapsed, 'state.cursor.collapsed must be true');
+    if (!state.cursor.collapsed) state = deleteSelectedRange(state);
 
     const containerPath = state.root.findAncestor(state.cursor.focus.path, (node) => node.isContainer);
     if (containerPath !== null && !containerPath.isRoot) return splitNodeByCursor(state, containerPath);

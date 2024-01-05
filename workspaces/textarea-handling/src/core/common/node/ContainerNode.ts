@@ -7,9 +7,9 @@ export class ContainerNode extends Node {
         if (!other.isContainer) return super.join(other);
 
         const children = [...this.children, ...other.children];
-        if (this.length > 0 && other.length > 0) {
-            children.splice(this.length - 1, 2, ...children[this.length - 1].join(children[this.length]));
-        }
+        // if (this.length > 0 && other.length > 0) {
+        //     children.splice(this.length - 1, 2, ...children[this.length - 1].join(children[this.length]));
+        // }
 
         return [this.copy({}, children)];
     }

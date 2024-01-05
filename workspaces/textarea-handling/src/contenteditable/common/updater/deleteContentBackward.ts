@@ -11,7 +11,6 @@ export function deleteContentBackward(state: EditorState) {
     if (!state.cursor.collapsed) return deleteSelectedRange(state);
 
     const caret = state.cursor.focus;
-    logger.info(caret.toString());
 
     const node = state.root.getByPath(caret.path);
     assert(node !== null, 'node must not be null');

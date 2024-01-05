@@ -5,7 +5,6 @@ import { EditorState } from '../../../core/common/core/EditorState';
 import { Cursor } from '../../../core/common/core/Cursor';
 import { Position } from '../../../core/common/core/Position';
 import { moveCaretBeforeFocusNode } from './moveCaretBeforeFocusNode';
-import { Path } from '../../../core/common/core/Path';
 
 export function joinFocusNodeToPrevious(state: EditorState) {
     const caret = state.cursor.focus;
@@ -21,13 +20,26 @@ export function joinFocusNodeToPrevious(state: EditorState) {
 
     const offset = parent.children.indexOf(node);
     assert(offset !== -1, 'offset must not be -1');
-    if (offset === 0) return joinFocusNodeToPrevious(moveCaretBeforeFocusNode(state));
+
+    if (offset === 0) {
+        const pathOfAncestorHavingSibling = state.root.findAncestor(caret.path, (node, path) => {
+            if (path.isRoot) return false;
+            const parent = state.root.getByPath(path.parent());
+            assert(parent !== null, 'parent must not be null');
+
+            const offset = parent.children.indexOf(node);
+            return offset > 0;
+        });
+        if (pathOfAncestorHavingSibling === null) return state;
+
+        return joinFocusNodeToPrevious(moveCaretBeforeFocusNode(state));
+    }
 
     const prevNode = parent.children[offset - 1];
 
     return state.copy({
         root: state.root.spliceByPosition(Position.of(parentPath, offset - 1), 2, ...prevNode.join(node)),
-        cursor: Cursor.of(Path.of()),
+        cursor: Cursor.of(state.root.getEndPosition(parentPath.child(prevNode.id))),
     });
 }
 

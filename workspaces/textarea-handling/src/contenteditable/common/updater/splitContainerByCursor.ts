@@ -16,7 +16,7 @@ export function splitNodeByCursor(state: EditorState, path: Path, newCursor: 'be
     assert(state.cursor.collapsed, 'state.cursor.collapsed must be true');
 
     const caret = state.cursor.focus;
-    assert(path.hasDescendant(caret.path), 'path.hasDescendant(caret.path)');
+    assert(path.includes(caret.path), 'path.includes(caret.path)');
 
     const node = state.root.getByPath(path);
     assert(node != null, 'node != null');

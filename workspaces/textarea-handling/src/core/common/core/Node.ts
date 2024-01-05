@@ -43,13 +43,13 @@ export class Node<Props extends Record<string, unknown> = Record<string, unknown
         return this.get(path.nodeIds[0])?.getByPath(path.slice(1)) ?? null;
     }
 
-    findAncestor(startNodePath: Path, predicate: (node: Node) => boolean): Path | null {
+    findAncestor(startNodePath: Path, predicate: (node: Node, path: Path) => boolean): Path | null {
         let path = startNodePath;
         do {
             const node = this.getByPath(path);
             if (node === null) return null;
 
-            if (predicate(node)) return path;
+            if (predicate(node, path)) return path;
 
             if (path.depth === 0) return null;
             path = path.parent();
@@ -241,7 +241,8 @@ export class Node<Props extends Record<string, unknown> = Record<string, unknown
 
         // eslint-disable-next-line no-constant-condition
         while (true) {
-            if (this.comparePosition(this.getEndPosition(path), to) >= 0) {
+            const cmp = this.comparePosition(this.getEndPosition(path), to);
+            if (cmp > 0) {
                 leftCoveredPath = path;
                 const node = this.getByPath(path);
                 assert(node !== null, 'node !== null');
@@ -250,6 +251,8 @@ export class Node<Props extends Record<string, unknown> = Record<string, unknown
                 path = path.child(node.children[node.children.length - 1].id);
             } else {
                 fullyCoveredPaths.push(path);
+                if (cmp === 0) break;
+
                 const parent = this.getByPath(path.parent());
                 assert(parent !== null, 'parent !== null');
 

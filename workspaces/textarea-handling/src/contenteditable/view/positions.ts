@@ -1,7 +1,8 @@
-import { Path } from '../../core/common/Node';
-import { Cursor, Position } from '../../core/common/Cursor';
+import { Cursor } from '../../core/common/core/Cursor';
 import { clamp } from '../../lib/clamp';
 import { assert } from '../../lib';
+import { Path } from '../../core/common/core/Path';
+import { Position } from '../../core/common/core/Position';
 
 // TODO: Terminologyの整理
 
@@ -35,7 +36,7 @@ export function readLengthFromDatasetAttr(node: Node): number | null {
     return +lengthStr;
 }
 
-export function getPath(node: Node): Path {
+export function getPath(node: Node): Path | null {
     let nodeOrNull: Node | null = node;
 
     while (nodeOrNull !== null) {
@@ -46,11 +47,15 @@ export function getPath(node: Node): Path {
         nodeOrNull = nodeOrNull.parentNode;
     }
 
-    return Path.ROOT;
+    console.error('Failed to identify path');
+
+    return null;
 }
 
-export function getPosition(node: Node, offset: number): Position {
+export function getPosition(node: Node, offset: number): Position | null {
     const path = getPath(node);
+    if (path === null) return null;
+
     if (node instanceof Text) {
         const parent = node.parentElement;
         if (parent !== null) {
@@ -100,6 +105,7 @@ export function getSelectionFromDOM(root: HTMLElement): { anchor: Position; focu
 
     const anchor = getPosition(anchorNode, selection.anchorOffset);
     const focus = getPosition(focusNode, selection.focusOffset);
+    if (anchor === null || focus === null) return null;
 
     console.group('getSelectionFromDOM');
     console.log(selection.anchorNode, selection.anchorOffset, selection.focusNode, selection.focusOffset);

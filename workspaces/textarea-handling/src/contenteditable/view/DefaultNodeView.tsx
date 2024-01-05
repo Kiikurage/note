@@ -1,5 +1,7 @@
-import { Node, Path, TextNode } from '../../core/common/Node';
+import { Node } from '../../core/common/core/Node';
 import { TextNodeView } from './TextNodeView';
+import { TextNode } from '../../core/common/node/TextNode';
+import { Path } from '../../core/common/core/Path';
 
 export const DefaultNodeView = ({ node, path }: { node: Node; path: Path }) => {
     return (
@@ -17,18 +19,19 @@ export const DefaultNodeView = ({ node, path }: { node: Node; path: Path }) => {
                     lineHeight: 1,
 
                     '&::after': {
+                        whiteSpace: 'nowrap',
                         color: '#0a0',
                         position: 'absolute',
                         bottom: '-1em',
                         left: 0,
-                        content: `"${path.toString()}:${node.type}"`,
+                        content: `"(${node.id})${node.type}"`,
                         fontFamily: 'monospace',
                     },
                 }}
             >
                 {node.children.map((child, i) => {
-                    const childPath = Path.of(...path.offsets, i);
-                    if (TextNode.isTextNode(child)) {
+                    const childPath = path.child(child.id);
+                    if (child instanceof TextNode) {
                         return <TextNodeView key={childPath.toString()} node={child} path={childPath} />;
                     } else {
                         return <DefaultNodeView key={childPath.toString()} node={child} path={childPath} />;

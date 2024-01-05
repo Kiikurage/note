@@ -1,7 +1,5 @@
 import { DIContainer } from '../../core/common/DIContainer';
 import { InsertText } from './command/InsertText';
-import { DeleteContentBackward } from './command/DeleteContentBackward';
-import { DeleteContentForward } from './command/DeleteContentForward';
 import { CommandService } from '../../core/common/CommandService';
 import { Disposable } from '../../lib';
 import { Logger } from '../../lib/logger';
@@ -20,13 +18,13 @@ export class ContentEditEventHub extends Disposable {
         // Basic commands
         this.on('insertText', (data) => {
             commandService.exec(InsertText({ text: data ?? '' }));
-        })
-            .on('deleteContentBackward', () => {
-                commandService.exec(DeleteContentBackward());
-            })
-            .on('deleteContentForward', () => {
-                commandService.exec(DeleteContentForward());
-            });
+        });
+        // .on('deleteContentBackward', () => {
+        //     commandService.exec(DeleteContentBackward());
+        // })
+        // .on('deleteContentForward', () => {
+        //     commandService.exec(DeleteContentForward());
+        // });
     }
 
     dispose() {

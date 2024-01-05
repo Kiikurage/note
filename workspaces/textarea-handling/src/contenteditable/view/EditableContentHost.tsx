@@ -1,15 +1,16 @@
 import { MutableRefObject, useCallback, useLayoutEffect, useRef, useState } from 'react';
-import { getSelectionFromDOM } from './positions';
-import { Editor } from '../../core/common/Editor';
+import { getSelectionFromDOM, setSelectionToDOM } from './positions';
+import { Editor } from '../../core/common/core/Editor';
 import { InsertText } from '../common/command/InsertText';
-import { SetCursorPosition } from '../common/command/SetCursorPosition';
-import { EditorState } from '../../core/common/EditorState';
+import { EditorState } from '../../core/common/core/EditorState';
 import { useService } from '../../core/view/DIContainerProvider';
 import { useEditorState } from '../../core/view/useEditorState';
 import { ContentEditEventHub } from '../common/ContentEditEventHub';
 import { CommandService } from '../../core/common/CommandService';
 import { DefaultNodeView } from './DefaultNodeView';
-import { Node, Path, TextNode } from '../../core/common/Node';
+import { Node } from '../../core/common/core/Node';
+import { Path } from '../../core/common/core/Path';
+import { TextNode } from '../../core/common/node/TextNode';
 
 export const EditableContentHost = () => {
     const editor = useService(Editor.ServiceKey);
@@ -35,7 +36,7 @@ export const EditableContentHost = () => {
                 contentEditable
                 suppressContentEditableWarning
             >
-                <DefaultNodeView node={editorState.root} path={Path.ROOT} />
+                <DefaultNodeView node={editorState.root} path={Path.of(editorState.root.id)} />
             </div>
             <div
                 css={{
@@ -54,14 +55,12 @@ export const EditableContentHost = () => {
                 <section css={{ marginTop: 32 }}>
                     <h3 css={{ margin: 0 }}>Cursors</h3>
                     <div>
-                        {editorState.cursors.map((cursor) => (
-                            <li key={cursor.id}>{cursor.toString()}</li>
-                        ))}
+                        <div key={editorState.cursor.id}>{editorState.cursor.toString()}</div>
                     </div>
                 </section>
                 <section css={{ marginTop: 16 }}>
                     <h3 css={{ margin: 0 }}>Document</h3>
-                    <NodeTreeNode node={editorState.root} path={Path.ROOT} />
+                    <NodeTreeNode node={editorState.root} path={Path.of(editorState.root.id)} />
                 </section>
             </div>
         </>
@@ -77,9 +76,9 @@ const NodeTreeNode = ({ node, path }: { node: Node; path: Path }) => {
         >
             <div css={{ margin: 0, lineHeight: 1.2 }}>
                 <span>
-                    {path.toString()} : {node.type}
+                    {'-'.repeat(path.depth)}({node.id}){node.type}
                 </span>
-                {TextNode.isTextNode(node) && (
+                {node instanceof TextNode && (
                     <span css={{ marginLeft: 8, color: '#888' }}>
                         &quot;
                         <span
@@ -92,7 +91,7 @@ const NodeTreeNode = ({ node, path }: { node: Node; path: Path }) => {
                                 verticalAlign: 'bottom',
                             }}
                         >
-                            {node.value}
+                            {node.text}
                         </span>
                         &quot;
                     </span>
@@ -100,8 +99,8 @@ const NodeTreeNode = ({ node, path }: { node: Node; path: Path }) => {
             </div>
             {node.children.length > 0 && (
                 <div css={{ margin: 0, padding: 0 }}>
-                    {node.children.map((child, i) => (
-                        <NodeTreeNode key={i} node={child} path={Path.of(...path.offsets, i)} />
+                    {node.children.map((child) => (
+                        <NodeTreeNode key={child.id} node={child} path={path.child(child.id)} />
                     ))}
                 </div>
             )}
@@ -213,7 +212,7 @@ function useSyncCursorPositionWithDOMEffects(
             const positions = getSelectionFromDOM(element);
             if (positions === null) return;
 
-            commandService.exec(SetCursorPosition(positions));
+            // commandService.exec(SetCursorPosition(positions));
         };
 
         const ownerDocument = element.ownerDocument;
@@ -224,10 +223,10 @@ function useSyncCursorPositionWithDOMEffects(
         };
     }, [commandService, composing, ref]);
 
-    // useLayoutEffect(() => {
-    //     if (composing) return;
-    //     if (ref.current === null) return;
-    //
-    //     setSelectionToDOM(ref.current, editorState.cursors[0]);
-    // }, [composing, editorState.cursors, ref]);
+    useLayoutEffect(() => {
+        if (composing) return;
+        if (ref.current === null) return;
+
+        setSelectionToDOM(ref.current, editorState.cursor);
+    }, [composing, editorState.cursor, ref]);
 }

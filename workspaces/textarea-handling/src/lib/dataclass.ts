@@ -2,11 +2,11 @@ export function dataclass<OwnProps>() {
     class Dataclass {
         constructor(props: OwnProps) {
             Object.assign(this, props);
-            this.init(props);
+            this.init();
         }
 
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        protected init(props: OwnProps) {}
+        protected init() {}
 
         copy(props: Partial<OwnProps> = {}): this {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any

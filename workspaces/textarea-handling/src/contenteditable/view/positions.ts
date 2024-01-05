@@ -14,19 +14,6 @@ export function getFocusState(element: Element | null) {
     return element === activeElement || element.contains(activeElement);
 }
 
-export function readPathFromDatasetAttr(node: Node): Path | null {
-    if (!(node instanceof HTMLElement)) return null;
-
-    const pathStr = node.dataset['path'];
-    if (pathStr === undefined) return null;
-
-    return Path.parse(pathStr);
-}
-
-export function isTextElement(node: Node): boolean {
-    return readPathFromDatasetAttr(node) !== null;
-}
-
 export function readLengthFromDatasetAttr(node: Node): number | null {
     if (!(node instanceof HTMLElement)) return null;
 
@@ -36,10 +23,30 @@ export function readLengthFromDatasetAttr(node: Node): number | null {
     return +lengthStr;
 }
 
+export function readPathFromDatasetAttr(node: Node): Path | null {
+    if (!(node instanceof HTMLElement)) return null;
+
+    const pathStr = node.dataset['path'];
+    if (pathStr === undefined) return null;
+
+    return Path.parse(pathStr);
+}
+
+export function isTextNode(node: Node): boolean {
+    return readLengthFromDatasetAttr(node) !== null;
+}
+
+export function isEditableContentHost(node: Node): boolean {
+    if (!(node instanceof HTMLElement)) return false;
+
+    return 'contentEditableHost' in node.dataset;
+}
+
 export function getPath(node: Node): Path | null {
     let nodeOrNull: Node | null = node;
 
     while (nodeOrNull !== null) {
+        if (isEditableContentHost(nodeOrNull)) return Path.of();
         const path = readPathFromDatasetAttr(nodeOrNull);
         if (path !== null) {
             return path;
@@ -70,14 +77,14 @@ export function getPosition(node: Node, offset: number): Position | null {
 }
 
 export function getElementByPath(root: HTMLElement, path: Path): Element | null {
-    return root.querySelector(`[data-path="${path}"]`) ?? root.querySelector(`[data-path="${path}"]`);
+    return root.querySelector(`[data-path="${path}"]`);
 }
 
 export function getElementByPosition(root: HTMLElement, position: Position): { node: Node; offset: number } | null {
     const element = getElementByPath(root, position.path);
     if (element === null) return null;
 
-    if (isTextElement(element)) {
+    if (isTextNode(element)) {
         if (element.hasChildNodes()) {
             return { node: element.childNodes[0], offset: position.offset };
         } else {
@@ -85,13 +92,7 @@ export function getElementByPosition(root: HTMLElement, position: Position): { n
             return { node: element, offset: 0 };
         }
     } else {
-        const node = element.parentElement;
-        assert(node !== null, 'node must not be null');
-
-        const offset = Array.from(node.children).indexOf(element);
-        assert(offset !== -1, 'offset must not be -1');
-
-        return { node, offset };
+        return { node: element, offset: position.offset };
     }
 }
 
@@ -107,9 +108,6 @@ export function getSelectionFromDOM(root: HTMLElement): { anchor: Position; focu
     const focus = getPosition(focusNode, selection.focusOffset);
     if (anchor === null || focus === null) return null;
 
-    console.group('getSelectionFromDOM');
-    console.log(anchor.toString(), focus.toString());
-    console.groupEnd();
     return { anchor, focus };
 }
 
@@ -130,8 +128,5 @@ export function setSelectionToDOM(root: HTMLElement, cursor: Cursor) {
         return;
     }
 
-    console.group('setSelectionToDOM');
-    console.log(anchorElement.node, anchorElement.offset, focusElement.node, focusElement.offset);
-    console.groupEnd();
     selection.setBaseAndExtent(anchorElement.node, anchorElement.offset, focusElement.node, focusElement.offset);
 }

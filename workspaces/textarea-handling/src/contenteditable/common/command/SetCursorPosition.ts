@@ -12,7 +12,7 @@ export const SetCursorPosition = Command.define('SetCursorPosition').withParams<
 CommandService.registerCommand(SetCursorPosition, (command, container) => {
     container.get(Editor.ServiceKey).updateState((oldState) => {
         return oldState.copy({
-            cursor: new Cursor({ anchor: command.anchor, focus: command.focus }),
+            cursor: Cursor.of(command.anchor, command.focus),
         });
     });
 });

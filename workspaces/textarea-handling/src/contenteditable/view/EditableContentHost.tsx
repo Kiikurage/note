@@ -36,6 +36,7 @@ export const EditableContentHost = () => {
                 }}
                 contentEditable
                 suppressContentEditableWarning
+                data-content-editable-host="true"
             >
                 <DefaultNodeView node={editorState.root} path={Path.of()} />
             </div>
@@ -98,7 +99,7 @@ const NodeTreeNode = ({ node, path }: { node: Node; path: Path }) => {
                     </span>
                 )}
             </div>
-            {node.children.length > 0 && (
+            {node.length > 0 && (
                 <div css={{ margin: 0, padding: 0 }}>
                     {node.children.map((child) => (
                         <NodeTreeNode key={child.id} node={child} path={path.child(child.id)} />
@@ -229,5 +230,5 @@ function useSyncCursorPositionWithDOMEffects(
         if (ref.current === null) return;
 
         setSelectionToDOM(ref.current, editorState.cursor);
-    }, [composing, editorState.cursor, ref]);
+    }, [composing, editorState, ref]);
 }

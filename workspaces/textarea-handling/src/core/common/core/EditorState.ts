@@ -15,10 +15,7 @@ export class EditorState extends dataclass<{
 
         return new EditorState({
             root,
-            cursor: new Cursor({
-                anchor: Position.of(Path.of()),
-                focus: Position.of(Path.of()),
-            }),
+            cursor: Cursor.of(Path.of()),
         });
     }
 }

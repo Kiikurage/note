@@ -17,4 +17,12 @@ export class Logger {
     error(...messages: unknown[]) {
         console.error(`${new Date().toISOString()} [${this.className}]`, ...messages);
     }
+
+    notImplemented(...messages: unknown[]) {
+        this.warn('[Not Implemented]', ...messages);
+    }
+
+    undefined(...messages: unknown[]) {
+        this.warn('[Undefined Behavior]', ...messages);
+    }
 }

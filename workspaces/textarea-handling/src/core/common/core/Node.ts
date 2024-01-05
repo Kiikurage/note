@@ -25,6 +25,10 @@ export class Node<Props extends Record<string, unknown> = Record<string, unknown
         return this.constructor.name;
     }
 
+    get length() {
+        return this.children.length;
+    }
+
     copy(props: Partial<Props>, children: readonly Node[] = []): this {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return new (this as any).constructor({ ...this.props, ...props }, children, this.id);
@@ -89,6 +93,12 @@ export class Node<Props extends Record<string, unknown> = Record<string, unknown
         return this.copy({}, children);
     }
 
+    deleteByOffset(offset: number): Node {
+        if (offset < 0 || offset >= this.length) return this;
+
+        return this.delete(this.children[offset].id);
+    }
+
     deleteByPath(path: Path): Node {
         assert(path.depth > 0, 'path.depth > 0');
         if (path.depth === 1) return this.delete(path.nodeIds[0]);
@@ -102,11 +112,12 @@ export class Node<Props extends Record<string, unknown> = Record<string, unknown
         return this.replace(path.nodeIds[0], newChild);
     }
 
+    deleteByPosition(position: Position): Node {
+        return this.updateByPath(position.path, (node) => node.deleteByOffset(position.offset));
+    }
+
     insert(offset: number, node: Node): Node {
-        assert(
-            0 <= offset && offset <= this.children.length,
-            `offset ${offset} is out of range [0, ${this.children.length}]`,
-        );
+        assert(0 <= offset && offset <= this.length, `offset ${offset} is out of range [0, ${this.length}]`);
 
         const children = this.children.slice();
         children.splice(offset, 0, node);

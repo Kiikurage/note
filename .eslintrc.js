@@ -11,6 +11,7 @@ module.exports = {
                 '@typescript-eslint/prefer-namespace-keyword': 'off',
                 '@typescript-eslint/no-namespace': 'off',
                 '@typescript-eslint/no-this-alias': 'off',
+                '@typescript-eslint/no-unused-vars': 'off',
             },
         },
         {

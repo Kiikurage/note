@@ -9,12 +9,12 @@ export class Logger {
         console.log(`${new Date().toISOString()} [${this.className}]`, ...messages);
     }
     info(...messages: unknown[]) {
-        console.log(`${new Date().toISOString()} [${this.className}]`, ...messages);
+        console.info(`${new Date().toISOString()} [${this.className}]`, ...messages);
     }
     warn(...messages: unknown[]) {
-        console.log(`${new Date().toISOString()} [${this.className}]`, ...messages);
+        console.warn(`${new Date().toISOString()} [${this.className}]`, ...messages);
     }
     error(...messages: unknown[]) {
-        console.log(`${new Date().toISOString()} [${this.className}]`, ...messages);
+        console.error(`${new Date().toISOString()} [${this.className}]`, ...messages);
     }
 }

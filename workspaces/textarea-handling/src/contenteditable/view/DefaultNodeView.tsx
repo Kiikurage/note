@@ -5,6 +5,8 @@ import { Path } from '../../core/common/core/Path';
 import { useEditorState } from '../../core/view/useEditorState';
 import { useService } from '../../core/view/DIContainerProvider';
 import { Editor } from '../../core/common/core/Editor';
+import { LinkNodeView } from '../../link/LinkNodeView';
+import { LinkNode } from '../../link/LinkNode';
 
 const JOINER = '\u2060';
 
@@ -13,44 +15,47 @@ export const DefaultNodeView = ({ node, path }: { node: Node; path: Path }) => {
     const editorState = useEditorState(editor);
 
     return (
-        <>
-            <div
-                id={path.toString()}
-                data-path={path}
-                css={{
-                    display: 'block',
-                    position: 'relative',
+        <div
+            data-path={path}
+            css={{
+                display: 'block',
+                position: 'relative',
 
-                    ...(editorState.debug && {
-                        border: '1px solid #000',
-                        padding: '4px',
-                        marginTop: '1em',
-                        background: 'rgba(0,0,0,0.1)',
+                ...(editorState.debug && {
+                    border: '1px solid #000',
+                    padding: '4px',
+                    marginTop: '1em',
+                    background: 'rgba(0,0,0,0.1)',
 
-                        '&::after': {
-                            whiteSpace: 'nowrap',
-                            color: '#0a0',
-                            position: 'absolute',
-                            top: '-1.25em',
-                            fontSize: '0.75em',
-                            lineHeight: 1,
-                            left: 0,
-                            content: `"(${node.id})${node.type}"`,
-                            fontFamily: 'monospace',
-                        },
-                    }),
-                }}
-            >
-                {node.length === 0 && JOINER}
-                {node.children.map((child, i) => {
-                    const childPath = path.child(child.id);
-                    if (child instanceof TextNode) {
-                        return <TextNodeView key={childPath.toString()} node={child} path={childPath} />;
-                    } else {
-                        return <DefaultNodeView key={childPath.toString()} node={child} path={childPath} />;
-                    }
-                })}
-            </div>
-        </>
+                    '&::after': {
+                        whiteSpace: 'nowrap',
+                        color: '#0a0',
+                        position: 'absolute',
+                        top: '-1.25em',
+                        fontSize: '0.75em',
+                        lineHeight: 1,
+                        left: 0,
+                        content: `"(${node.id})${node.type}"`,
+                        fontFamily: 'monospace',
+                    },
+                }),
+            }}
+        >
+            {node.length === 0 && JOINER}
+            {renderNodes(node.children, path)}
+        </div>
     );
 };
+
+export function renderNodes(nodes: readonly Node[], path: Path) {
+    return nodes.map((node, i) => {
+        const nodePath = path.child(node.id);
+        if (node instanceof TextNode) {
+            return <TextNodeView key={nodePath.toString()} node={node} path={nodePath} />;
+        } else if (node instanceof LinkNode) {
+            return <LinkNodeView key={nodePath.toString()} node={node} path={nodePath} />;
+        } else {
+            return <DefaultNodeView key={nodePath.toString()} node={node} path={nodePath} />;
+        }
+    });
+}

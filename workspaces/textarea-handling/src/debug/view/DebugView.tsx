@@ -6,6 +6,7 @@ import { Path } from '../../core/common/core/Path';
 import { TextNode } from '../../core/common/node/TextNode';
 import { NodeSerializer } from '../../serialize/common/NodeSerializer';
 import { Cursor } from '../../core/common/core/Cursor';
+import { useEffect } from 'react';
 
 const LOCAL_STORAGE_KEY = 'textarea-handling-debug';
 
@@ -14,17 +15,17 @@ export const DebugView = () => {
     const nodeSerializer = useService(NodeSerializer.ServiceKey);
     const editorState = useEditorState(editor);
 
-    const handleSaveButtonClick = () => {
-        const serializedNodes = nodeSerializer.serialize(editorState.root);
-        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(serializedNodes));
-    };
-
-    const handleLoadButtonClick = () => {
+    useEffect(() => {
         const serializedNodes = localStorage.getItem(LOCAL_STORAGE_KEY);
         if (serializedNodes === null) return;
         const root = nodeSerializer.deserialize(JSON.parse(serializedNodes));
         editor.updateState((state) => state.copy({ root, cursor: Cursor.of(Path.of()) }));
-    };
+    }, [editor, nodeSerializer]);
+
+    useEffect(() => {
+        const serializedNodes = nodeSerializer.serialize(editorState.root);
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(serializedNodes));
+    }, [editorState.root, nodeSerializer]);
 
     return (
         <div
@@ -46,8 +47,6 @@ export const DebugView = () => {
                         />
                         Show debug info
                     </label>
-                    <button onClick={handleSaveButtonClick}>SAVE</button>
-                    <button onClick={handleLoadButtonClick}>LOAD</button>
                 </div>
             </section>
             <section css={{ marginBottom: 32 }}>

@@ -100,35 +100,6 @@ function useCompositionStatus(ref: MutableRefObject<HTMLDivElement | null>) {
     return composing;
 }
 
-// function useDOMFocusState(ref: MutableRefObject<HTMLDivElement | null>) {
-//     const [focused, setFocused] = useState(() => getFocusState(ref.current));
-//
-//     useLayoutEffect(() => {
-//         const element = ref.current;
-//         if (element === null) return;
-//
-//         const ownerDocument = element.ownerDocument;
-//
-//         const handler = () => {
-//             setFocused(getFocusState(ref.current));
-//         };
-//
-//         element.addEventListener('focus', handler);
-//         element.addEventListener('blur', handler);
-//         ownerDocument.addEventListener('focus', handler);
-//         ownerDocument.addEventListener('blur', handler);
-//
-//         return () => {
-//             element.removeEventListener('focus', handler);
-//             element.removeEventListener('blur', handler);
-//             ownerDocument.removeEventListener('focus', handler);
-//             ownerDocument.removeEventListener('blur', handler);
-//         };
-//     }, [ref]);
-//
-//     return focused;
-// }
-
 function useSyncCursorPositionWithDOMEffects(
     ref: MutableRefObject<HTMLDivElement | null>,
     editorState: EditorState,

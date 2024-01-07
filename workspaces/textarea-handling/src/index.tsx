@@ -5,13 +5,14 @@ import { ClipboardExtension } from './clipboard';
 import { SerializeExtension } from './serialize';
 import { DebugExtension } from './debug';
 import { DebugView } from './debug/view/DebugView';
+import { LinkExtension } from './link';
 
 window.addEventListener('DOMContentLoaded', () => {
     const container = document.getElementById('root')!;
 
     createRoot(container).render(
         <div css={{ position: 'fixed', inset: 16 }}>
-            <DIContainerProvider extensions={[DebugExtension, ClipboardExtension, SerializeExtension]}>
+            <DIContainerProvider extensions={[LinkExtension, DebugExtension, ClipboardExtension, SerializeExtension]}>
                 <div
                     css={{
                         position: 'absolute',

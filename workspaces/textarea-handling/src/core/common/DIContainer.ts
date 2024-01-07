@@ -11,7 +11,7 @@ export class DIContainer {
     private static readonly factories = new Map<symbol, (container: DIContainer) => unknown>();
 
     static register<T>(factory: (container: DIContainer) => T) {
-        const key = Symbol() as ServiceKey<T>;
+        const key = serviceKey<T>(factory.name);
         DIContainer.factories.set(key, factory);
         return key;
     }

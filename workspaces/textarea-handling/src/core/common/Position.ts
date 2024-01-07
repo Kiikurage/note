@@ -1,4 +1,4 @@
-import { dataclass } from '../../../lib';
+import { dataclass } from '../../lib';
 import { Path } from './Path';
 
 export class Position extends dataclass<{ path: Path; offset: number }>() {

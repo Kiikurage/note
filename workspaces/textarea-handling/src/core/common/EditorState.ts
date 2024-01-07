@@ -1,6 +1,6 @@
-import { dataclass } from '../../../lib';
-import { Logger } from '../../../lib/logger';
-import { RootNode } from '../node/RootNode';
+import { dataclass } from '../../lib';
+import { Logger } from '../../lib/logger';
+import { RootNode } from './RootNode';
 import { Cursor } from './Cursor';
 import { Path } from './Path';
 import { Position } from './Position';

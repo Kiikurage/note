@@ -1,8 +1,8 @@
-import { Cursor } from '../../core/common/core/Cursor';
-import { clamp } from '../../lib/clamp';
-import { assert } from '../../lib';
-import { Path } from '../../core/common/core/Path';
-import { Position } from '../../core/common/core/Position';
+import { Cursor } from '../core/common/Cursor';
+import { clamp } from '../lib/clamp';
+import { assert } from '../lib';
+import { Path } from '../core/common/Path';
+import { Position } from '../core/common/Position';
 
 // TODO: Terminologyの整理
 

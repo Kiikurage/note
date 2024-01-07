@@ -1,7 +1,7 @@
-import { Channel, Disposable } from '../../../lib';
+import { Channel, Disposable } from '../../lib';
 import { EditorState } from './EditorState';
-import { DIContainer } from '../DIContainer';
-import { Logger } from '../../../lib/logger';
+import { DIContainer } from './DIContainer';
+import { Logger } from '../../lib/logger';
 
 export class Editor extends Disposable {
     static readonly ServiceKey = DIContainer.register(() => new Editor());

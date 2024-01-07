@@ -1,8 +1,8 @@
-import { EditorState } from '../../../core/common/core/EditorState';
+import { EditorState } from '../../../core/common/EditorState';
 import { assert } from '../../../lib';
-import { RootNode } from '../../../core/common/node/RootNode';
-import { TextNode } from '../../../core/common/node/TextNode';
-import { Cursor } from '../../../core/common/core/Cursor';
+import { RootNode } from '../../../core/common/RootNode';
+import { TextNode } from '../../../core/common/TextNode';
+import { Cursor } from '../../../core/common/Cursor';
 import { Logger } from '../../../lib/logger';
 import { deleteSelectedRange } from './deleteSelectedRange';
 

@@ -1,5 +1,5 @@
-import { Node } from '../core/Node';
-import { assert } from '../../../lib';
+import { Node } from './Node';
+import { assert } from '../../lib';
 
 export class TextNode extends Node<{ text: string }> {
     readonly isContainer = false;

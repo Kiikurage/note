@@ -1,7 +1,7 @@
 import { assert } from '../../../lib';
-import { Node } from '../../../core/common/core/Node';
-import { Path } from '../../../core/common/core/Path';
-import { Position } from '../../../core/common/core/Position';
+import { Node } from '../../../core/common/Node';
+import { Path } from '../../../core/common/Path';
+import { Position } from '../../../core/common/Position';
 
 export function getPositionBeforeNode(root: Node, nodePath: Path): Position {
     const node = root.getByPath(nodePath);

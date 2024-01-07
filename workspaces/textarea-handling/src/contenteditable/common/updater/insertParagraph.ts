@@ -1,10 +1,10 @@
 import { assert } from '../../../lib';
-import { ParagraphNode } from '../../../core/common/node/ParagraphNode';
+import { ParagraphNode } from '../../../core/common/ParagraphNode';
 import { Logger } from '../../../lib/logger';
-import { Cursor } from '../../../core/common/core/Cursor';
-import { EditorState } from '../../../core/common/core/EditorState';
-import { Position } from '../../../core/common/core/Position';
-import { Path } from '../../../core/common/core/Path';
+import { Cursor } from '../../../core/common/Cursor';
+import { EditorState } from '../../../core/common/EditorState';
+import { Position } from '../../../core/common/Position';
+import { Path } from '../../../core/common/Path';
 import { splitNodeByCursor } from './splitContainerByCursor';
 import { deleteSelectedRange } from './deleteSelectedRange';
 

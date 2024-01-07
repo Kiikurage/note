@@ -1,6 +1,6 @@
-import { Path } from '../core/common/core/Path';
+import { Path } from '../core/common/Path';
 import { LinkNode } from './LinkNode';
-import { renderNodes } from '../contenteditable/view/DefaultNodeView';
+import { renderNodes } from '../contenteditable/DefaultNodeView';
 
 export const LinkNodeView = ({ node, path }: { node: LinkNode; path: Path }) => {
     return (

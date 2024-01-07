@@ -1,4 +1,4 @@
-import { assert, dataclass } from '../../../lib';
+import { assert, dataclass } from '../../lib';
 
 export class Path extends dataclass<{
     nodeIds: number[];

@@ -1,9 +1,9 @@
 import { assert } from '../../../lib';
-import { RootNode } from '../../../core/common/node/RootNode';
+import { RootNode } from '../../../core/common/RootNode';
 import { Logger } from '../../../lib/logger';
-import { EditorState } from '../../../core/common/core/EditorState';
-import { Cursor } from '../../../core/common/core/Cursor';
-import { Position } from '../../../core/common/core/Position';
+import { EditorState } from '../../../core/common/EditorState';
+import { Cursor } from '../../../core/common/Cursor';
+import { Position } from '../../../core/common/Position';
 import { moveCaretBeforeFocusNode } from './moveCaretBeforeFocusNode';
 
 export function joinFocusNodeToPrevious(state: EditorState) {

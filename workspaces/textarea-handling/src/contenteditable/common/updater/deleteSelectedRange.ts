@@ -1,8 +1,8 @@
 import { Logger } from '../../../lib/logger';
-import { EditorState } from '../../../core/common/core/EditorState';
+import { EditorState } from '../../../core/common/EditorState';
 import { assert } from '../../../lib';
-import { Cursor } from '../../../core/common/core/Cursor';
-import { Position } from '../../../core/common/core/Position';
+import { Cursor } from '../../../core/common/Cursor';
+import { Position } from '../../../core/common/Position';
 
 export function deleteSelectedRange(state: EditorState) {
     const { anchor, focus } = state.cursor;

@@ -1,5 +1,5 @@
-import { EditorState } from '../../../core/common/core/EditorState';
-import { Cursor } from '../../../core/common/core/Cursor';
+import { EditorState } from '../../../core/common/EditorState';
+import { Cursor } from '../../../core/common/Cursor';
 import { getPositionBeforeNode } from './getPositionBeforeNode';
 
 export function moveCaretBeforeAnchorNode(state: EditorState): EditorState {

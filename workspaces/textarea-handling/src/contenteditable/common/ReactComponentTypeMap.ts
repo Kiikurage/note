@@ -1,8 +1,8 @@
 import { DIContainer } from '../../core/common/DIContainer';
-import { Path } from '../../core/common/core/Path';
-import { Node, NodeConstructor, NodeTypeOf } from '../../core/common/core/Node';
+import { Path } from '../../core/common/Path';
+import { Node, NodeConstructor, NodeTypeOf } from '../../core/common/Node';
 import { ComponentType, createElement } from 'react';
-import { DefaultNodeView } from '../view/DefaultNodeView';
+import { DefaultNodeView } from '../DefaultNodeView';
 
 export class ReactComponentTypeMap {
     private readonly map = new Map<

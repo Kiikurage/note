@@ -1,4 +1,4 @@
-import { assert, dataclass } from '../../../lib';
+import { assert, dataclass } from '../../lib';
 import { Position } from './Position';
 import { Path } from './Path';
 

@@ -1,9 +1,9 @@
-import { EditorState } from '../core/common/core/EditorState';
+import { EditorState } from '../core/common/EditorState';
 import { assert, isNotNullish } from '../lib';
 import { LinkNode } from './LinkNode';
-import { Position } from '../core/common/core/Position';
+import { Position } from '../core/common/Position';
 import { Logger } from '../lib/logger';
-import { Cursor } from '../core/common/core/Cursor';
+import { Cursor } from '../core/common/Cursor';
 
 export function insertLinkToSelection(state: EditorState) {
     if (state.cursor.collapsed) return state;

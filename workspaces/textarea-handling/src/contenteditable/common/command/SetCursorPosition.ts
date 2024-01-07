@@ -1,8 +1,8 @@
 import { Command } from '../../../core/common/Command';
 import { CommandService } from '../../../core/common/CommandService';
-import { Position } from '../../../core/common/core/Position';
-import { Editor } from '../../../core/common/core/Editor';
-import { Cursor } from '../../../core/common/core/Cursor';
+import { Position } from '../../../core/common/Position';
+import { Editor } from '../../../core/common/Editor';
+import { Cursor } from '../../../core/common/Cursor';
 
 export const SetCursorPosition = Command.define('SetCursorPosition').withParams<{
     anchor: Position;

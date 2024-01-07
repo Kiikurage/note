@@ -1,4 +1,4 @@
 import { ContainerNode } from './ContainerNode';
-import { Node } from '../core/Node';
+import { Node } from './Node';
 
 export class RootNode extends ContainerNode {}

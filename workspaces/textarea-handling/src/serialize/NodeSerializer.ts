@@ -1,5 +1,5 @@
-import { DIContainer } from '../../core/common/DIContainer';
-import { Node, NodeConstructor } from '../../core/common/core/Node';
+import { DIContainer } from '../core/common/DIContainer';
+import { Node, NodeConstructor } from '../core/common/Node';
 
 export class NodeSerializer {
     static readonly ServiceKey = DIContainer.register(() => new NodeSerializer());

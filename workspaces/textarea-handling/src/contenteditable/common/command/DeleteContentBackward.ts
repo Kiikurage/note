@@ -1,6 +1,6 @@
 import { CommandService } from '../../../core/common/CommandService';
 import { Command } from '../../../core/common/Command';
-import { Editor } from '../../../core/common/core/Editor';
+import { Editor } from '../../../core/common/Editor';
 import { deleteContentBackward } from '../updater/deleteContentBackward';
 
 export const DeleteContentBackward = Command.define('contenteditable.deleteContentBackward');

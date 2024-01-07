@@ -1,5 +1,5 @@
-import { EditorState } from '../../../core/common/core/EditorState';
-import { Cursor } from '../../../core/common/core/Cursor';
+import { EditorState } from '../../../core/common/EditorState';
+import { Cursor } from '../../../core/common/Cursor';
 import { getPositionAfterNode } from './getPositionAfterNode';
 
 export function moveCaretAfterFocusNode(state: EditorState): EditorState {

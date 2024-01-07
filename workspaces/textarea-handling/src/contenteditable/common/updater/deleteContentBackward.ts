@@ -1,9 +1,9 @@
 import { assert } from '../../../lib';
-import { TextNode } from '../../../core/common/node/TextNode';
-import { RootNode } from '../../../core/common/node/RootNode';
+import { TextNode } from '../../../core/common/TextNode';
+import { RootNode } from '../../../core/common/RootNode';
 import { Logger } from '../../../lib/logger';
-import { EditorState } from '../../../core/common/core/EditorState';
-import { Cursor } from '../../../core/common/core/Cursor';
+import { EditorState } from '../../../core/common/EditorState';
+import { Cursor } from '../../../core/common/Cursor';
 import { joinFocusNodeToPrevious } from './joinFocusNodeToPrevious';
 import { deleteSelectedRange } from './deleteSelectedRange';
 

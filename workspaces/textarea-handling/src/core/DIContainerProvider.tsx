@@ -1,6 +1,6 @@
 import { createContext, ReactNode, useContext, useRef } from 'react';
-import { DIContainer, ServiceKey } from '../common/DIContainer';
-import { Extension, loadExtension } from '../common/Extension';
+import { DIContainer, ServiceKey } from './common/DIContainer';
+import { Extension, loadExtension } from './common/Extension';
 
 const context = createContext<DIContainer>(null as never);
 

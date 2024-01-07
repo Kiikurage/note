@@ -1,18 +1,21 @@
 import { createRoot } from 'react-dom/client';
-import { EditableContentHost } from './contenteditable/view/EditableContentHost';
-import { DIContainerProvider } from './core/view/DIContainerProvider';
+import { EditableContentHost } from './contenteditable/EditableContentHost';
+import { DIContainerProvider } from './core/DIContainerProvider';
 import { ClipboardExtension } from './clipboard';
 import { SerializeExtension } from './serialize';
 import { DebugExtension } from './debug';
-import { DebugView } from './debug/view/DebugView';
+import { DebugView } from './debug/DebugView';
 import { LinkExtension } from './link';
+import { HistoryExtension } from './history';
 
 window.addEventListener('DOMContentLoaded', () => {
     const container = document.getElementById('root')!;
 
     createRoot(container).render(
         <div css={{ position: 'fixed', inset: 16 }}>
-            <DIContainerProvider extensions={[LinkExtension, DebugExtension, ClipboardExtension, SerializeExtension]}>
+            <DIContainerProvider
+                extensions={[LinkExtension, HistoryExtension, DebugExtension, ClipboardExtension, SerializeExtension]}
+            >
                 <div
                     css={{
                         position: 'absolute',

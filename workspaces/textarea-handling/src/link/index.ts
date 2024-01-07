@@ -5,7 +5,7 @@ import { KeyBindingExtension } from '../keybinding';
 import { CommandService } from '../core/common/CommandService';
 import { InsertLink } from './InsertLink';
 import { SerializeExtension } from '../serialize';
-import { NodeSerializer } from '../serialize/common/NodeSerializer';
+import { NodeSerializer } from '../serialize/NodeSerializer';
 import { LinkNode } from './LinkNode';
 import { ReactComponentTypeMap } from '../contenteditable/common/ReactComponentTypeMap';
 import { LinkNodeView } from './LinkNodeView';

@@ -1,12 +1,12 @@
-import { Node } from '../../core/common/core/Node';
+import { Node } from '../core/common/Node';
 import { TextNodeView } from './TextNodeView';
-import { TextNode } from '../../core/common/node/TextNode';
-import { Path } from '../../core/common/core/Path';
-import { useEditorState } from '../../core/view/useEditorState';
-import { useService } from '../../core/view/DIContainerProvider';
-import { Editor } from '../../core/common/core/Editor';
-import { LinkNodeView } from '../../link/LinkNodeView';
-import { LinkNode } from '../../link/LinkNode';
+import { TextNode } from '../core/common/TextNode';
+import { Path } from '../core/common/Path';
+import { useEditorState } from '../core/useEditorState';
+import { useService } from '../core/DIContainerProvider';
+import { Editor } from '../core/common/Editor';
+import { LinkNodeView } from '../link/LinkNodeView';
+import { LinkNode } from '../link/LinkNode';
 
 const JOINER = '\u2060';
 

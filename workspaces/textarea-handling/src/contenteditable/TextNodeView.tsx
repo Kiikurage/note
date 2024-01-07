@@ -1,5 +1,5 @@
-import { TextNode } from '../../core/common/node/TextNode';
-import { Path } from '../../core/common/core/Path';
+import { TextNode } from '../core/common/TextNode';
+import { Path } from '../core/common/Path';
 
 export const TextNodeView = ({ node, path }: { node: TextNode; path: Path }) => {
     return (

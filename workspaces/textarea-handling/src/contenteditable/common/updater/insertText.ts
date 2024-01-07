@@ -1,9 +1,9 @@
 import { assert } from '../../../lib';
-import { TextNode } from '../../../core/common/node/TextNode';
-import { ParagraphNode } from '../../../core/common/node/ParagraphNode';
+import { TextNode } from '../../../core/common/TextNode';
+import { ParagraphNode } from '../../../core/common/ParagraphNode';
 import { Logger } from '../../../lib/logger';
-import { Cursor } from '../../../core/common/core/Cursor';
-import { EditorState } from '../../../core/common/core/EditorState';
+import { Cursor } from '../../../core/common/Cursor';
+import { EditorState } from '../../../core/common/EditorState';
 import { deleteSelectedRange } from './deleteSelectedRange';
 
 export function insertText(state: EditorState, text: string) {

@@ -1,17 +1,17 @@
 import { MutableRefObject, useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { getSelectionFromDOM, setSelectionToDOM } from './positions';
-import { Editor } from '../../core/common/core/Editor';
-import { InsertText } from '../common/command/InsertText';
-import { EditorState } from '../../core/common/core/EditorState';
-import { useService } from '../../core/view/DIContainerProvider';
-import { useEditorState } from '../../core/view/useEditorState';
-import { ContentEditEventHub } from '../common/ContentEditEventHub';
-import { CommandService } from '../../core/common/CommandService';
+import { Editor } from '../core/common/Editor';
+import { InsertText } from './common/command/InsertText';
+import { EditorState } from '../core/common/EditorState';
+import { useService } from '../core/DIContainerProvider';
+import { useEditorState } from '../core/useEditorState';
+import { ContentEditEventHub } from './common/ContentEditEventHub';
+import { CommandService } from '../core/common/CommandService';
 import { DefaultNodeView } from './DefaultNodeView';
-import { Node } from '../../core/common/core/Node';
-import { Path } from '../../core/common/core/Path';
-import { TextNode } from '../../core/common/node/TextNode';
-import { SetCursorPosition } from '../common/command/SetCursorPosition';
+import { Node } from '../core/common/Node';
+import { Path } from '../core/common/Path';
+import { TextNode } from '../core/common/TextNode';
+import { SetCursorPosition } from './common/command/SetCursorPosition';
 
 export const EditableContentHost = () => {
     const editor = useService(Editor.ServiceKey);

@@ -1,11 +1,11 @@
-import { useService } from '../../core/view/DIContainerProvider';
-import { Editor } from '../../core/common/core/Editor';
-import { useEditorState } from '../../core/view/useEditorState';
-import { Node } from '../../core/common/core/Node';
-import { Path } from '../../core/common/core/Path';
-import { TextNode } from '../../core/common/node/TextNode';
-import { NodeSerializer } from '../../serialize/common/NodeSerializer';
-import { Cursor } from '../../core/common/core/Cursor';
+import { useService } from '../core/DIContainerProvider';
+import { Editor } from '../core/common/Editor';
+import { useEditorState } from '../core/useEditorState';
+import { Node } from '../core/common/Node';
+import { Path } from '../core/common/Path';
+import { TextNode } from '../core/common/TextNode';
+import { NodeSerializer } from '../serialize/NodeSerializer';
+import { Cursor } from '../core/common/Cursor';
 import { useEffect } from 'react';
 
 const LOCAL_STORAGE_KEY = 'textarea-handling-debug';

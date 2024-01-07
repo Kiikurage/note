@@ -1,5 +1,5 @@
-import { Logger } from '../../../lib/logger';
-import { assert } from '../../../lib';
+import { Logger } from '../../lib/logger';
+import { assert } from '../../lib';
 import { Path } from './Path';
 import { Position } from './Position';
 

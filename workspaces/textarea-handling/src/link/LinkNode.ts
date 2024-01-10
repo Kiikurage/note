@@ -1,4 +1,4 @@
-import { Node } from '../core/common/Node';
+import { Node } from '../core/Node';
 
 export class LinkNode extends Node<{
     href: string;

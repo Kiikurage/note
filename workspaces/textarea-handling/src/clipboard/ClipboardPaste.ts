@@ -1,5 +1,5 @@
-import { Command } from '../core/common/Command';
-import { CommandService } from '../core/common/CommandService';
+import { Command } from '../command/Command';
+import { CommandService } from '../command/CommandService';
 import { ClipboardService } from './ClipboardService';
 
 export const ClipboardPaste = Command.define('clipboard.paste');

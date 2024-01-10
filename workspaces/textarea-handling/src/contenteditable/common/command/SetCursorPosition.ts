@@ -1,8 +1,8 @@
-import { Command } from '../../../core/common/Command';
-import { CommandService } from '../../../core/common/CommandService';
-import { Position } from '../../../core/common/Position';
-import { Editor } from '../../../core/common/Editor';
-import { Cursor } from '../../../core/common/Cursor';
+import { Command } from '../../../command/Command';
+import { CommandService } from '../../../command/CommandService';
+import { Position } from '../../../core/Position';
+import { Editor } from '../../../core/Editor';
+import { Cursor } from '../../../core/Cursor';
 
 export const SetCursorPosition = Command.define('SetCursorPosition').withParams<{
     anchor: Position;
@@ -10,9 +10,9 @@ export const SetCursorPosition = Command.define('SetCursorPosition').withParams<
 }>();
 
 CommandService.registerCommand(SetCursorPosition, (command, container) => {
-    container.get(Editor.ServiceKey).updateState((oldState) => {
-        return oldState.copy({
+    container.get(Editor.ServiceKey).updateState((state) =>
+        state.copy({
             cursor: Cursor.of(command.anchor, command.focus),
-        });
-    });
+        }),
+    );
 });

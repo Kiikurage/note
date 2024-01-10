@@ -1,5 +1,5 @@
-import { DIContainer } from '../core/common/DIContainer';
-import { extension } from '../core/common/Extension';
+import { DIContainer } from '../lib/DIContainer';
+import { extension } from '../extension/Extension';
 import { SerializeExtension } from '../serialize';
 
 export const DebugExtension = extension({

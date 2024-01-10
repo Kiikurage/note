@@ -1,6 +1,6 @@
-import { EditorState } from '../core/common/EditorState';
-import { Editor } from '../core/common/Editor';
-import { DIContainer } from '../core/common/DIContainer';
+import { EditorState } from '../core/EditorState';
+import { Editor } from '../core/Editor';
+import { DIContainer } from '../lib/DIContainer';
 
 export class EditorHistory {
     static readonly ServiceKey = DIContainer.register(
@@ -39,7 +39,7 @@ export class EditorHistory {
     }
 
     private readonly handleEditorChange = () => {
-        if (this.editor.state.root === this.buffer[this.index].root) return;
+        if (this.editor.state.doc === this.buffer[this.index].doc) return;
 
         this.buffer.length = this.index + 1;
         this.index++;

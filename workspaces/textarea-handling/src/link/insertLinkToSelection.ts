@@ -1,44 +1,51 @@
-import { EditorState } from '../core/common/EditorState';
-import { assert, isNotNullish } from '../lib';
+import { EditorState } from '../core/EditorState';
+import { assert } from '../lib';
 import { LinkNode } from './LinkNode';
-import { Position } from '../core/common/Position';
+import { Position } from '../core/Position';
 import { Logger } from '../lib/logger';
-import { Cursor } from '../core/common/Cursor';
+import { Cursor } from '../core/Cursor';
+import { Doc } from '../core/Doc';
+import { split } from '../core/mutation/split';
 
 export function insertLinkToSelection(state: EditorState) {
     if (state.cursor.collapsed) return state;
-    const { focus, anchor } = state.cursor;
-    assert(focus.path.equals(anchor.path), 'focus.path.equals(anchor.path)');
 
-    const path = focus.path;
-    const fromOffset = Math.min(focus.offset, anchor.offset);
-    const toOffset = Math.max(focus.offset, anchor.offset);
+    const [from, to] = state.cursor.getRange(state.doc);
+    if (from.nodeId !== to.nodeId) {
+        logger.warn('Insert link with multiple nodes are not supported yet.');
+        return state;
+    }
 
-    const node = state.root.getByPath(path);
-    assert(node != null, 'node != null');
-
-    const [leftAndMid, right] = node.split(toOffset);
-    assert(leftAndMid !== null, 'leftAndMid !== null');
-    const [left, mid] = leftAndMid.split(fromOffset);
-    assert(mid !== null, 'mid !== null');
-
-    const link = new LinkNode({ href: 'https://example.com' }, [mid]);
-
-    const parentPath = path.parent();
-    const parent = state.root.getByPath(parentPath);
-    assert(parent != null, 'parent != null');
-
-    const offset = parent.children.findIndex((child) => child.id === node.id);
-    assert(offset !== -1, 'offset !== -1');
+    const { doc, links } = insertLink(state.doc, from, to);
+    const lastLinkNode = links[links.length - 1];
 
     return state.copy({
-        root: state.root.spliceByPosition(
-            Position.of(parentPath, offset),
-            1,
-            ...[left, link, right].filter(isNotNullish),
-        ),
-        cursor: Cursor.of(parentPath.child(link.id), 0, 1),
+        doc,
+        cursor: Cursor.of(doc.nextSiblingNodeId(lastLinkNode.id), 0),
     });
+}
+
+function insertLink(doc: Doc, from: Position, to: Position): InsertLinkResult {
+    assert(from.nodeId === to.nodeId, 'from.path === to.path');
+
+    doc = split(doc, to);
+    doc = split(doc, from);
+
+    const mid = doc.nextSiblingNode(from.nodeId);
+
+    const link = new LinkNode({ href: 'https://example.com' });
+    doc = doc.insertAfter(from.nodeId, link);
+    doc = doc.insertFirst(link.id, mid);
+
+    return {
+        doc,
+        links: [link],
+    };
+}
+
+interface InsertLinkResult {
+    doc: Doc;
+    links: LinkNode[];
 }
 
 const logger = Logger.of(insertLinkToSelection);

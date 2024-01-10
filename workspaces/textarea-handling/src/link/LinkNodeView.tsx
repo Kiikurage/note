@@ -1,11 +1,9 @@
-import { Path } from '../core/common/Path';
 import { LinkNode } from './LinkNode';
-import { renderNodes } from '../contenteditable/DefaultNodeView';
+import { NodeViewBase } from '../contenteditable/NodeViewBase';
+import { NodeChildren } from '../contenteditable/NodeChildren';
 
-export const LinkNodeView = ({ node, path }: { node: LinkNode; path: Path }) => {
-    return (
-        <a id={path.toString()} data-path={path} href={node.props.href}>
-            {renderNodes(node.children, path)}
-        </a>
-    );
-};
+export const LinkNodeView = ({ node }: { node: LinkNode }) => (
+    <NodeViewBase node={node} as="a" href={node.props.href}>
+        <NodeChildren parent={node} />
+    </NodeViewBase>
+);

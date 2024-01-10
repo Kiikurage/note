@@ -1,4 +1,4 @@
-import { DIContainer } from '../../core/common/DIContainer';
+import { DIContainer } from '../../lib/DIContainer';
 import { Disposable } from '../../lib';
 import { Logger } from '../../lib/logger';
 import { KeyEventsInterceptor } from '../KeyEventsInterceptor';

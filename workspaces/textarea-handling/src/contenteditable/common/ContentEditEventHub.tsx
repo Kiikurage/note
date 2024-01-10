@@ -1,37 +1,11 @@
-import { DIContainer } from '../../core/common/DIContainer';
-import { InsertText } from './command/InsertText';
-import { CommandService } from '../../core/common/CommandService';
+import { DIContainer } from '../../lib/DIContainer';
 import { Disposable } from '../../lib';
 import { Logger } from '../../lib/logger';
-import { DeleteContentBackward } from './command/DeleteContentBackward';
-import { DeleteContentForward } from './command/DeleteContentForward';
-import { InsertParagraph } from './command/InsertParagraph';
 
 export class ContentEditEventHub extends Disposable {
-    static readonly ServiceKey = DIContainer.register(
-        (container) => new ContentEditEventHub(container.get(CommandService.ServiceKey)),
-    );
+    static readonly ServiceKey = DIContainer.register(() => new ContentEditEventHub());
 
     private readonly handlers = new Map<ContentEditType, ContentEditHandler>();
-    private readonly logger = new Logger(ContentEditEventHub.name);
-
-    constructor(private readonly commandService: CommandService) {
-        super();
-
-        // Basic commands
-        this.on('insertText', (data) => {
-            commandService.exec(InsertText({ text: data ?? '' }));
-        })
-            .on('insertParagraph', () => {
-                commandService.exec(InsertParagraph());
-            })
-            .on('deleteContentBackward', () => {
-                commandService.exec(DeleteContentBackward());
-            })
-            .on('deleteContentForward', () => {
-                commandService.exec(DeleteContentForward());
-            });
-    }
 
     dispose() {
         this.handlers.clear();
@@ -99,3 +73,5 @@ export type ContentEditType =
     | string;
 
 export type ContentEditHandler = (data: string | null) => void;
+
+const logger = new Logger(ContentEditEventHub.name);

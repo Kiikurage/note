@@ -1,12 +1,12 @@
-import { DIContainer } from '../core/common/DIContainer';
-import { extension } from '../core/common/Extension';
+import { DIContainer } from '../lib/DIContainer';
+import { extension } from '../extension/Extension';
 import { KeyBindingExtension } from '../keybinding';
 import { ClipboardCut } from './ClipboardCut';
 import { ClipboardPaste } from './ClipboardPaste';
 import { ClipboardCopy } from './ClipboardCopy';
 import { ContentEditEventHub } from '../contenteditable/common/ContentEditEventHub';
 import { KeyBindingService } from '../keybinding/common/KeyBindingService';
-import { CommandService } from '../core/common/CommandService';
+import { CommandService } from '../command/CommandService';
 
 export const ClipboardExtension = extension({
     name: 'Clipboard',

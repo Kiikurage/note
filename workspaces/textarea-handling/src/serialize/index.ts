@@ -1,9 +1,9 @@
-import { DIContainer } from '../core/common/DIContainer';
-import { extension } from '../core/common/Extension';
+import { DIContainer } from '../lib/DIContainer';
+import { extension } from '../extension/Extension';
 import { NodeSerializer } from './NodeSerializer';
-import { RootNode } from '../core/common/RootNode';
-import { ParagraphNode } from '../core/common/ParagraphNode';
-import { TextNode } from '../core/common/TextNode';
+import { RootNode } from '../core/node/RootNode';
+import { ParagraphNode } from '../core/node/ParagraphNode';
+import { TextNode } from '../core/node/TextNode';
 
 export const SerializeExtension = extension({
     name: 'Serialize',

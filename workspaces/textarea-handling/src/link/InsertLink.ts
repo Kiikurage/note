@@ -1,6 +1,6 @@
-import { Command } from '../core/common/Command';
-import { CommandService } from '../core/common/CommandService';
-import { Editor } from '../core/common/Editor';
+import { Command } from '../command/Command';
+import { CommandService } from '../command/CommandService';
+import { Editor } from '../core/Editor';
 import { insertLinkToSelection } from './insertLinkToSelection';
 
 export const InsertLink = Command.define('insertLink');

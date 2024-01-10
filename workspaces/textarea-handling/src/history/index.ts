@@ -1,8 +1,8 @@
-import { DIContainer } from '../core/common/DIContainer';
-import { extension } from '../core/common/Extension';
+import { DIContainer } from '../lib/DIContainer';
+import { extension } from '../extension/Extension';
 import { KeyBindingExtension } from '../keybinding';
 import { KeyBindingService } from '../keybinding/common/KeyBindingService';
-import { CommandService } from '../core/common/CommandService';
+import { CommandService } from '../command/CommandService';
 import { HistoryUndo } from './HistoryUndo';
 import { HistoryRedo } from './HistoryRedo';
 import { EditorHistory } from './EditorHistory';

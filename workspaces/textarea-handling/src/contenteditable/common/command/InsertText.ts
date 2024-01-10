@@ -1,7 +1,7 @@
-import { Command } from '../../../core/common/Command';
-import { CommandService } from '../../../core/common/CommandService';
-import { Editor } from '../../../core/common/Editor';
-import { insertText } from '../updater/insertText';
+import { Command } from '../../../command/Command';
+import { CommandService } from '../../../command/CommandService';
+import { Editor } from '../../../core/Editor';
+import { insertText } from '../../../core/mutation/insertText';
 
 export const InsertText = Command.define('contenteditable.insertText').withParams<{ text: string }>();
 

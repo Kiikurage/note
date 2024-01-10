@@ -1,5 +1,5 @@
-import { Command } from '../core/common/Command';
-import { CommandService } from '../core/common/CommandService';
+import { Command } from '../command/Command';
+import { CommandService } from '../command/CommandService';
 import { EditorHistory } from './EditorHistory';
 
 export const HistoryUndo = Command.define('history.undo');

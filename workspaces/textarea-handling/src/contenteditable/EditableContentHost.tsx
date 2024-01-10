@@ -1,22 +1,20 @@
 import { MutableRefObject, useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { getSelectionFromDOM, setSelectionToDOM } from './positions';
-import { Editor } from '../core/common/Editor';
+import { Editor } from '../core/Editor';
 import { InsertText } from './common/command/InsertText';
-import { EditorState } from '../core/common/EditorState';
-import { useService } from '../core/DIContainerProvider';
-import { useEditorState } from '../core/useEditorState';
+import { EditorState } from '../core/EditorState';
+import { useService } from './DIContainerProvider';
+import { useEditorState } from './useEditorState';
 import { ContentEditEventHub } from './common/ContentEditEventHub';
-import { CommandService } from '../core/common/CommandService';
-import { DefaultNodeView } from './DefaultNodeView';
-import { Node } from '../core/common/Node';
-import { Path } from '../core/common/Path';
-import { TextNode } from '../core/common/TextNode';
+import { CommandService } from '../command/CommandService';
 import { SetCursorPosition } from './common/command/SetCursorPosition';
+import { ReactComponentTypeMap } from './ReactComponentTypeMap';
 
 export const EditableContentHost = () => {
     const editor = useService(Editor.ServiceKey);
     const editorState = useEditorState(editor);
     const commandService = useService(CommandService.ServiceKey);
+    const componentTypeMap = useService(ReactComponentTypeMap.ServiceKey);
 
     const ref = useRef<HTMLDivElement | null>(null);
     useDOMInput(ref, commandService);
@@ -32,12 +30,16 @@ export const EditableContentHost = () => {
                 minHeight: '100%',
                 whiteSpace: 'pre-wrap',
                 wordBreak: 'break-all',
+
+                p: {
+                    margin: 0,
+                },
             }}
             contentEditable
             suppressContentEditableWarning
             data-content-editable-host="true"
         >
-            <DefaultNodeView node={editorState.root} path={Path.of()} />
+            {componentTypeMap.render(editorState.doc.root)}
         </div>
     );
 };

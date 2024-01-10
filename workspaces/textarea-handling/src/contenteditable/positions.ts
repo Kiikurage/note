@@ -1,18 +1,9 @@
-import { Cursor } from '../core/common/Cursor';
+import { Cursor } from '../core/Cursor';
 import { clamp } from '../lib/clamp';
 import { assert } from '../lib';
-import { Path } from '../core/common/Path';
-import { Position } from '../core/common/Position';
-
-// TODO: Terminologyの整理
-
-export function getFocusState(element: Element | null) {
-    if (element === null) return false;
-    if (!element.ownerDocument?.hasFocus()) return false;
-
-    const activeElement = element.ownerDocument?.activeElement ?? null;
-    return element === activeElement || element.contains(activeElement);
-}
+import { Position } from '../core/Position';
+import { NodeId } from '../core/Node';
+import { Logger } from '../lib/logger';
 
 export function readLengthFromDatasetAttr(node: Node): number | null {
     if (!(node instanceof HTMLElement)) return null;
@@ -23,33 +14,26 @@ export function readLengthFromDatasetAttr(node: Node): number | null {
     return +lengthStr;
 }
 
-export function readPathFromDatasetAttr(node: Node): Path | null {
+export function readNodeIdFromDatasetAttr(node: Node): NodeId | null {
     if (!(node instanceof HTMLElement)) return null;
 
-    const pathStr = node.dataset['path'];
-    if (pathStr === undefined) return null;
+    const nodeId = node.dataset['nodeId'];
+    if (nodeId === undefined) return null;
 
-    return Path.parse(pathStr);
+    return +nodeId;
 }
 
 export function isTextNode(node: Node): boolean {
     return readLengthFromDatasetAttr(node) !== null;
 }
 
-export function isEditableContentHost(node: Node): boolean {
-    if (!(node instanceof HTMLElement)) return false;
-
-    return 'contentEditableHost' in node.dataset;
-}
-
-export function getPath(node: Node): Path | null {
+export function getNodeId(node: Node): NodeId | null {
     let nodeOrNull: Node | null = node;
 
     while (nodeOrNull !== null) {
-        if (isEditableContentHost(nodeOrNull)) return Path.of();
-        const path = readPathFromDatasetAttr(nodeOrNull);
-        if (path !== null) {
-            return path;
+        const nodeId = readNodeIdFromDatasetAttr(nodeOrNull);
+        if (nodeId !== null) {
+            return nodeId;
         }
         nodeOrNull = nodeOrNull.parentNode;
     }
@@ -58,28 +42,28 @@ export function getPath(node: Node): Path | null {
 }
 
 export function getPosition(node: Node, offset: number): Position | null {
-    const path = getPath(node);
-    if (path === null) return null;
+    const nodeId = getNodeId(node);
+    if (nodeId === null) return null;
 
     if (node instanceof Text) {
         const parent = node.parentElement;
         if (parent !== null) {
             const length = readLengthFromDatasetAttr(parent);
             if (length !== null) {
-                return new Position({ path, offset: clamp(offset, 0, length) });
+                return new Position({ nodeId, offset: clamp(offset, 0, length) });
             }
         }
     }
 
-    return new Position({ path, offset: 0 });
+    return new Position({ nodeId, offset: 0 });
 }
 
-export function getElementByPath(root: HTMLElement, path: Path): Element | null {
-    return root.querySelector(`[data-path="${path}"]`);
+export function getElementByNodeId(root: HTMLElement, nodeId: NodeId): Element | null {
+    return root.querySelector(`[data-node-id="${nodeId}"]`);
 }
 
 export function getElementByPosition(root: HTMLElement, position: Position): { node: Node; offset: number } | null {
-    const element = getElementByPath(root, position.path);
+    const element = getElementByNodeId(root, position.nodeId);
     if (element === null) return null;
 
     if (isTextNode(element)) {
@@ -128,3 +112,5 @@ export function setSelectionToDOM(root: HTMLElement, cursor: Cursor) {
 
     selection.setBaseAndExtent(anchorElement.node, anchorElement.offset, focusElement.node, focusElement.offset);
 }
+
+const logger = new Logger('positions');

@@ -1,0 +1,603 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage generated="1704824901644" clover="3.2.0">
+  <project timestamp="1704824901644" name="All files">
+    <metrics statements="480" coveredstatements="329" conditionals="213" coveredconditionals="137" methods="149" coveredmethods="86" elements="842" coveredelements="552" complexity="0" loc="480" ncloc="480" packages="6" files="33" classes="33"/>
+    <package name="core">
+      <metrics statements="226" coveredstatements="200" conditionals="105" coveredconditionals="79" methods="60" coveredmethods="55"/>
+      <file name="Cursor.ts" path="/Users/kikurage/workspace/note/workspaces/textarea-handling/src/core/Cursor.ts">
+        <metrics statements="36" coveredstatements="15" conditionals="15" coveredconditionals="7" methods="5" coveredmethods="3"/>
+        <line num="19" count="17" type="cond" truecount="2" falsecount="0"/>
+        <line num="20" count="10" type="cond" truecount="2" falsecount="0"/>
+        <line num="21" count="5" type="stmt"/>
+        <line num="22" count="5" type="stmt"/>
+        <line num="24" count="5" type="stmt"/>
+        <line num="26" count="5" type="stmt"/>
+        <line num="27" count="5" type="stmt"/>
+        <line num="29" count="5" type="stmt"/>
+        <line num="32" count="7" type="cond" truecount="1" falsecount="1"/>
+        <line num="33" count="7" type="cond" truecount="1" falsecount="1"/>
+        <line num="34" count="0" type="stmt"/>
+        <line num="35" count="0" type="stmt"/>
+        <line num="37" count="0" type="stmt"/>
+        <line num="39" count="7" type="stmt"/>
+        <line num="40" count="7" type="stmt"/>
+        <line num="41" count="7" type="stmt"/>
+        <line num="43" count="7" type="stmt"/>
+        <line num="46" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="47" count="0" type="stmt"/>
+        <line num="48" count="0" type="stmt"/>
+        <line num="49" count="0" type="stmt"/>
+        <line num="50" count="0" type="stmt"/>
+        <line num="52" count="0" type="stmt"/>
+        <line num="54" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="55" count="0" type="stmt"/>
+        <line num="56" count="0" type="stmt"/>
+        <line num="57" count="0" type="stmt"/>
+        <line num="58" count="0" type="stmt"/>
+        <line num="59" count="0" type="stmt"/>
+        <line num="61" count="0" type="stmt"/>
+        <line num="64" count="0" type="stmt"/>
+        <line num="68" count="7" type="stmt"/>
+        <line num="72" count="0" type="stmt"/>
+        <line num="76" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="77" count="0" type="stmt"/>
+        <line num="79" count="0" type="stmt"/>
+      </file>
+      <file name="Doc.ts" path="/Users/kikurage/workspace/note/workspaces/textarea-handling/src/core/Doc.ts">
+        <metrics statements="174" coveredstatements="171" conditionals="79" coveredconditionals="63" methods="45" coveredmethods="43"/>
+        <line num="12" count="5529" type="stmt"/>
+        <line num="13" count="285" type="stmt"/>
+        <line num="14" count="285" type="stmt"/>
+        <line num="15" count="277" type="stmt"/>
+        <line num="29" count="90" type="stmt"/>
+        <line num="30" count="90" type="stmt"/>
+        <line num="34" count="172" type="cond" truecount="2" falsecount="0"/>
+        <line num="37" count="291" type="stmt"/>
+        <line num="40" count="49" type="cond" truecount="2" falsecount="0"/>
+        <line num="43" count="291" type="stmt"/>
+        <line num="46" count="27" type="stmt"/>
+        <line num="47" count="27" type="cond" truecount="2" falsecount="0"/>
+        <line num="49" count="18" type="stmt"/>
+        <line num="52" count="291" type="stmt"/>
+        <line num="55" count="28" type="stmt"/>
+        <line num="56" count="28" type="cond" truecount="2" falsecount="0"/>
+        <line num="58" count="20" type="stmt"/>
+        <line num="59" count="20" type="cond" truecount="1" falsecount="1"/>
+        <line num="61" count="20" type="stmt"/>
+        <line num="64" count="291" type="stmt"/>
+        <line num="67" count="6" type="stmt"/>
+        <line num="68" count="6" type="cond" truecount="2" falsecount="0"/>
+        <line num="70" count="4" type="stmt"/>
+        <line num="73" count="291" type="stmt"/>
+        <line num="76" count="327" type="stmt"/>
+        <line num="79" count="291" type="stmt"/>
+        <line num="82" count="43" type="stmt"/>
+        <line num="83" count="38" type="stmt"/>
+        <line num="88" count="342" type="stmt"/>
+        <line num="92" count="88" type="stmt"/>
+        <line num="93" count="88" type="cond" truecount="1" falsecount="1"/>
+        <line num="94" count="88" type="stmt"/>
+        <line num="97" count="291" type="stmt"/>
+        <line num="100" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="103" count="291" type="stmt"/>
+        <line num="106" count="0" type="stmt"/>
+        <line num="107" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="110" count="291" type="stmt"/>
+        <line num="113" count="7" type="stmt"/>
+        <line num="114" count="7" type="cond" truecount="1" falsecount="1"/>
+        <line num="116" count="7" type="stmt"/>
+        <line num="117" count="7" type="cond" truecount="1" falsecount="1"/>
+        <line num="119" count="7" type="stmt"/>
+        <line num="122" count="291" type="stmt"/>
+        <line num="125" count="17" type="stmt"/>
+        <line num="126" count="17" type="cond" truecount="1" falsecount="1"/>
+        <line num="128" count="17" type="stmt"/>
+        <line num="129" count="17" type="cond" truecount="1" falsecount="1"/>
+        <line num="131" count="17" type="stmt"/>
+        <line num="134" count="291" type="stmt"/>
+        <line num="137" count="13" type="cond" truecount="2" falsecount="0"/>
+        <line num="138" count="5" type="stmt"/>
+        <line num="141" count="291" type="stmt"/>
+        <line num="144" count="11" type="stmt"/>
+        <line num="145" count="11" type="cond" truecount="2" falsecount="0"/>
+        <line num="147" count="4" type="stmt"/>
+        <line num="150" count="291" type="stmt"/>
+        <line num="153" count="4" type="stmt"/>
+        <line num="154" count="4" type="cond" truecount="2" falsecount="0"/>
+        <line num="156" count="2" type="stmt"/>
+        <line num="159" count="291" type="stmt"/>
+        <line num="162" count="4" type="stmt"/>
+        <line num="163" count="4" type="cond" truecount="2" falsecount="0"/>
+        <line num="165" count="1" type="stmt"/>
+        <line num="168" count="291" type="stmt"/>
+        <line num="171" count="17" type="stmt"/>
+        <line num="174" count="291" type="stmt"/>
+        <line num="177" count="5" type="stmt"/>
+        <line num="178" count="5" type="cond" truecount="2" falsecount="0"/>
+        <line num="180" count="1" type="stmt"/>
+        <line num="183" count="291" type="stmt"/>
+        <line num="186" count="14" type="stmt"/>
+        <line num="187" count="14" type="cond" truecount="2" falsecount="0"/>
+        <line num="189" count="12" type="stmt"/>
+        <line num="192" count="291" type="stmt"/>
+        <line num="195" count="12" type="stmt"/>
+        <line num="196" count="12" type="cond" truecount="2" falsecount="0"/>
+        <line num="198" count="8" type="stmt"/>
+        <line num="201" count="291" type="stmt"/>
+        <line num="204" count="7" type="stmt"/>
+        <line num="205" count="7" type="stmt"/>
+        <line num="206" count="8" type="cond" truecount="2" falsecount="0"/>
+        <line num="208" count="3" type="stmt"/>
+        <line num="210" count="2" type="stmt"/>
+        <line num="214" count="165" type="stmt"/>
+        <line num="215" count="165" type="stmt"/>
+        <line num="216" count="165" type="stmt"/>
+        <line num="218" count="165" type="stmt"/>
+        <line num="220" count="162" type="stmt"/>
+        <line num="224" count="4" type="stmt"/>
+        <line num="228" count="7" type="stmt"/>
+        <line num="232" count="3" type="stmt"/>
+        <line num="236" count="5" type="stmt"/>
+        <line num="240" count="123" type="stmt"/>
+        <line num="241" count="123" type="stmt"/>
+        <line num="245" count="15" type="stmt"/>
+        <line num="246" count="15" type="stmt"/>
+        <line num="247" count="15" type="stmt"/>
+        <line num="249" count="15" type="stmt"/>
+        <line num="251" count="15" type="stmt"/>
+        <line num="255" count="10" type="stmt"/>
+        <line num="256" count="10" type="stmt"/>
+        <line num="257" count="10" type="stmt"/>
+        <line num="259" count="10" type="stmt"/>
+        <line num="261" count="9" type="stmt"/>
+        <line num="265" count="16" type="stmt"/>
+        <line num="266" count="16" type="stmt"/>
+        <line num="267" count="16" type="stmt"/>
+        <line num="269" count="16" type="stmt"/>
+        <line num="270" count="16" type="cond" truecount="1" falsecount="1"/>
+        <line num="272" count="16" type="stmt"/>
+        <line num="274" count="15" type="stmt"/>
+        <line num="278" count="3" type="stmt"/>
+        <line num="282" count="72" type="stmt"/>
+        <line num="283" count="72" type="stmt"/>
+        <line num="284" count="72" type="stmt"/>
+        <line num="285" count="157" type="stmt"/>
+        <line num="286" count="157" type="stmt"/>
+        <line num="288" count="72" type="stmt"/>
+        <line num="289" count="70" type="stmt"/>
+        <line num="293" count="55" type="cond" truecount="2" falsecount="0"/>
+        <line num="294" count="44" type="cond" truecount="2" falsecount="0"/>
+        <line num="296" count="30" type="stmt"/>
+        <line num="297" count="29" type="stmt"/>
+        <line num="299" count="29" type="stmt"/>
+        <line num="301" count="29" type="stmt"/>
+        <line num="303" count="29" type="stmt"/>
+        <line num="304" count="21" type="stmt"/>
+        <line num="305" count="21" type="stmt"/>
+        <line num="306" count="21" type="cond" truecount="2" falsecount="0"/>
+        <line num="308" count="6" type="stmt"/>
+        <line num="309" count="6" type="stmt"/>
+        <line num="311" count="6" type="cond" truecount="2" falsecount="0"/>
+        <line num="314" count="23" type="cond" truecount="2" falsecount="0"/>
+        <line num="315" count="12" type="stmt"/>
+        <line num="316" count="12" type="cond" truecount="2" falsecount="0"/>
+        <line num="319" count="11" type="cond" truecount="2" falsecount="0"/>
+        <line num="320" count="5" type="stmt"/>
+        <line num="321" count="5" type="cond" truecount="2" falsecount="0"/>
+        <line num="324" count="6" type="cond" truecount="3" falsecount="1"/>
+        <line num="329" count="597" type="cond" truecount="2" falsecount="0"/>
+        <line num="333" count="351" type="cond" truecount="2" falsecount="0"/>
+        <line num="343" count="189" type="stmt"/>
+        <line num="345" count="185" type="stmt"/>
+        <line num="346" count="185" type="cond" truecount="2" falsecount="0"/>
+        <line num="347" count="37" type="cond" truecount="1" falsecount="1"/>
+        <line num="348" count="23" type="stmt"/>
+        <line num="351" count="185" type="stmt"/>
+        <line num="352" count="185" type="stmt"/>
+        <line num="354" count="185" type="stmt"/>
+        <line num="355" count="185" type="stmt"/>
+        <line num="356" count="185" type="stmt"/>
+        <line num="365" count="24" type="stmt"/>
+        <line num="366" count="4" type="stmt"/>
+        <line num="369" count="24" type="stmt"/>
+        <line num="370" count="24" type="stmt"/>
+        <line num="372" count="24" type="stmt"/>
+        <line num="373" count="24" type="cond" truecount="2" falsecount="0"/>
+        <line num="375" count="21" type="stmt"/>
+        <line num="377" count="21" type="stmt"/>
+        <line num="378" count="21" type="stmt"/>
+        <line num="380" count="21" type="cond" truecount="2" falsecount="0"/>
+        <line num="381" count="4" type="stmt"/>
+        <line num="383" count="17" type="stmt"/>
+        <line num="384" count="17" type="stmt"/>
+        <line num="385" count="17" type="stmt"/>
+        <line num="387" count="21" type="stmt"/>
+        <line num="399" count="25" type="stmt"/>
+        <line num="400" count="25" type="stmt"/>
+        <line num="401" count="24" type="stmt"/>
+        <line num="402" count="23" type="stmt"/>
+        <line num="404" count="24" type="stmt"/>
+        <line num="405" count="5" type="stmt"/>
+        <line num="409" count="5" type="stmt"/>
+      </file>
+      <file name="EditorState.ts" path="/Users/kikurage/workspace/note/workspaces/textarea-handling/src/core/EditorState.ts">
+        <metrics statements="3" coveredstatements="3" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
+        <line num="11" count="5" type="stmt"/>
+        <line num="13" count="5" type="stmt"/>
+        <line num="20" count="1" type="stmt"/>
+      </file>
+      <file name="Node.ts" path="/Users/kikurage/workspace/note/workspaces/textarea-handling/src/core/Node.ts">
+        <metrics statements="7" coveredstatements="6" conditionals="6" coveredconditionals="4" methods="4" coveredmethods="4"/>
+        <line num="13" count="5" type="stmt"/>
+        <line num="21" count="50" type="cond" truecount="2" falsecount="2"/>
+        <line num="22" count="0" type="stmt"/>
+        <line num="25" count="50" type="stmt"/>
+        <line num="29" count="50" type="stmt"/>
+        <line num="34" count="16" type="stmt"/>
+        <line num="38" count="5" type="stmt"/>
+      </file>
+      <file name="Position.ts" path="/Users/kikurage/workspace/note/workspaces/textarea-handling/src/core/Position.ts">
+        <metrics statements="6" coveredstatements="5" conditionals="5" coveredconditionals="5" methods="5" coveredmethods="4"/>
+        <line num="7" count="365" type="stmt"/>
+        <line num="11" count="7" type="cond" truecount="2" falsecount="0"/>
+        <line num="15" count="12" type="stmt"/>
+        <line num="16" count="12" type="stmt"/>
+        <line num="20" count="24" type="stmt"/>
+        <line num="24" count="0" type="stmt"/>
+      </file>
+    </package>
+    <package name="core.mutation">
+      <metrics statements="113" coveredstatements="99" conditionals="60" coveredconditionals="52" methods="13" coveredmethods="10"/>
+      <file name="deleteAndMerge.ts" path="/Users/kikurage/workspace/note/workspaces/textarea-handling/src/core/mutation/deleteAndMerge.ts">
+        <metrics statements="20" coveredstatements="16" conditionals="12" coveredconditionals="9" methods="2" coveredmethods="1"/>
+        <line num="11" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="13" count="0" type="stmt"/>
+        <line num="14" count="0" type="stmt"/>
+        <line num="16" count="0" type="stmt"/>
+        <line num="23" count="4" type="stmt"/>
+        <line num="26" count="4" type="cond" truecount="2" falsecount="0"/>
+        <line num="28" count="4" type="stmt"/>
+        <line num="29" count="4" type="stmt"/>
+        <line num="31" count="4" type="cond" truecount="2" falsecount="0"/>
+        <line num="32" count="11" type="stmt"/>
+        <line num="33" count="11" type="stmt"/>
+        <line num="34" count="11" type="stmt"/>
+        <line num="35" count="11" type="stmt"/>
+        <line num="36" count="11" type="cond" truecount="2" falsecount="0"/>
+        <line num="38" count="3" type="stmt"/>
+        <line num="39" count="3" type="cond" truecount="1" falsecount="1"/>
+        <line num="40" count="3" type="stmt"/>
+        <line num="42" count="3" type="cond" truecount="2" falsecount="0"/>
+        <line num="45" count="4" type="stmt"/>
+        <line num="54" count="2" type="stmt"/>
+      </file>
+      <file name="deleteByRange.ts" path="/Users/kikurage/workspace/note/workspaces/textarea-handling/src/core/mutation/deleteByRange.ts">
+        <metrics statements="36" coveredstatements="35" conditionals="20" coveredconditionals="19" methods="4" coveredmethods="4"/>
+        <line num="15" count="4" type="cond" truecount="2" falsecount="0"/>
+        <line num="16" count="2" type="stmt"/>
+        <line num="19" count="2" type="stmt"/>
+        <line num="21" count="2" type="stmt"/>
+        <line num="23" count="2" type="stmt"/>
+        <line num="24" count="4" type="cond" truecount="2" falsecount="0"/>
+        <line num="26" count="4" type="cond" truecount="2" falsecount="0"/>
+        <line num="30" count="2" type="stmt"/>
+        <line num="31" count="6" type="stmt"/>
+        <line num="32" count="6" type="cond" truecount="2" falsecount="0"/>
+        <line num="33" count="2" type="stmt"/>
+        <line num="34" count="2" type="stmt"/>
+        <line num="35" count="4" type="cond" truecount="2" falsecount="0"/>
+        <line num="36" count="1" type="stmt"/>
+        <line num="37" count="1" type="stmt"/>
+        <line num="39" count="3" type="stmt"/>
+        <line num="40" count="3" type="cond" truecount="2" falsecount="0"/>
+        <line num="42" count="2" type="stmt"/>
+        <line num="46" count="2" type="stmt"/>
+        <line num="47" count="4" type="stmt"/>
+        <line num="50" count="2" type="stmt"/>
+        <line num="51" count="2" type="stmt"/>
+        <line num="53" count="2" type="stmt"/>
+        <line num="57" count="6" type="cond" truecount="2" falsecount="0"/>
+        <line num="59" count="5" type="stmt"/>
+        <line num="60" count="5" type="cond" truecount="2" falsecount="0"/>
+        <line num="61" count="3" type="stmt"/>
+        <line num="63" count="2" type="stmt"/>
+        <line num="68" count="2" type="stmt"/>
+        <line num="72" count="2" type="stmt"/>
+        <line num="74" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="75" count="1" type="stmt"/>
+        <line num="78" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="79" count="1" type="stmt"/>
+        <line num="80" count="1" type="stmt"/>
+        <line num="83" count="0" type="stmt"/>
+      </file>
+      <file name="insertText.ts" path="/Users/kikurage/workspace/note/workspaces/textarea-handling/src/core/mutation/insertText.ts">
+        <metrics statements="25" coveredstatements="25" conditionals="14" coveredconditionals="13" methods="3" coveredmethods="3"/>
+        <line num="11" count="5" type="cond" truecount="1" falsecount="1"/>
+        <line num="13" count="5" type="stmt"/>
+        <line num="15" count="5" type="stmt"/>
+        <line num="28" count="10" type="stmt"/>
+        <line num="30" count="10" type="cond" truecount="2" falsecount="0"/>
+        <line num="31" count="2" type="stmt"/>
+        <line num="32" count="2" type="stmt"/>
+        <line num="35" count="8" type="stmt"/>
+        <line num="36" count="8" type="cond" truecount="4" falsecount="0"/>
+        <line num="37" count="2" type="stmt"/>
+        <line num="38" count="2" type="stmt"/>
+        <line num="41" count="6" type="stmt"/>
+        <line num="42" count="6" type="cond" truecount="4" falsecount="0"/>
+        <line num="43" count="2" type="stmt"/>
+        <line num="44" count="2" type="stmt"/>
+        <line num="51" count="4" type="cond" truecount="2" falsecount="0"/>
+        <line num="52" count="2" type="stmt"/>
+        <line num="54" count="2" type="stmt"/>
+        <line num="56" count="2" type="stmt"/>
+        <line num="59" count="2" type="stmt"/>
+        <line num="60" count="2" type="stmt"/>
+        <line num="62" count="2" type="stmt"/>
+        <line num="63" count="2" type="stmt"/>
+        <line num="65" count="2" type="stmt"/>
+        <line num="74" count="1" type="stmt"/>
+      </file>
+      <file name="merge.ts" path="/Users/kikurage/workspace/note/workspaces/textarea-handling/src/core/mutation/merge.ts">
+        <metrics statements="12" coveredstatements="11" conditionals="10" coveredconditionals="8" methods="1" coveredmethods="1"/>
+        <line num="18" count="7" type="stmt"/>
+        <line num="19" count="7" type="stmt"/>
+        <line num="20" count="7" type="stmt"/>
+        <line num="21" count="7" type="stmt"/>
+        <line num="23" count="7" type="cond" truecount="1" falsecount="1"/>
+        <line num="25" count="7" type="cond" truecount="4" falsecount="0"/>
+        <line num="26" count="3" type="stmt"/>
+        <line num="29" count="4" type="cond" truecount="3" falsecount="1"/>
+        <line num="30" count="4" type="stmt"/>
+        <line num="31" count="4" type="stmt"/>
+        <line num="32" count="4" type="stmt"/>
+        <line num="35" count="0" type="stmt"/>
+      </file>
+      <file name="split.ts" path="/Users/kikurage/workspace/note/workspaces/textarea-handling/src/core/mutation/split.ts">
+        <metrics statements="20" coveredstatements="12" conditionals="4" coveredconditionals="3" methods="3" coveredmethods="1"/>
+        <line num="21" count="4" type="stmt"/>
+        <line num="23" count="4" type="cond" truecount="2" falsecount="0"/>
+        <line num="24" count="2" type="stmt"/>
+        <line num="25" count="2" type="stmt"/>
+        <line num="26" count="2" type="stmt"/>
+        <line num="29" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="30" count="2" type="stmt"/>
+        <line num="31" count="2" type="stmt"/>
+        <line num="33" count="2" type="stmt"/>
+        <line num="34" count="2" type="stmt"/>
+        <line num="35" count="2" type="stmt"/>
+        <line num="37" count="2" type="stmt"/>
+        <line num="40" count="0" type="stmt"/>
+        <line num="47" count="0" type="stmt"/>
+        <line num="48" count="0" type="stmt"/>
+        <line num="49" count="0" type="stmt"/>
+        <line num="53" count="0" type="stmt"/>
+        <line num="54" count="0" type="stmt"/>
+        <line num="55" count="0" type="stmt"/>
+        <line num="58" count="0" type="stmt"/>
+      </file>
+    </package>
+    <package name="core.node">
+      <metrics statements="7" coveredstatements="6" conditionals="3" coveredconditionals="2" methods="6" coveredmethods="5"/>
+      <file name="ContainerNode.ts" path="/Users/kikurage/workspace/note/workspaces/textarea-handling/src/core/node/ContainerNode.ts">
+        <metrics statements="0" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+      </file>
+      <file name="ParagraphNode.ts" path="/Users/kikurage/workspace/note/workspaces/textarea-handling/src/core/node/ParagraphNode.ts">
+        <metrics statements="0" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+      </file>
+      <file name="RootNode.ts" path="/Users/kikurage/workspace/note/workspaces/textarea-handling/src/core/node/RootNode.ts">
+        <metrics statements="0" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+      </file>
+      <file name="TextNode.ts" path="/Users/kikurage/workspace/note/workspaces/textarea-handling/src/core/node/TextNode.ts">
+        <metrics statements="7" coveredstatements="6" conditionals="3" coveredconditionals="2" methods="6" coveredmethods="5"/>
+        <line num="5" count="62" type="stmt"/>
+        <line num="9" count="7" type="stmt"/>
+        <line num="13" count="14" type="cond" truecount="1" falsecount="1"/>
+        <line num="15" count="14" type="stmt"/>
+        <line num="19" count="9" type="stmt"/>
+        <line num="23" count="6" type="stmt"/>
+        <line num="27" count="0" type="stmt"/>
+      </file>
+    </package>
+    <package name="lib">
+      <metrics statements="79" coveredstatements="18" conditionals="19" coveredconditionals="4" methods="43" coveredmethods="13"/>
+      <file name="Channel.ts" path="/Users/kikurage/workspace/note/workspaces/textarea-handling/src/lib/Channel.ts">
+        <metrics statements="6" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="5" coveredmethods="0"/>
+        <line num="4" count="0" type="stmt"/>
+        <line num="19" count="0" type="stmt"/>
+        <line num="20" count="0" type="stmt"/>
+        <line num="24" count="0" type="stmt"/>
+        <line num="25" count="0" type="stmt"/>
+        <line num="29" count="0" type="stmt"/>
+      </file>
+      <file name="DIContainer.ts" path="/Users/kikurage/workspace/note/workspaces/textarea-handling/src/lib/DIContainer.ts">
+        <metrics statements="15" coveredstatements="5" conditionals="2" coveredconditionals="0" methods="5" coveredmethods="2"/>
+        <line num="6" count="1" type="stmt"/>
+        <line num="10" count="0" type="stmt"/>
+        <line num="11" count="1" type="stmt"/>
+        <line num="14" count="1" type="stmt"/>
+        <line num="15" count="1" type="stmt"/>
+        <line num="16" count="1" type="stmt"/>
+        <line num="20" count="0" type="stmt"/>
+        <line num="24" count="0" type="stmt"/>
+        <line num="25" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="26" count="0" type="stmt"/>
+        <line num="27" count="0" type="stmt"/>
+        <line num="29" count="0" type="stmt"/>
+        <line num="30" count="0" type="stmt"/>
+        <line num="32" count="0" type="stmt"/>
+        <line num="36" count="0" type="stmt"/>
+      </file>
+      <file name="Disposable.ts" path="/Users/kikurage/workspace/note/workspaces/textarea-handling/src/lib/Disposable.ts">
+        <metrics statements="9" coveredstatements="0" conditionals="4" coveredconditionals="0" methods="2" coveredmethods="0"/>
+        <line num="6" count="0" type="stmt"/>
+        <line num="7" count="0" type="stmt"/>
+        <line num="10" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="11" count="0" type="stmt"/>
+        <line num="12" count="0" type="stmt"/>
+        <line num="16" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="17" count="0" type="stmt"/>
+        <line num="19" count="0" type="stmt"/>
+        <line num="21" count="0" type="stmt"/>
+      </file>
+      <file name="assert.ts" path="/Users/kikurage/workspace/note/workspaces/textarea-handling/src/lib/assert.ts">
+        <metrics statements="3" coveredstatements="3" conditionals="2" coveredconditionals="2" methods="1" coveredmethods="1"/>
+        <line num="2" count="654" type="cond" truecount="2" falsecount="0"/>
+        <line num="3" count="14" type="stmt"/>
+        <line num="4" count="14" type="stmt"/>
+      </file>
+      <file name="counter.ts" path="/Users/kikurage/workspace/note/workspaces/textarea-handling/src/lib/counter.ts">
+        <metrics statements="4" coveredstatements="3" conditionals="0" coveredconditionals="0" methods="3" coveredmethods="2"/>
+        <line num="2" count="5" type="stmt"/>
+        <line num="3" count="261" type="stmt"/>
+        <line num="4" count="5" type="stmt"/>
+        <line num="6" count="0" type="stmt"/>
+      </file>
+      <file name="dataclass.ts" path="/Users/kikurage/workspace/note/workspaces/textarea-handling/src/lib/dataclass.ts">
+        <metrics statements="4" coveredstatements="4" conditionals="1" coveredconditionals="0" methods="4" coveredmethods="4"/>
+        <line num="4" count="384" type="stmt"/>
+        <line num="5" count="384" type="stmt"/>
+        <line num="13" count="9" type="stmt"/>
+        <line num="17" count="26" type="stmt"/>
+      </file>
+      <file name="eventTarget.ts" path="/Users/kikurage/workspace/note/workspaces/textarea-handling/src/lib/eventTarget.ts">
+        <metrics statements="26" coveredstatements="0" conditionals="6" coveredconditionals="0" methods="9" coveredmethods="0"/>
+        <line num="4" count="0" type="stmt"/>
+        <line num="7" count="0" type="stmt"/>
+        <line num="10" count="0" type="stmt"/>
+        <line num="11" count="0" type="stmt"/>
+        <line num="17" count="0" type="stmt"/>
+        <line num="18" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="19" count="0" type="stmt"/>
+        <line num="20" count="0" type="stmt"/>
+        <line num="21" count="0" type="stmt"/>
+        <line num="23" count="0" type="stmt"/>
+        <line num="24" count="0" type="stmt"/>
+        <line num="30" count="0" type="stmt"/>
+        <line num="31" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="33" count="0" type="stmt"/>
+        <line num="34" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="35" count="0" type="stmt"/>
+        <line num="36" count="0" type="stmt"/>
+        <line num="38" count="0" type="stmt"/>
+        <line num="42" count="0" type="stmt"/>
+        <line num="43" count="0" type="stmt"/>
+        <line num="45" count="0" type="stmt"/>
+        <line num="47" count="0" type="stmt"/>
+        <line num="52" count="0" type="stmt"/>
+        <line num="79" count="0" type="stmt"/>
+        <line num="80" count="0" type="stmt"/>
+        <line num="82" count="0" type="stmt"/>
+      </file>
+      <file name="index.ts" path="/Users/kikurage/workspace/note/workspaces/textarea-handling/src/lib/index.ts">
+        <metrics statements="0" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+      </file>
+      <file name="isNotNullish.ts" path="/Users/kikurage/workspace/note/workspaces/textarea-handling/src/lib/isNotNullish.ts">
+        <metrics statements="2" coveredstatements="2" conditionals="2" coveredconditionals="2" methods="2" coveredmethods="2"/>
+        <line num="2" count="38" type="cond" truecount="2" falsecount="0"/>
+        <line num="6" count="38" type="stmt"/>
+      </file>
+      <file name="logger.ts" path="/Users/kikurage/workspace/note/workspaces/textarea-handling/src/lib/logger.ts">
+        <metrics statements="7" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="8" coveredmethods="2"/>
+        <line num="5" count="14" type="stmt"/>
+        <line num="9" count="0" type="stmt"/>
+        <line num="12" count="0" type="stmt"/>
+        <line num="15" count="0" type="stmt"/>
+        <line num="18" count="0" type="stmt"/>
+        <line num="22" count="0" type="stmt"/>
+        <line num="26" count="0" type="stmt"/>
+      </file>
+      <file name="noop.ts" path="/Users/kikurage/workspace/note/workspaces/textarea-handling/src/lib/noop.ts">
+        <metrics statements="0" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="0"/>
+      </file>
+      <file name="singleton.ts" path="/Users/kikurage/workspace/note/workspaces/textarea-handling/src/lib/singleton.ts">
+        <metrics statements="2" coveredstatements="0" conditionals="2" coveredconditionals="0" methods="2" coveredmethods="0"/>
+        <line num="2" count="0" type="stmt"/>
+        <line num="4" count="0" type="cond" truecount="0" falsecount="2"/>
+      </file>
+      <file name="throwError.ts" path="/Users/kikurage/workspace/note/workspaces/textarea-handling/src/lib/throwError.ts">
+        <metrics statements="1" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="0"/>
+        <line num="8" count="0" type="stmt"/>
+      </file>
+    </package>
+    <package name="lib.geometry">
+      <metrics statements="38" coveredstatements="1" conditionals="24" coveredconditionals="0" methods="18" coveredmethods="0"/>
+      <file name="Line.ts" path="/Users/kikurage/workspace/note/workspaces/textarea-handling/src/lib/geometry/Line.ts">
+        <metrics statements="26" coveredstatements="0" conditionals="24" coveredconditionals="0" methods="7" coveredmethods="0"/>
+        <line num="10" count="0" type="stmt"/>
+        <line num="14" count="0" type="stmt"/>
+        <line num="18" count="0" type="stmt"/>
+        <line num="19" count="0" type="stmt"/>
+        <line num="21" count="0" type="stmt"/>
+        <line num="26" count="0" type="stmt"/>
+        <line num="27" count="0" type="stmt"/>
+        <line num="29" count="0" type="stmt"/>
+        <line num="30" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="32" count="0" type="stmt"/>
+        <line num="39" count="0" type="stmt"/>
+        <line num="40" count="0" type="stmt"/>
+        <line num="48" count="0" type="cond" truecount="0" falsecount="4"/>
+        <line num="50" count="0" type="stmt"/>
+        <line num="51" count="0" type="stmt"/>
+        <line num="53" count="0" type="stmt"/>
+        <line num="54" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="56" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="57" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="58" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="59" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="61" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="62" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="63" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="64" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="66" count="0" type="stmt"/>
+      </file>
+      <file name="LineSegment.ts" path="/Users/kikurage/workspace/note/workspaces/textarea-handling/src/lib/geometry/LineSegment.ts">
+        <metrics statements="2" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="2" coveredmethods="0"/>
+        <line num="9" count="0" type="stmt"/>
+        <line num="13" count="0" type="stmt"/>
+      </file>
+      <file name="Rect.ts" path="/Users/kikurage/workspace/note/workspaces/textarea-handling/src/lib/geometry/Rect.ts">
+        <metrics statements="9" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="9" coveredmethods="0"/>
+        <line num="12" count="0" type="stmt"/>
+        <line num="16" count="0" type="stmt"/>
+        <line num="20" count="0" type="stmt"/>
+        <line num="24" count="0" type="stmt"/>
+        <line num="28" count="0" type="stmt"/>
+        <line num="32" count="0" type="stmt"/>
+        <line num="36" count="0" type="stmt"/>
+        <line num="40" count="0" type="stmt"/>
+        <line num="44" count="0" type="stmt"/>
+      </file>
+      <file name="Vector2.ts" path="/Users/kikurage/workspace/note/workspaces/textarea-handling/src/lib/geometry/Vector2.ts">
+        <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="7" count="5" type="stmt"/>
+      </file>
+      <file name="index.ts" path="/Users/kikurage/workspace/note/workspaces/textarea-handling/src/lib/geometry/index.ts">
+        <metrics statements="0" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+      </file>
+    </package>
+    <package name="serialize">
+      <metrics statements="17" coveredstatements="5" conditionals="2" coveredconditionals="0" methods="9" coveredmethods="3"/>
+      <file name="NodeSerializer.ts" path="/Users/kikurage/workspace/note/workspaces/textarea-handling/src/serialize/NodeSerializer.ts">
+        <metrics statements="17" coveredstatements="5" conditionals="2" coveredconditionals="0" methods="9" coveredmethods="3"/>
+        <line num="6" count="1" type="stmt"/>
+        <line num="7" count="2" type="stmt"/>
+        <line num="10" count="0" type="stmt"/>
+        <line num="11" count="0" type="stmt"/>
+        <line num="16" count="36" type="stmt"/>
+        <line num="19" count="32" type="stmt"/>
+        <line num="23" count="4" type="stmt"/>
+        <line num="27" count="0" type="stmt"/>
+        <line num="29" count="0" type="stmt"/>
+        <line num="30" count="0" type="stmt"/>
+        <line num="31" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="32" count="0" type="stmt"/>
+        <line num="34" count="0" type="stmt"/>
+        <line num="35" count="0" type="stmt"/>
+        <line num="37" count="0" type="stmt"/>
+        <line num="40" count="0" type="stmt"/>
+        <line num="41" count="0" type="stmt"/>
+      </file>
+    </package>
+  </project>
+</coverage>

@@ -1,5 +1,6 @@
-import { DIContainer } from '../core/common/DIContainer';
-import { Node, NodeConstructor } from '../core/common/Node';
+import { DIContainer } from '../lib/DIContainer';
+import { Node, NodeConstructor, NodeId } from '../core/Node';
+import { Doc } from '../core/Doc';
 
 export class NodeSerializer {
     static readonly ServiceKey = DIContainer.register(() => new NodeSerializer());
@@ -10,24 +11,34 @@ export class NodeSerializer {
         return this;
     }
 
-    serialize(node: Node): SerializedNode {
-        return {
-            type: node.type,
-            props: node.props,
-            children: node.children.map((child) => this.serialize(child)),
-        };
-    }
-
-    deserialize(serializedNode: SerializedNode): Node {
-        const nodeConstructor = this.nodeConstructors.get(serializedNode.type);
-        if (!nodeConstructor) {
-            throw new Error(`No node constructor registered for type ${serializedNode.type}`);
+    serialize(doc: Doc): SerializedNode {
+        function serializeNode(node: Node): SerializedNode {
+            return {
+                type: node.type,
+                props: node.props,
+                children: doc.children(node.id).map((child) => serializeNode(child)),
+            };
         }
 
-        return new nodeConstructor(
-            serializedNode.props,
-            serializedNode.children.map((child) => this.deserialize(child)),
-        );
+        return serializeNode(doc.root);
+    }
+
+    deserialize(serializedRoot: SerializedNode): Doc {
+        let doc = Doc.empty();
+
+        const deserializeNode = (parentId: NodeId, serializedNode: SerializedNode) => {
+            const nodeConstructor = this.nodeConstructors.get(serializedNode.type);
+            if (nodeConstructor === undefined)
+                throw new Error(`NodeConstructor for type ${serializedNode.type} is not registered.`);
+
+            const node = new nodeConstructor(serializedNode.props);
+            doc = doc.insertLast(parentId, node);
+
+            serializedNode.children.forEach((child) => deserializeNode(node.id, child));
+        };
+
+        serializedRoot.children.forEach((child) => deserializeNode(doc.root.id, child));
+        return doc;
     }
 }
 

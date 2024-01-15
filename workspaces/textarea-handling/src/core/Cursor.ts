@@ -1,7 +1,6 @@
-import { assert } from '../lib';
 import { Position } from './Position';
-import { Doc } from './Doc';
-import { NodeId } from './Node';
+import { Doc, NodeId } from './interfaces';
+import { assert } from '../lib/assert';
 
 export class Cursor {
     constructor(
@@ -51,7 +50,7 @@ export class Cursor {
 
             return new Cursor(Position.of(nodeId, fromOffset), Position.of(nodeId, toOffset));
         }
-        if (args.length === 3) {
+        if (args.length === 4) {
             const [anchorNodeId, anchorOffset, focusNodeId, focusOffset] = args;
             assert(typeof anchorNodeId === 'number', 'typeof anchorNodeId === "number"');
             assert(typeof anchorOffset === 'number', 'typeof anchorOffset === "number"');
@@ -72,11 +71,11 @@ export class Cursor {
         return `Cursor(${this.anchor.toString()}, ${this.focus.toString()})`;
     }
 
-    getRange(doc: Doc): [from: Position, to: Position] {
+    getRange(doc: Doc): { from: Position; to: Position } {
         if (doc.compare(this.anchor, this.focus) < 0) {
-            return [this.anchor, this.focus];
+            return { from: this.anchor, to: this.focus };
         } else {
-            return [this.focus, this.anchor];
+            return { from: this.focus, to: this.anchor };
         }
     }
 }

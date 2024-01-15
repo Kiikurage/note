@@ -1,6 +1,6 @@
 import { DIContainer } from '../lib/DIContainer';
-import { Node, NodeConstructor, NodeId } from '../core/Node';
-import { Doc } from '../core/Doc';
+import { createDoc } from '../core/createDoc';
+import { Doc, Node, NodeConstructor, NodeId } from '../core/interfaces';
 
 export class NodeSerializer {
     static readonly ServiceKey = DIContainer.register(() => new NodeSerializer());
@@ -15,7 +15,6 @@ export class NodeSerializer {
         function serializeNode(node: Node): SerializedNode {
             return {
                 type: node.type,
-                props: node.props,
                 children: doc.children(node.id).map((child) => serializeNode(child)),
             };
         }
@@ -24,14 +23,14 @@ export class NodeSerializer {
     }
 
     deserialize(serializedRoot: SerializedNode): Doc {
-        let doc = Doc.empty();
+        let doc = createDoc();
 
         const deserializeNode = (parentId: NodeId, serializedNode: SerializedNode) => {
             const nodeConstructor = this.nodeConstructors.get(serializedNode.type);
             if (nodeConstructor === undefined)
                 throw new Error(`NodeConstructor for type ${serializedNode.type} is not registered.`);
 
-            const node = new nodeConstructor(serializedNode.props);
+            const node = new nodeConstructor(serializedNode);
             doc = doc.insertLast(parentId, node);
 
             serializedNode.children.forEach((child) => deserializeNode(node.id, child));
@@ -44,6 +43,5 @@ export class NodeSerializer {
 
 interface SerializedNode {
     type: string;
-    props: Record<string, unknown>;
     children: SerializedNode[];
 }

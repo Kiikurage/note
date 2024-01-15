@@ -1,5 +1,5 @@
 import { KeyBindingService } from './common/KeyBindingService';
-import { Disposable } from '../lib';
+import { Disposable } from '../lib/Disposable';
 
 export class KeyEventsInterceptor extends Disposable {
     constructor(private readonly service: KeyBindingService) {

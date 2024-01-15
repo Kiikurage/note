@@ -1,7 +1,7 @@
 import { DIContainer } from '../../lib/DIContainer';
-import { Disposable } from '../../lib';
 import { Logger } from '../../lib/logger';
 import { KeyEventsInterceptor } from '../KeyEventsInterceptor';
+import { Disposable } from '../../lib/Disposable';
 
 export interface IKeyboardEvent {
     key: string;

@@ -1,4 +1,4 @@
-import { assert } from './index';
+import { assert } from './assert';
 
 export type ServiceKey<T> = symbol & { __type: T };
 

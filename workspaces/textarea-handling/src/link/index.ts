@@ -3,7 +3,7 @@ import { extension } from '../extension/Extension';
 import { KeyBindingService } from '../keybinding/common/KeyBindingService';
 import { KeyBindingExtension } from '../keybinding';
 import { CommandService } from '../command/CommandService';
-import { InsertLink } from './InsertLink';
+import { ToggleLink } from './ToggleLink';
 import { SerializeExtension } from '../serialize';
 import { NodeSerializer } from '../serialize/NodeSerializer';
 import { LinkNode } from './LinkNode';
@@ -21,7 +21,7 @@ export const LinkExtension = extension({
 
         keyBinding
             .registerBinding({ command: 'insertLink', key: 'cmd+k' })
-            .registerHandler('insertLink', () => commandService.exec(InsertLink()));
+            .registerHandler('insertLink', () => commandService.exec(ToggleLink()));
 
         serializer.register(LinkNode);
 

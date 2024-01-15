@@ -1,5 +1,3 @@
-import { Node } from '../core/Node';
+import { ContainerNode } from '../core/node/ContainerNode';
 
-export class LinkNode extends Node<{
-    href: string;
-}> {}
+export class LinkNode extends ContainerNode<{ href: string }> {}

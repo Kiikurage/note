@@ -1,10 +1,26 @@
 import { TextNode } from '../../core/node/TextNode';
-import { NodeViewBase } from '../NodeViewBase';
+import { useService } from '../DIContainerProvider';
+import { PositionMap } from '../PositionMap';
+import { useLayoutEffect, useRef } from 'react';
+import { Position } from '../../core/Position';
 
-const JOINER = '\u2060';
+export const TextNodeView = ({ node }: { node: TextNode }) => {
+    const positionMap = useService(PositionMap.ServiceKey);
+    const ref = useRef<HTMLSpanElement | null>(null);
 
-export const TextNodeView = ({ node }: { node: TextNode }) => (
-    <NodeViewBase as="span" node={node} data-length={node.length}>
-        {node.text.length === 0 ? JOINER : node.text}
-    </NodeViewBase>
-);
+    useLayoutEffect(() => {
+        const element = ref.current;
+        if (!element) return;
+
+        const domNode = node.text.length === 0 ? element : element.childNodes[0];
+
+        positionMap.register(domNode, Position.of(node.id, 0));
+        return () => positionMap.unregister(domNode);
+    }, [node.id, node.text.length, positionMap]);
+
+    return (
+        <span ref={ref} data-node-id={node.id}>
+            {node.text}
+        </span>
+    );
+};

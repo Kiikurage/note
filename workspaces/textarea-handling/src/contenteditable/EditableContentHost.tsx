@@ -1,5 +1,4 @@
 import { MutableRefObject, useCallback, useLayoutEffect, useRef, useState } from 'react';
-import { getSelectionFromDOM, setSelectionToDOM } from './positions';
 import { Editor } from '../core/Editor';
 import { InsertText } from './common/command/InsertText';
 import { EditorState } from '../core/EditorState';
@@ -9,16 +8,18 @@ import { ContentEditEventHub } from './common/ContentEditEventHub';
 import { CommandService } from '../command/CommandService';
 import { SetCursorPosition } from './common/command/SetCursorPosition';
 import { ReactComponentTypeMap } from './ReactComponentTypeMap';
+import { PositionMap } from './PositionMap';
+import { Position } from '../core/Position';
+import { Cursor } from '../core/Cursor';
 
 export const EditableContentHost = () => {
     const editor = useService(Editor.ServiceKey);
     const editorState = useEditorState(editor);
-    const commandService = useService(CommandService.ServiceKey);
     const componentTypeMap = useService(ReactComponentTypeMap.ServiceKey);
 
     const ref = useRef<HTMLDivElement | null>(null);
-    useDOMInput(ref, commandService);
-    useSyncCursorPositionWithDOMEffects(ref, editorState, commandService);
+    useDOMInput(ref);
+    useSyncCursorPositionWithDOMEffects(ref, editorState);
 
     return (
         <div
@@ -44,8 +45,9 @@ export const EditableContentHost = () => {
     );
 };
 
-function useDOMInput(ref: MutableRefObject<HTMLDivElement | null>, commandService: CommandService) {
+function useDOMInput(ref: MutableRefObject<HTMLDivElement | null>) {
     const service = useService(ContentEditEventHub.ServiceKey);
+    const commandService = useService(CommandService.ServiceKey);
 
     const handleBeforeInput = useCallback(
         (ev: InputEvent) => {
@@ -102,11 +104,9 @@ function useCompositionStatus(ref: MutableRefObject<HTMLDivElement | null>) {
     return composing;
 }
 
-function useSyncCursorPositionWithDOMEffects(
-    ref: MutableRefObject<HTMLDivElement | null>,
-    editorState: EditorState,
-    commandService: CommandService,
-) {
+function useSyncCursorPositionWithDOMEffects(ref: MutableRefObject<HTMLDivElement | null>, editorState: EditorState) {
+    const positionMap = useService(PositionMap.ServiceKey);
+    const commandService = useService(CommandService.ServiceKey);
     const composing = useCompositionStatus(ref);
 
     useLayoutEffect(() => {
@@ -116,10 +116,10 @@ function useSyncCursorPositionWithDOMEffects(
         const handlerSelectionChange = () => {
             if (composing) return;
 
-            const positions = getSelectionFromDOM(element);
-            if (positions === null) return;
+            const position = getSelectionFromDOM(element, positionMap);
+            if (position === null) return;
 
-            commandService.exec(SetCursorPosition(positions));
+            commandService.exec(SetCursorPosition(position));
         };
 
         const ownerDocument = element.ownerDocument;
@@ -128,12 +128,52 @@ function useSyncCursorPositionWithDOMEffects(
         return () => {
             ownerDocument.removeEventListener('selectionchange', handlerSelectionChange);
         };
-    }, [commandService, composing, ref]);
+    }, [commandService, composing, positionMap, ref]);
 
     useLayoutEffect(() => {
         if (composing) return;
         if (ref.current === null) return;
 
-        setSelectionToDOM(ref.current, editorState.cursor);
-    }, [composing, editorState, ref]);
+        setSelectionToDOM(ref.current, editorState.cursor, positionMap);
+    }, [composing, editorState, positionMap, ref]);
+}
+
+function getSelectionFromDOM(
+    root: HTMLElement,
+    positionMap: PositionMap,
+): { anchor: Position; focus: Position } | null {
+    const selection = root.ownerDocument.getSelection();
+    if (selection === null) return null;
+    if (selection.anchorNode === null || selection.focusNode === null) return null;
+
+    const anchorPositionInModel = positionMap.getPositionInModel(selection.anchorNode, selection.anchorOffset);
+    const focusPositionInModel = positionMap.getPositionInModel(selection.focusNode, selection.focusOffset);
+    if (anchorPositionInModel === null || focusPositionInModel === null) return null;
+
+    return { anchor: anchorPositionInModel, focus: focusPositionInModel };
+}
+
+function setSelectionToDOM(root: HTMLElement, cursor: Cursor, positionMap: PositionMap) {
+    const anchorPositionInDOM = positionMap.getPositionInDOM(cursor.anchor);
+    const focusPositionInDOM = positionMap.getPositionInDOM(cursor.focus);
+    if (anchorPositionInDOM === null || focusPositionInDOM === null) return;
+
+    const selection = root.ownerDocument.getSelection();
+    if (selection === null) return;
+
+    if (
+        selection.anchorNode === anchorPositionInDOM.node &&
+        selection.anchorOffset === anchorPositionInDOM.offset &&
+        selection.focusNode === focusPositionInDOM.node &&
+        selection.focusOffset === focusPositionInDOM.offset
+    ) {
+        return;
+    }
+
+    selection.setBaseAndExtent(
+        anchorPositionInDOM.node,
+        anchorPositionInDOM.offset,
+        focusPositionInDOM.node,
+        focusPositionInDOM.offset,
+    );
 }

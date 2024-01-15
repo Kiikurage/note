@@ -1,6 +1,6 @@
 import { DIContainer } from '../lib/DIContainer';
 import { extension } from '../extension/Extension';
-import { ContentEditEventHub } from '../contenteditable/common/ContentEditEventHub';
+import { ContentEditEventHub } from './common/ContentEditEventHub';
 import { CommandService } from '../command/CommandService';
 import { InsertText } from './common/command/InsertText';
 import { InsertParagraph } from './common/command/InsertParagraph';
@@ -9,10 +9,10 @@ import { DeleteContentForward } from './common/command/DeleteContentForward';
 import { ReactComponentTypeMap } from './ReactComponentTypeMap';
 import { TextNodeView } from './nodeView/TextNodeView';
 import { TextNode } from '../core/node/TextNode';
-import { ParagraphNode } from '../core/node/ParagraphNode';
 import { ParagraphNodeView } from './nodeView/ParagraphNodeView';
 import { RootNode } from '../core/node/RootNode';
 import { RootNodeView } from './nodeView/RootNodeView';
+import { ParagraphNode } from '../core/node/ContainerNode';
 
 export const ContentEditableExtension = extension({
     name: 'ContentEditable',

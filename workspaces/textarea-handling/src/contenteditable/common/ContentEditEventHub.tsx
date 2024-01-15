@@ -1,6 +1,6 @@
 import { DIContainer } from '../../lib/DIContainer';
-import { Disposable } from '../../lib';
 import { Logger } from '../../lib/logger';
+import { Disposable } from '../../lib/Disposable';
 
 export class ContentEditEventHub extends Disposable {
     static readonly ServiceKey = DIContainer.register(() => new ContentEditEventHub());

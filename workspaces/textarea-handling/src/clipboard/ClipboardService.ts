@@ -1,6 +1,6 @@
 import { DIContainer } from '../lib/DIContainer';
 import { Editor } from '../core/Editor';
-import { Node } from '../core/Node';
+import { Node } from '../core/interfaces';
 
 export class ClipboardService {
     static readonly ServiceKey = DIContainer.register(

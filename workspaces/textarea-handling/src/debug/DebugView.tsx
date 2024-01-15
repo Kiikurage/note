@@ -1,32 +1,42 @@
 import { useService } from '../contenteditable/DIContainerProvider';
 import { Editor } from '../core/Editor';
 import { useEditorState } from '../contenteditable/useEditorState';
-import { Node } from '../core/Node';
 import { TextNode } from '../core/node/TextNode';
 import { NodeSerializer } from '../serialize/NodeSerializer';
 import { Cursor } from '../core/Cursor';
-import { useEffect } from 'react';
 import { Position } from '../core/Position';
-import { Doc } from '../core/Doc';
+import { EditorState } from '../core/EditorState';
+import { createDoc } from '../core/createDoc';
+import { Doc, Node } from '../core/interfaces';
+import { assert } from '../lib/assert';
+import { useRef } from 'react';
 
 const LOCAL_STORAGE_KEY = 'textarea-handling-debug';
 
 export const DebugView = () => {
+    const renderCountRef = useRef(0);
+    renderCountRef.current += 1;
     const editor = useService(Editor.ServiceKey);
     const nodeSerializer = useService(NodeSerializer.ServiceKey);
     const editorState = useEditorState(editor);
 
-    useEffect(() => {
-        const serializedNodes = localStorage.getItem(LOCAL_STORAGE_KEY);
-        if (serializedNodes === null) return;
-        const doc = nodeSerializer.deserialize(JSON.parse(serializedNodes));
-        editor.updateState((state) => state.copy({ doc, cursor: Cursor.of(Position.of(doc.root.id, 0)) }));
-    }, [editor, nodeSerializer]);
+    // useEffect(() => {
+    //     const serializedNodes = localStorage.getItem(LOCAL_STORAGE_KEY);
+    //     if (serializedNodes === null) return;
+    //     const doc = nodeSerializer.deserialize(JSON.parse(serializedNodes));
+    //     editor.updateState((state) => state.copy({ doc, cursor: Cursor.of(Position.of(doc.root.id, 0)) }));
+    // }, [editor, nodeSerializer]);
+    //
+    // useEffect(() => {
+    //     const serializedNodes = nodeSerializer.serialize(editorState.doc);
+    //     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(serializedNodes));
+    // }, [editorState.doc, nodeSerializer]);
 
-    useEffect(() => {
-        const serializedNodes = nodeSerializer.serialize(editorState.doc);
-        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(serializedNodes));
-    }, [editorState.doc, nodeSerializer]);
+    const selection = document.getSelection();
+    const anchorNode = selection?.anchorNode ?? null;
+    const anchorOffset = selection?.anchorOffset ?? null;
+    const focusNode = selection?.focusNode ?? null;
+    const focusOffset = selection?.focusOffset ?? null;
 
     return (
         <div
@@ -40,20 +50,50 @@ export const DebugView = () => {
             }}
         >
             <section>
-                <div>Rendered at {new Date().toISOString()}</div>
-            </section>
-            <section>
-                <h3 css={{ margin: 0 }}>Cursors</h3>
                 <div>
-                    <div>{editorState.cursor.toString()}</div>
+                    Render:{renderCountRef.current}. Last at {new Date().toISOString()}.
                 </div>
             </section>
             <section>
-                <h3 css={{ margin: 0 }}>Document</h3>
+                <h3 css={{ margin: 0 }}>Cursor</h3>
+                <div>{editorState.cursor.toString()}</div>
+                <div>
+                    Anchor: <NodeView node={anchorNode} offset={anchorOffset} />
+                </div>
+                <div>
+                    Focus: <NodeView node={focusNode} offset={focusOffset} />
+                </div>
+            </section>
+            <section>
+                <h3 css={{ margin: 0 }}>
+                    Document{' '}
+                    <button
+                        onClick={() =>
+                            editor.updateState(() => {
+                                const doc = createDoc();
+                                return new EditorState({
+                                    doc,
+                                    cursor: Cursor.of(Position.of(doc.root.id, 0)),
+                                });
+                            })
+                        }
+                    >
+                        RESET
+                    </button>
+                </h3>
                 <NodeTreeNode node={editorState.doc.root} doc={editorState.doc} />
             </section>
         </div>
     );
+};
+
+const NodeView = ({ node, offset }: { node: globalThis.Node | null; offset: number | null }) => {
+    if (node === null) return '#N/A';
+
+    if (node instanceof Text) return `#Text "${node.textContent}" ${offset ?? '#N/A'}`;
+    assert(node instanceof Element, 'node is Element');
+
+    return `<${node.tagName.toLowerCase()} /> ${offset ?? '#N/A'}`;
 };
 
 const NodeTreeNode = ({ node, doc }: { node: Node; doc: Doc }) => {

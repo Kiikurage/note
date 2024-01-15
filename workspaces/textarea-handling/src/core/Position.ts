@@ -1,6 +1,6 @@
-import { assert, dataclass } from '../lib';
-
-import { NodeId } from './Node';
+import { NodeId } from './interfaces';
+import { assert } from '../lib/assert';
+import { dataclass } from '../lib/dataclass';
 
 export class Position extends dataclass<{ nodeId: NodeId; offset: number }>() {
     static of(nodeId: NodeId, offset = 0) {

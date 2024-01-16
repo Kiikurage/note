@@ -1,4 +1,4 @@
-import { NodeChildren } from '../NodeChildren';
+import { NodeChildren } from './NodeChildren';
 import { ParagraphNode } from '../../core/node/ContainerNode';
 import { useService } from '../DIContainerProvider';
 import { PositionMap } from '../PositionMap';

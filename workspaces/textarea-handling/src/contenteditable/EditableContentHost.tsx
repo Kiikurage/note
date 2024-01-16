@@ -4,13 +4,11 @@ import { InsertText } from './common/command/InsertText';
 import { EditorState } from '../core/EditorState';
 import { useService } from './DIContainerProvider';
 import { useEditorState } from './useEditorState';
-import { ContentEditEventHub } from './common/ContentEditEventHub';
 import { CommandService } from '../command/CommandService';
 import { SetCursorPosition } from './common/command/SetCursorPosition';
 import { ReactComponentTypeMap } from './ReactComponentTypeMap';
 import { PositionMap } from './PositionMap';
-import { Position } from '../core/Position';
-import { Cursor } from '../core/Cursor';
+import { ContentEditEventHub } from './common/ContentEditEventHub';
 
 export const EditableContentHost = () => {
     const editor = useService(Editor.ServiceKey);
@@ -38,7 +36,6 @@ export const EditableContentHost = () => {
             }}
             contentEditable
             suppressContentEditableWarning
-            data-content-editable-host="true"
         >
             {componentTypeMap.render(editorState.doc.root)}
         </div>
@@ -116,10 +113,10 @@ function useSyncCursorPositionWithDOMEffects(ref: MutableRefObject<HTMLDivElemen
         const handlerSelectionChange = () => {
             if (composing) return;
 
-            const position = getSelectionFromDOM(element, positionMap);
-            if (position === null) return;
+            const selection = positionMap.getSelection();
+            if (selection === null) return;
 
-            commandService.exec(SetCursorPosition(position));
+            commandService.exec(SetCursorPosition(selection));
         };
 
         const ownerDocument = element.ownerDocument;
@@ -134,46 +131,6 @@ function useSyncCursorPositionWithDOMEffects(ref: MutableRefObject<HTMLDivElemen
         if (composing) return;
         if (ref.current === null) return;
 
-        setSelectionToDOM(ref.current, editorState.cursor, positionMap);
+        positionMap.setSelection(editorState.cursor.anchor, editorState.cursor.focus);
     }, [composing, editorState, positionMap, ref]);
-}
-
-function getSelectionFromDOM(
-    root: HTMLElement,
-    positionMap: PositionMap,
-): { anchor: Position; focus: Position } | null {
-    const selection = root.ownerDocument.getSelection();
-    if (selection === null) return null;
-    if (selection.anchorNode === null || selection.focusNode === null) return null;
-
-    const anchorPositionInModel = positionMap.getPositionInModel(selection.anchorNode, selection.anchorOffset);
-    const focusPositionInModel = positionMap.getPositionInModel(selection.focusNode, selection.focusOffset);
-    if (anchorPositionInModel === null || focusPositionInModel === null) return null;
-
-    return { anchor: anchorPositionInModel, focus: focusPositionInModel };
-}
-
-function setSelectionToDOM(root: HTMLElement, cursor: Cursor, positionMap: PositionMap) {
-    const anchorPositionInDOM = positionMap.getPositionInDOM(cursor.anchor);
-    const focusPositionInDOM = positionMap.getPositionInDOM(cursor.focus);
-    if (anchorPositionInDOM === null || focusPositionInDOM === null) return;
-
-    const selection = root.ownerDocument.getSelection();
-    if (selection === null) return;
-
-    if (
-        selection.anchorNode === anchorPositionInDOM.node &&
-        selection.anchorOffset === anchorPositionInDOM.offset &&
-        selection.focusNode === focusPositionInDOM.node &&
-        selection.focusOffset === focusPositionInDOM.offset
-    ) {
-        return;
-    }
-
-    selection.setBaseAndExtent(
-        anchorPositionInDOM.node,
-        anchorPositionInDOM.offset,
-        focusPositionInDOM.node,
-        focusPositionInDOM.offset,
-    );
 }

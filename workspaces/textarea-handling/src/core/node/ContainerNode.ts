@@ -147,23 +147,23 @@ export class ContainerNode<Props = void> extends AbstractNode<Props> {
 // There is a circular dependency between ContainerNode and ParagraphNode. Must be placed in the same file.
 export class ParagraphNode extends ContainerNode {
     insertText(doc: Doc, offset: number, text: string): InsertTextResult {
-        const position = Position.of(this.id, offset);
-
-        const nextChild = doc.getByPositionOrNull(position);
+        const nextChild = doc.getByPositionOrNull(Position.of(this.id, offset));
         if (nextChild !== null) {
             const result = nextChild.insertText(doc, 0, text);
             if (result.doc !== doc) return result;
         }
 
-        const prevChild = doc.prevPositionNodeOrNull(Position.of(this.id, offset));
-        if (prevChild !== null) {
-            const result = prevChild.insertText(doc, 0, text);
-            if (result.doc !== doc) return result;
+        if (offset > 0) {
+            const prevChild = doc.prevPositionNodeOrNull(Position.of(this.id, offset - 1));
+            if (prevChild !== null) {
+                const result = prevChild.insertText(doc, doc.length(prevChild.id), text);
+                if (result.doc !== doc) return result;
+            }
         }
 
         const textNode = new TextNode({ text });
         return {
-            doc: doc.insertByPosition(position, textNode),
+            doc: doc.insertByPosition(Position.of(this.id, offset), textNode),
             from: Position.of(textNode.id),
             to: Position.of(textNode.id, text.length),
         };

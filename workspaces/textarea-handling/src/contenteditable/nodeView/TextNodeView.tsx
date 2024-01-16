@@ -1,7 +1,7 @@
 import { TextNode } from '../../core/node/TextNode';
 import { useService } from '../DIContainerProvider';
 import { PositionMap } from '../PositionMap';
-import { useLayoutEffect, useRef } from 'react';
+import { Fragment, useLayoutEffect, useRef } from 'react';
 import { Position } from '../../core/Position';
 
 export const TextNodeView = ({ node }: { node: TextNode }) => {
@@ -18,9 +18,5 @@ export const TextNodeView = ({ node }: { node: TextNode }) => {
         return () => positionMap.unregister(domNode);
     }, [node.id, node.text.length, positionMap]);
 
-    return (
-        <span ref={ref} data-node-id={node.id}>
-            {node.text}
-        </span>
-    );
+    return <span ref={ref}>{node.text}</span>;
 };

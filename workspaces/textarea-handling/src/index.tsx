@@ -5,9 +5,9 @@ import { ClipboardExtension } from './clipboard';
 import { SerializeExtension } from './serialize';
 import { DebugExtension } from './debug';
 import { DebugView } from './debug/DebugView';
-import { LinkExtension } from './link';
 import { HistoryExtension } from './history';
 import { ContentEditableExtension } from './contenteditable';
+import { CodeExtension } from './code';
 
 window.addEventListener('DOMContentLoaded', () => {
     const container = document.getElementById('root')!;
@@ -17,7 +17,7 @@ window.addEventListener('DOMContentLoaded', () => {
             <DIContainerProvider
                 extensions={[
                     ContentEditableExtension,
-                    LinkExtension,
+                    CodeExtension,
                     HistoryExtension,
                     DebugExtension,
                     ClipboardExtension,

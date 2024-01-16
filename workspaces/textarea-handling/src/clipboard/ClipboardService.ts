@@ -17,16 +17,12 @@ export class ClipboardService {
 
     cut() {
         // this.data = getSelectedData(this.editor.state);
-        this.editor.updateState((state) => {
-            // return deleteSelectedRange(state);
-            return state;
-        });
+        this.editor.updateState((state) => state.deleteSelectedRange());
     }
 
     paste() {
         this.editor.updateState((state) => {
             // state = deleteSelectedRange(state);
-
             // state = insertNodes(state, this.data);
 
             return state;

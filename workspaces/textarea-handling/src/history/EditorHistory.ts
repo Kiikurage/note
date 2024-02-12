@@ -1,5 +1,5 @@
-import { EditorState } from '../core/EditorState';
-import { Editor } from '../core/Editor';
+import { EditorState } from '../core/common/EditorState';
+import { Editor } from '../core/common/Editor';
 import { DIContainer } from '../lib/DIContainer';
 
 export class EditorHistory {
@@ -39,7 +39,7 @@ export class EditorHistory {
     }
 
     private readonly handleEditorChange = () => {
-        if (this.editor.state.doc === this.buffer[this.index].doc) return;
+        // if (this.editor.state.doc === this.buffer[this.index].doc) return;
 
         this.buffer.length = this.index + 1;
         this.index++;

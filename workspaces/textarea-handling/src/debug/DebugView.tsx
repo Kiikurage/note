@@ -1,36 +1,17 @@
-import { useService } from '../contenteditable/DIContainerProvider';
-import { Editor } from '../core/Editor';
-import { useEditorState } from '../contenteditable/useEditorState';
-import { TextNode } from '../core/node/TextNode';
-import { NodeSerializer } from '../serialize/NodeSerializer';
-import { Cursor } from '../core/Cursor';
-import { Position } from '../core/Position';
-import { EditorState } from '../core/EditorState';
-import { createDoc } from '../core/createDoc';
-import { Doc, Node } from '../core/interfaces';
+import { Editor } from '../core/common/Editor';
+import { TextNode } from '../core/common/node/TextNode';
+import { EditorState } from '../core/common/EditorState';
 import { assert } from '../lib/assert';
 import { useRef } from 'react';
-
-const LOCAL_STORAGE_KEY = 'textarea-handling-debug';
+import { DocNode } from '../core/common/node/DocNode';
+import { useService } from '../core/react/DIContainerProvider';
+import { useEditorState } from '../core/react/useEditorState';
 
 export const DebugView = () => {
     const renderCountRef = useRef(0);
     renderCountRef.current += 1;
     const editor = useService(Editor.ServiceKey);
-    const nodeSerializer = useService(NodeSerializer.ServiceKey);
     const editorState = useEditorState(editor);
-
-    // useEffect(() => {
-    //     const serializedNodes = localStorage.getItem(LOCAL_STORAGE_KEY);
-    //     if (serializedNodes === null) return;
-    //     const doc = nodeSerializer.deserialize(JSON.parse(serializedNodes));
-    //     editor.updateState((state) => state.copy({ doc, cursor: Cursor.of(Position.of(doc.root.id, 0)) }));
-    // }, [editor, nodeSerializer]);
-    //
-    // useEffect(() => {
-    //     const serializedNodes = nodeSerializer.serialize(editorState.doc);
-    //     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(serializedNodes));
-    // }, [editorState.doc, nodeSerializer]);
 
     const selection = document.getSelection();
     const anchorNode = selection?.anchorNode ?? null;
@@ -66,22 +47,9 @@ export const DebugView = () => {
             </section>
             <section>
                 <h3 css={{ margin: 0 }}>
-                    Document{' '}
-                    <button
-                        onClick={() =>
-                            editor.updateState(() => {
-                                const doc = createDoc();
-                                return new EditorState({
-                                    doc,
-                                    cursor: Cursor.of(Position.of(doc.root.id, 0)),
-                                });
-                            })
-                        }
-                    >
-                        RESET
-                    </button>
+                    Document <button onClick={() => editor.updateState(() => EditorState.create())}>RESET</button>
                 </h3>
-                <NodeTreeNode node={editorState.doc.root} doc={editorState.doc} />
+                <NodeTreeNode node={editorState.root} />
             </section>
         </div>
     );
@@ -96,9 +64,7 @@ const NodeView = ({ node, offset }: { node: globalThis.Node | null; offset: numb
     return `<${node.tagName.toLowerCase()} /> ${offset ?? '#N/A'}`;
 };
 
-const NodeTreeNode = ({ node, doc }: { node: Node; doc: Doc }) => {
-    const children = doc.children(node.id);
-
+const NodeTreeNode = ({ node }: { node: DocNode }) => {
     return (
         <div
             css={{
@@ -107,7 +73,7 @@ const NodeTreeNode = ({ node, doc }: { node: Node; doc: Doc }) => {
         >
             <div css={{ margin: 0, lineHeight: 1.2 }}>
                 <span>
-                    ({node.id}){node.type}
+                    ({node.id}){node.constructor.name}
                 </span>
                 {node instanceof TextNode && (
                     <span css={{ marginLeft: 8, color: '#888' }}>
@@ -128,10 +94,10 @@ const NodeTreeNode = ({ node, doc }: { node: Node; doc: Doc }) => {
                     </span>
                 )}
             </div>
-            {children.length > 0 && (
+            {node.children.length > 0 && (
                 <div css={{ margin: 0, padding: 0, marginLeft: '16px' }}>
-                    {children.map((child) => (
-                        <NodeTreeNode key={child.id} node={child} doc={doc} />
+                    {node.children.map((child) => (
+                        <NodeTreeNode key={child.id} node={child} />
                     ))}
                 </div>
             )}

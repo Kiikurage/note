@@ -1,12 +1,11 @@
 import { TextNode } from '../common/node/TextNode';
-import { insertText } from '../common/mutate/insertText';
-import { Cursor } from '../common/Cursor';
+import { insertText } from '../common/mutation/insertText';
+import { createCursor, Cursor } from '../common/Cursor';
 import { Editor, registerComponent } from '../common/Editor';
 import { InsertText } from '../common/command/InsertText';
 import { CommandService } from '../../command/CommandService';
 import { SetCursor } from '../common/command/SetCursor';
-import { PositionMap } from './PositionMap';
-import { EditorState } from '../common/EditorState';
+import { PointMap } from './PointMap';
 import { InsertParagraph } from '../common/command/InsertParagraph';
 import { DeleteContentBackward } from '../common/command/DeleteContentBackward';
 import { DeleteContentForward } from '../common/command/DeleteContentForward';
@@ -19,7 +18,7 @@ export class DOMEventHandlerManager {
             new DOMEventHandlerManager(
                 editor,
                 editor.getComponent(CommandService.ComponentKey),
-                editor.getComponent(PositionMap.ComponentKey),
+                editor.getComponent(PointMap.ComponentKey),
             ),
     );
 
@@ -29,7 +28,7 @@ export class DOMEventHandlerManager {
     constructor(
         private readonly editor: Editor,
         private readonly commandService: CommandService,
-        private readonly positionMap: PositionMap,
+        private readonly pointMap: PointMap,
     ) {
         this.addContentEditEventHandler('insertText', (data) => commandService.exec(InsertText({ text: data ?? '' })))
             .addContentEditEventHandler('insertParagraph', () => commandService.exec(InsertParagraph()))
@@ -80,7 +79,7 @@ export class DOMEventHandlerManager {
         if (!(this.editor.state.cursor.anchor.node instanceof TextNode)) {
             this.editor.updateState((state) => {
                 state = insertText(state, ZERO_WIDTH_SPACE);
-                state = { ...state, cursor: Cursor.of(state.cursor.anchor.node, state.cursor.anchor.offset - 1) };
+                state = { ...state, cursor: createCursor(state.cursor.anchor.node, state.cursor.anchor.offset - 1) };
                 return state;
             });
         }
@@ -103,10 +102,10 @@ export class DOMEventHandlerManager {
     private readonly handleSelectionChange = () => {
         if (this.composing) return;
 
-        const selection = this.positionMap.getSelection();
+        const selection = this.pointMap.getSelection();
         if (selection === null) return;
 
-        this.commandService.exec(SetCursor({ cursor: Cursor.of(selection.anchor, selection.focus) }));
+        this.commandService.exec(SetCursor({ cursor: createCursor(selection.anchor, selection.focus) }));
     };
 }
 

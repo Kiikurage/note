@@ -1,6 +1,6 @@
 import { assert } from '../../../lib/assert';
 import { counter } from '../../../lib/counter';
-import { Position } from '../Position';
+import { Point } from '../Point';
 
 const nextNodeId = counter();
 
@@ -57,26 +57,6 @@ export abstract class DocNode {
         return null;
     }
 
-    insertChild(offset: number, child: DocNode): void {
-        assert(
-            offset >= 0 && offset <= this._children.length,
-            `Offset ${offset} is out of range: [0, ${this._children.length}]`,
-        );
-        if (child.parent !== null) child.remove();
-
-        const prevChild = this._children[offset - 1] ?? null;
-        const nextChild = this._children[offset] ?? null;
-
-        this._children.splice(offset, 0, child);
-        child._parent = this;
-
-        if (prevChild) prevChild._next = child;
-        child._prev = prevChild;
-
-        if (nextChild) nextChild._prev = child;
-        child._next = nextChild;
-    }
-
     insertFirst(child: DocNode): void {
         this.insertChild(0, child);
     }
@@ -131,71 +111,51 @@ export abstract class DocNode {
         return this.children.length;
     }
 
-    /**
-     * Insert text into the node
-     * @param offset
-     * @param text
-     */
+    insertChild(offset: number, child: DocNode): void {
+        assert(
+            offset >= 0 && offset <= this._children.length,
+            `Offset ${offset} is out of range: [0, ${this._children.length}]`,
+        );
+        if (child.parent !== null) child.remove();
+
+        const prevChild = this._children[offset - 1] ?? null;
+        const nextChild = this._children[offset] ?? null;
+
+        this._children.splice(offset, 0, child);
+        child._parent = this;
+
+        if (prevChild) prevChild._next = child;
+        child._prev = prevChild;
+
+        if (nextChild) nextChild._prev = child;
+        child._next = nextChild;
+    }
+
     abstract insertText(offset: number, text: string): InsertContentResult;
 
-    /**
-     * Insert paragraph break.
-     * @param offset
-     */
     abstract insertParagraph(offset: number): InsertContentResult;
 
-    /**
-     * Delete content in this node
-     * @param start
-     * @param end
-     */
     abstract deleteContent(start: number, end: number): DeleteContentResult;
 
-    /**
-     * Delete one character backwardly
-     * @param offset
-     */
     abstract deleteContentBackward(offset: number): DeleteContentResult;
 
-    /**
-     * Delete one character forwardly
-     * @param offset
-     */
     abstract deleteContentForward(offset: number): DeleteContentResult;
 
-    /**
-     * Delete the end of the node. i.e. deleteContentForward(this.length).
-     *
-     *  - If this content has boundary, this operation semantically means deleting that boundary.
-     *      e.g. For ParagraphNode, this means deleting its paragraph break.
-     *  - If this content doesn't have the boundary, this operation semantically equals to
-     *      this.next.deleteContentForward(0).
-     *  - If this node doesn't have a next sibling, delegate to parent.deleteEnd().
-     */
     abstract deleteEnd(): DeleteContentResult;
 
-    /**
-     * Delete the begin of the node. Semantics are same as {@link deleteEnd}.
-     */
     abstract deleteBegin(): DeleteContentResult;
 
-    /**
-     * Merge this node with the next node.
-     *  - If there is no next node, do nothing.
-     *  - If this node cannot be merged with the next node, do nothing.
-     *  - If this node can be merged. merge child nodes recursively.
-     */
     abstract mergeWithNext(): MergeContentResult;
 }
 
 export interface InsertContentResult {
-    positionAfterInsertion: Position;
+    pointAfterInsertion: Point;
 }
 
 export interface DeleteContentResult {
-    positionAfterDeletion: Position;
+    pointAfterDeletion: Point;
 }
 
 export interface MergeContentResult {
-    mergedPosition: Position;
+    mergedPoint: Point;
 }

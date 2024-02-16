@@ -1,4 +1,4 @@
-import { Cursor } from '../Cursor';
+import { createCursor } from '../Cursor';
 import { EditorState } from '../EditorState';
 import { deleteSelectedRange } from './deleteSelectedRange';
 
@@ -8,6 +8,6 @@ export function deleteContentBackward(state: EditorState): EditorState {
     const result = state.cursor.focus.node.deleteContentBackward(state.cursor.focus.offset);
     return {
         ...state,
-        cursor: Cursor.of(result.positionAfterDeletion),
+        cursor: createCursor(result.pointAfterDeletion),
     };
 }

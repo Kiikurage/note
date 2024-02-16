@@ -1,12 +1,12 @@
 import { TextNode } from '../../common/node/TextNode';
-import { useService } from '../EditorContextProvider';
-import { PositionMap } from '../PositionMap';
+import { useService } from '../EditorView';
+import { PointMap } from '../PointMap';
 import { useLayoutEffect, useRef } from 'react';
-import { Position } from '../../common/Position';
+import { Point } from '../../common/Point';
 import { assert } from '../../../lib/assert';
 
 export const TextNodeView = ({ node }: { node: TextNode }) => {
-    const positionMap = useService(PositionMap.ComponentKey);
+    const pointMap = useService(PointMap.ComponentKey);
     const ref = useRef<HTMLSpanElement | null>(null);
     assert(node.text.length > 0, 'TextNodeView: node.text.length > 0');
 
@@ -16,9 +16,9 @@ export const TextNodeView = ({ node }: { node: TextNode }) => {
 
         const textNode = element.childNodes[0];
 
-        positionMap.register(textNode, node);
-        return () => positionMap.unregister(textNode);
-    }, [node, positionMap]);
+        pointMap.register(textNode, node);
+        return () => pointMap.unregister(textNode);
+    }, [node, pointMap]);
 
     return <span ref={ref}>{node.text}</span>;
 };

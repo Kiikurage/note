@@ -1,12 +1,11 @@
-import { deleteContentBackward } from './mutate/deleteContentBackward';
-import { EditorState } from './EditorState';
-import { deleteContentForward } from './mutate/deleteContentForward';
-import { insertParagraph } from './mutate/insertParagraph';
-import { insertText } from './mutate/insertText';
-import { setCursor } from './mutate/setCursor';
+import { deleteContentBackward } from './mutation/deleteContentBackward';
+import { createEditorState, EditorState } from './EditorState';
+import { deleteContentForward } from './mutation/deleteContentForward';
+import { insertParagraph } from './mutation/insertParagraph';
+import { insertText } from './mutation/insertText';
+import { setCursor } from './mutation/setCursor';
 import { DocNode, resetNodeIdCounter } from './node/DocNode';
-import { Cursor } from './Cursor';
-import { Position } from './Position';
+import { createCursor, Cursor } from './Cursor';
 
 describe('EditorState', () => {
     describe('RandomizedTest', () => {
@@ -23,7 +22,7 @@ describe('EditorState', () => {
                 const actions: Action[] = [];
 
                 try {
-                    let state = EditorState.create();
+                    let state = createEditorState();
 
                     for (let i = 0; i < NUM_ACTIONS_IN_TESTCASE; i++) {
                         const action = generateAction(state);
@@ -67,7 +66,7 @@ function parseCursorString(root: DocNode, cursorString: string): Cursor {
     const focusNode = findNodeById(root, Number(match[3]));
     const focusOffset = Number(match[4]);
     if (!anchorNode || !focusNode) throw new Error('Node not found');
-    return Cursor.of(anchorNode, anchorOffset, focusNode, focusOffset);
+    return createCursor(anchorNode, anchorOffset, focusNode, focusOffset);
 }
 
 function processAction(state: EditorState, action: Action) {
@@ -107,7 +106,7 @@ function generateAction(state: EditorState): Action {
             const offset1 = Math.floor(Math.random() * node1.length);
             const node2 = nodes[Math.floor(Math.random() * nodes.length)];
             const offset2 = Math.floor(Math.random() * node2.length);
-            const cursor = Cursor.of(node1, offset1, node2, offset2);
+            const cursor = createCursor(node1, offset1, node2, offset2);
             return { type: 'setCursor', cursor: cursor.toString() };
         }
 
@@ -117,7 +116,7 @@ function generateAction(state: EditorState): Action {
 }
 
 function execRandomizedTest(actions: Action[]) {
-    let state = EditorState.create();
+    let state = createEditorState();
     for (const action of actions) {
         state = processAction(state, action);
     }

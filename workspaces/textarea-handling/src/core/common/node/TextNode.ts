@@ -1,6 +1,6 @@
 import { DeleteContentResult, DocNode, InsertContentResult, MergeContentResult } from './DocNode';
 import { assert } from '../../../lib/assert';
-import { Position } from '../Position';
+import { createPoint } from '../Point';
 import { ParagraphNode } from './ContainerNode';
 
 export class TextNode extends DocNode {
@@ -16,12 +16,12 @@ export class TextNode extends DocNode {
         assert(offset >= 0 && offset <= this.text.length, 'Offset is out of range');
         this.text = this.text.substring(0, offset) + text + this.text.substring(offset);
 
-        return { positionAfterInsertion: Position.of(this, offset + text.length) };
+        return { pointAfterInsertion: createPoint(this, offset + text.length) };
     }
 
     insertParagraph(offset: number): InsertContentResult {
         const paragraph = this.findAncestor((node) => node instanceof ParagraphNode);
-        if (paragraph === null) return { positionAfterInsertion: Position.of(this, offset) };
+        if (paragraph === null) return { pointAfterInsertion: createPoint(this, offset) };
 
         const textNodeOffset = paragraph.children.indexOf(this);
         assert(textNodeOffset !== -1, 'Text node should be a child of paragraph');
@@ -37,7 +37,7 @@ export class TextNode extends DocNode {
         paragraph.insertAfter(newParagraph);
         paragraph.children.slice(textNodeOffset + 1).forEach((child) => newParagraph.insertLast(child));
 
-        return { positionAfterInsertion: Position.of(newText, 0) };
+        return { pointAfterInsertion: createPoint(newText, 0) };
     }
 
     deleteContent(start: number, end: number): DeleteContentResult {
@@ -51,7 +51,7 @@ export class TextNode extends DocNode {
         }
 
         this.text = this.text.substring(0, start) + this.text.substring(end);
-        return { positionAfterDeletion: Position.of(this, start) };
+        return { pointAfterDeletion: createPoint(this, start) };
     }
 
     deleteContentBackward(offset: number): DeleteContentResult {
@@ -67,25 +67,25 @@ export class TextNode extends DocNode {
     deleteEnd(): DeleteContentResult {
         return (
             this.next?.deleteContentForward(0) ??
-            this.parent?.deleteEnd() ?? { positionAfterDeletion: Position.of(this, this.length) }
+            this.parent?.deleteEnd() ?? { pointAfterDeletion: createPoint(this, this.length) }
         );
     }
 
     deleteBegin(): DeleteContentResult {
         return (
             this.prev?.deleteContentBackward(this.prev.length) ??
-            this.parent?.deleteBegin() ?? { positionAfterDeletion: Position.of(this, 0) }
+            this.parent?.deleteBegin() ?? { pointAfterDeletion: createPoint(this, 0) }
         );
     }
 
     mergeWithNext(): MergeContentResult {
-        if (!this.next) return { mergedPosition: Position.of(this, this.length) };
-        if (!(this.next instanceof TextNode)) return { mergedPosition: Position.of(this, this.length) };
+        if (!this.next) return { mergedPoint: createPoint(this, this.length) };
+        if (!(this.next instanceof TextNode)) return { mergedPoint: createPoint(this, this.length) };
 
         const originalLength = this.length;
         this.text = this.text + this.next.text;
         this.next.remove();
 
-        return { mergedPosition: Position.of(this, originalLength) };
+        return { mergedPoint: createPoint(this, originalLength) };
     }
 }

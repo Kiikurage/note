@@ -1,4 +1,4 @@
-import { extension } from '../extension/Extension';
+import { extension } from '../core/common/Extension';
 import { KeyBindingService } from './common/KeyBindingService';
 import { Editor } from '../core/common/Editor';
 

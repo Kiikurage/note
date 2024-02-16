@@ -7,10 +7,10 @@ describe('TextNode', () => {
             const node = new TextNode('hello');
             const result = node.insertText(2, 'world');
             expect(node.text).toBe('heworldllo');
-            expect(result).toEqual({ positionAfterInsertion: { node, offset: 7 } });
+            expect(result).toEqual({ pointAfterInsertion: { node, offset: 7 } });
         });
 
-        it('invalid insert position', () => {
+        it('invalid insert point', () => {
             const node = new TextNode('hello');
             expect(() => node.insertText(9, 'world')).toThrow();
         });
@@ -21,7 +21,7 @@ describe('TextNode', () => {
             const node = new TextNode('hello');
             const result = node.deleteContent(1, 4);
             expect(node.text).toBe('ho');
-            expect(result).toEqual({ positionAfterDeletion: { node, offset: 1 } });
+            expect(result).toEqual({ pointAfterDeletion: { node, offset: 1 } });
         });
 
         it('delete all content', () => {
@@ -30,7 +30,7 @@ describe('TextNode', () => {
             root.insertLast(node);
             const result = node.deleteContent(0, 5);
             expect(root.children).toHaveLength(0);
-            expect(result).toEqual({ positionAfterDeletion: { node: root, offset: 0 } });
+            expect(result).toEqual({ pointAfterDeletion: { node: root, offset: 0 } });
         });
     });
 
@@ -39,7 +39,7 @@ describe('TextNode', () => {
             const node = new TextNode('hello');
             const result = node.deleteContentBackward(2);
             expect(node.text).toBe('hllo');
-            expect(result).toEqual({ positionAfterDeletion: { node, offset: 1 } });
+            expect(result).toEqual({ pointAfterDeletion: { node, offset: 1 } });
         });
 
         it('delete a character at the beginning triggers deleteBegin', () => {
@@ -59,7 +59,7 @@ describe('TextNode', () => {
             const node = new TextNode('hello');
             const result = node.deleteContentForward(1);
             expect(node.text).toBe('hllo');
-            expect(result).toEqual({ positionAfterDeletion: { node, offset: 1 } });
+            expect(result).toEqual({ pointAfterDeletion: { node, offset: 1 } });
         });
 
         it('delete a character at the end triggers deleteEnd', () => {
@@ -84,7 +84,7 @@ describe('TextNode', () => {
             const result = node.deleteBegin();
             expect(node.text).toBe('world');
             expect(prev.text).toBe('hell');
-            expect(result).toEqual({ positionAfterDeletion: { node: prev, offset: 4 } });
+            expect(result).toEqual({ pointAfterDeletion: { node: prev, offset: 4 } });
         });
     });
 
@@ -98,7 +98,7 @@ describe('TextNode', () => {
             const result = node.deleteEnd();
             expect(node.text).toBe('hello');
             expect(next.text).toBe('orld');
-            expect(result).toEqual({ positionAfterDeletion: { node: next, offset: 0 } });
+            expect(result).toEqual({ pointAfterDeletion: { node: next, offset: 0 } });
         });
     });
 });

@@ -1,7 +1,7 @@
 import { DeleteContentResult, DocNode, InsertContentResult, MergeContentResult } from './DocNode';
 import { assert } from '../../../lib/assert';
 import { TextNode } from './TextNode';
-import { Position } from '../Position';
+import { createPoint } from '../Point';
 
 export class ContainerNode extends DocNode {
     insertText(offset: number, text: string): InsertContentResult {
@@ -32,7 +32,7 @@ export class ContainerNode extends DocNode {
         assert(start <= end, `Start:${start} is greater than end:${end}`);
 
         this.children.slice(start, end).forEach((node) => node.remove());
-        return { positionAfterDeletion: Position.of(this, start) };
+        return { pointAfterDeletion: createPoint(this, start) };
     }
 
     deleteContentBackward(offset: number): DeleteContentResult {
@@ -54,35 +54,35 @@ export class ContainerNode extends DocNode {
     deleteEnd(): DeleteContentResult {
         if (this.next) {
             const result = this.mergeWithNext();
-            return { positionAfterDeletion: result.mergedPosition };
+            return { pointAfterDeletion: result.mergedPoint };
         } else {
-            return this.parent?.deleteEnd() ?? { positionAfterDeletion: Position.of(this, this.length) };
+            return this.parent?.deleteEnd() ?? { pointAfterDeletion: createPoint(this, this.length) };
         }
     }
 
     deleteBegin(): DeleteContentResult {
         if (this.prev) {
             const result = this.prev.mergeWithNext();
-            return { positionAfterDeletion: result.mergedPosition };
+            return { pointAfterDeletion: result.mergedPoint };
         } else {
-            return this.parent?.deleteBegin() ?? { positionAfterDeletion: Position.of(this, 0) };
+            return this.parent?.deleteBegin() ?? { pointAfterDeletion: createPoint(this, 0) };
         }
     }
 
     mergeWithNext(): MergeContentResult {
-        if (!this.next) return { mergedPosition: Position.of(this, this.length) };
-        if (this.constructor !== this.next.constructor) return { mergedPosition: Position.of(this, this.length) };
+        if (!this.next) return { mergedPoint: createPoint(this, this.length) };
+        if (this.constructor !== this.next.constructor) return { mergedPoint: createPoint(this, this.length) };
 
         const originalLength = this.length;
         const originalLastChild = this.children.at(-1);
         this.next.children.forEach((child) => this.insertLast(child));
         this.next.remove();
 
-        return originalLastChild?.mergeWithNext() ?? { mergedPosition: Position.of(this, originalLength) };
+        return originalLastChild?.mergeWithNext() ?? { mergedPoint: createPoint(this, originalLength) };
     }
 
     insertParagraph(offset: number): InsertContentResult {
-        return { positionAfterInsertion: Position.of(this, offset) };
+        return { pointAfterInsertion: createPoint(this, offset) };
     }
 }
 
@@ -103,7 +103,7 @@ export class ParagraphNode extends ContainerNode {
         const textNode = new TextNode(text);
         this.insertChild(offset, textNode);
 
-        return { positionAfterInsertion: Position.of(textNode, text.length) };
+        return { pointAfterInsertion: createPoint(textNode, text.length) };
     }
 
     insertParagraph(offset: number): InsertContentResult {
@@ -111,6 +111,6 @@ export class ParagraphNode extends ContainerNode {
         this.insertAfter(newParagraph);
         this.children.slice(offset).forEach((child) => newParagraph.insertLast(child));
 
-        return { positionAfterInsertion: Position.of(newParagraph, 0) };
+        return { pointAfterInsertion: createPoint(newParagraph, 0) };
     }
 }

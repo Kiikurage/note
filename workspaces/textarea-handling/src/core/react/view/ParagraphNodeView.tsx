@@ -1,21 +1,21 @@
 import { NodeChildren } from './NodeChildren';
-import { useService } from '../EditorContextProvider';
-import { PositionMap } from '../PositionMap';
+import { useService } from '../EditorView';
+import { PointMap } from '../PointMap';
 import { useLayoutEffect, useRef } from 'react';
-import { Position } from '../../common/Position';
+import { Point } from '../../common/Point';
 import { ParagraphNode } from '../../common/node/ContainerNode';
 
 export const ParagraphNodeView = ({ node }: { node: ParagraphNode }) => {
-    const positionMap = useService(PositionMap.ComponentKey);
+    const pointMap = useService(PointMap.ComponentKey);
     const ref = useRef<HTMLParagraphElement | null>(null);
 
     useLayoutEffect(() => {
         const element = ref.current;
         if (!element) return;
 
-        positionMap.register(element, node);
-        return () => positionMap.unregister(element);
-    }, [node, positionMap]);
+        pointMap.register(element, node);
+        return () => pointMap.unregister(element);
+    }, [node, pointMap]);
 
     return (
         <p ref={ref}>

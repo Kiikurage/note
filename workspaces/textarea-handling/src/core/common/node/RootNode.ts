@@ -1,11 +1,11 @@
 import { DeleteContentResult, InsertContentResult } from './DocNode';
-import { Position } from '../Position';
+import { createPoint } from '../Point';
 import { ContainerNode, ParagraphNode } from './ContainerNode';
 
 export class RootNode extends ContainerNode {
     deleteEnd(): DeleteContentResult {
         // Do nothing
-        return { positionAfterDeletion: Position.of(this, this.length) };
+        return { pointAfterDeletion: createPoint(this, this.length) };
     }
 
     insertParagraph(offset: number): InsertContentResult {
@@ -16,6 +16,6 @@ export class RootNode extends ContainerNode {
 
         this.insertChild(offset, new ParagraphNode());
 
-        return { positionAfterInsertion: Position.of(this, offset + 1) };
+        return { pointAfterInsertion: createPoint(this, offset + 1) };
     }
 }

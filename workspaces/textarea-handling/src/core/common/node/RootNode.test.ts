@@ -1,7 +1,7 @@
 import { TextNode } from './TextNode';
 import { ParagraphNode } from './ContainerNode';
 import { RootNode } from './RootNode';
-import { Position } from '../Position';
+import { createPoint } from '../Point';
 
 describe('RootNode', () => {
     describe('insertParagraph', () => {
@@ -11,10 +11,10 @@ describe('RootNode', () => {
             expect(rootNode.children.length).toBe(2);
             expect(rootNode.children[0]).toBeInstanceOf(ParagraphNode);
             expect(rootNode.children[1]).toBeInstanceOf(ParagraphNode);
-            expect(result.positionAfterInsertion).toEqual(Position.of(rootNode, 1));
+            expect(result.pointAfterInsertion).toEqual(createPoint(rootNode, 1));
         });
 
-        it('When there is some content, insert 1 paragraph node and set cursor position after it', () => {
+        it('When there is some content, insert 1 paragraph node and set cursor point after it', () => {
             const rootNode = new RootNode();
             const paragraph = new ParagraphNode();
             rootNode.insertLast(paragraph);
@@ -22,7 +22,7 @@ describe('RootNode', () => {
             expect(rootNode.children.length).toBe(2);
             expect(rootNode.children[0]).toBe(paragraph);
             expect(rootNode.children[1]).toBeInstanceOf(ParagraphNode);
-            expect(result.positionAfterInsertion).toEqual(Position.of(rootNode, 2));
+            expect(result.pointAfterInsertion).toEqual(createPoint(rootNode, 2));
         });
     });
 
@@ -35,7 +35,7 @@ describe('RootNode', () => {
             rootNode.insertLast(paragraph);
 
             const result = rootNode.deleteEnd();
-            expect(result.positionAfterDeletion).toEqual(Position.of(rootNode, rootNode.length));
+            expect(result.pointAfterDeletion).toEqual(createPoint(rootNode, rootNode.length));
         });
     });
 });

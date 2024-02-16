@@ -1,14 +1,14 @@
 import { NodeChildren } from './NodeChildren';
 import { RootNode } from '../../common/node/RootNode';
-import { useEditorState, useService } from '../EditorContextProvider';
-import { PositionMap } from '../PositionMap';
+import { useEditorState, useService } from '../EditorView';
+import { PointMap } from '../PointMap';
 import { useLayoutEffect, useRef } from 'react';
-import { Position } from '../../common/Position';
+import { Point } from '../../common/Point';
 import { DOMEventHandlerManager } from '../DOMEventHandlerManager';
 
 export const RootNodeView = ({ node }: { node: RootNode }) => {
     const ref = useRef<HTMLDivElement | null>(null);
-    const positionMap = useService(PositionMap.ComponentKey);
+    const pointMap = useService(PointMap.ComponentKey);
     const domEventHandlerManager = useService(DOMEventHandlerManager.ComponentKey);
     const editorState = useEditorState();
 
@@ -16,9 +16,9 @@ export const RootNodeView = ({ node }: { node: RootNode }) => {
         const element = ref.current;
         if (!element) return;
 
-        positionMap.register(element, node);
-        return () => positionMap.unregister(element);
-    }, [node, positionMap]);
+        pointMap.register(element, node);
+        return () => pointMap.unregister(element);
+    }, [node, pointMap]);
 
     useLayoutEffect(
         () => domEventHandlerManager.registerRootElementEventHandlers(ref.current),
@@ -29,9 +29,9 @@ export const RootNodeView = ({ node }: { node: RootNode }) => {
         if (domEventHandlerManager.isComposing) return;
 
         requestAnimationFrame(() => {
-            positionMap.setSelection(editorState.cursor.anchor, editorState.cursor.focus);
+            pointMap.setSelection(editorState.cursor.anchor, editorState.cursor.focus);
         });
-    }, [domEventHandlerManager.isComposing, editorState.cursor.anchor, editorState.cursor.focus, positionMap]);
+    }, [domEventHandlerManager.isComposing, editorState.cursor.anchor, editorState.cursor.focus, pointMap]);
 
     return (
         <div

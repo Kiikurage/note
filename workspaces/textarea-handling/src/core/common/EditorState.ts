@@ -1,15 +1,12 @@
-import { DocNode } from './node/DocNode';
 import { RootNode } from './node/RootNode';
-import { Cursor } from './Cursor';
+import { createCursor, Cursor } from './Cursor';
 
 export interface EditorState {
-    root: DocNode;
+    root: RootNode;
     cursor: Cursor;
 }
 
-export module EditorState {
-    export function create(): EditorState {
-        const root = new RootNode();
-        return { root, cursor: Cursor.of(root, 0) };
-    }
+export function createEditorState(): EditorState {
+    const root = new RootNode();
+    return { root, cursor: createCursor(root, 0) };
 }

@@ -1,4 +1,4 @@
-import { EditorState } from './EditorState';
+import { createEditorState, EditorState } from './EditorState';
 import { Disposable } from '../../lib/Disposable';
 import { Channel } from '../../lib/Channel';
 
@@ -14,7 +14,7 @@ export class Editor extends Disposable {
     readonly onChange = this.register(new Channel<EditorState>());
     private readonly components = new Map<ComponentKey<unknown>, unknown>();
 
-    private _state = EditorState.create();
+    private _state = createEditorState();
 
     get state() {
         return this._state;

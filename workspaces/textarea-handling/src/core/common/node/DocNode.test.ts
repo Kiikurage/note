@@ -1,17 +1,19 @@
-import { DocNode } from './DocNode';
 import { assert } from '../../../lib/assert';
+import { ContainerNode } from './ContainerNode';
 
 const notImplemented = (...args: never[]): never => {
     assert(false, 'not implemented');
 };
 
-class DocNodeImpl extends DocNode {
+class DocNodeImpl extends ContainerNode {
     readonly insertText = notImplemented;
+    readonly insertParagraph = notImplemented;
     readonly deleteContent = notImplemented;
     readonly deleteContentBackward = notImplemented;
     readonly deleteContentForward = notImplemented;
     readonly deleteEnd = notImplemented;
     readonly deleteBegin = notImplemented;
+    readonly mergeWithNext = notImplemented;
 }
 
 describe('DocNode', () => {
@@ -127,7 +129,7 @@ describe('DocNode', () => {
             expect(child3.prev).toBe(child1);
         });
 
-        it('invalid insert position', () => {
+        it('invalid insert point', () => {
             const parent = new DocNodeImpl();
             const child = new DocNodeImpl();
 

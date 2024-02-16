@@ -1,5 +1,5 @@
 import { createContext, useContext, useRef, useSyncExternalStore } from 'react';
-import { Extension } from '../../extension/Extension';
+import { Extension } from '../common/Extension';
 import { ComponentKey, Editor } from '../common/Editor';
 import { RootNodeView } from './view/RootNodeView';
 

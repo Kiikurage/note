@@ -1,4 +1,4 @@
-import { useService } from '../EditorContextProvider';
+import { useService } from '../EditorView';
 import { ReactComponentTypeMap } from '../ReactComponentTypeMap';
 import { DocNode } from '../../common/node/DocNode';
 

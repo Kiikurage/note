@@ -1,4 +1,4 @@
-import { ComponentKey, Editor, registerComponent } from '../core/common/Editor';
+import { ComponentKey, Editor, registerComponent } from './Editor';
 
 export abstract class Extension {
     abstract readonly name: string;

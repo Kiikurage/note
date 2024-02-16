@@ -1,4 +1,4 @@
-import { Cursor } from '../Cursor';
+import { createCursor } from '../Cursor';
 import { EditorState } from '../EditorState';
 import { deleteSelectedRange } from './deleteSelectedRange';
 
@@ -8,6 +8,6 @@ export function insertText(state: EditorState, text: string): EditorState {
     const result = state.cursor.focus.node.insertText(state.cursor.focus.offset, text);
     return {
         ...state,
-        cursor: Cursor.of(result.positionAfterInsertion),
+        cursor: createCursor(result.pointAfterInsertion),
     };
 }

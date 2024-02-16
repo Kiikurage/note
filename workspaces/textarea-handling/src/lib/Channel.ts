@@ -1,6 +1,4 @@
-import { Disposable, IDisposable } from './Disposable';
-
-export class Channel<T = void> extends Disposable {
+export class Channel<T = void> {
     private readonly callbacks = new Set<(value: T) => void>();
 
     /**
@@ -15,7 +13,7 @@ export class Channel<T = void> extends Disposable {
      *         }
      *     }
      */
-    addListener(callback: (value: T) => void): IDisposable {
+    addListener(callback: (value: T) => void) {
         this.callbacks.add(callback);
         return { dispose: () => this.removeListener(callback) };
     }

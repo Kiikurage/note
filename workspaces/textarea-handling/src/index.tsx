@@ -1,5 +1,5 @@
 import { createRoot } from 'react-dom/client';
-import { EditorView } from './core/react/EditorView';
+import { EditorView } from './react/EditorView';
 
 window.addEventListener('DOMContentLoaded', () => {
     createRoot(document.getElementById('root')!).render(<EditorView />);

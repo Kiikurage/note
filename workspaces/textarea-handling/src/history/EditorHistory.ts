@@ -1,5 +1,5 @@
-import { EditorState } from '../core/common/EditorState';
-import { Editor, registerComponent } from '../core/common/Editor';
+import { EditorState } from '../core/EditorState';
+import { Editor, registerComponent } from '../core/Editor';
 
 export class EditorHistory {
     static readonly ComponentKey = registerComponent((editor) => new EditorHistory(editor));

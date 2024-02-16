@@ -4,6 +4,6 @@ import { EditorHistory } from './EditorHistory';
 
 export const HistoryUndo = Command.define('history.undo');
 
-CommandService.registerCommand(HistoryUndo, (command, container) => {
-    container.get(EditorHistory.ServiceKey).undo();
+CommandService.registerCommand(HistoryUndo, (command, editor) => {
+    editor.getComponent(EditorHistory.ComponentKey).undo();
 });

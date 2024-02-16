@@ -1,17 +1,15 @@
-import { Editor } from '../core/common/Editor';
 import { TextNode } from '../core/common/node/TextNode';
 import { EditorState } from '../core/common/EditorState';
 import { assert } from '../lib/assert';
 import { useRef } from 'react';
 import { DocNode } from '../core/common/node/DocNode';
-import { useService } from '../core/react/DIContainerProvider';
-import { useEditorState } from '../core/react/useEditorState';
+import { useEditor, useEditorState } from '../core/react/EditorContextProvider';
 
 export const DebugView = () => {
     const renderCountRef = useRef(0);
     renderCountRef.current += 1;
-    const editor = useService(Editor.ServiceKey);
-    const editorState = useEditorState(editor);
+    const editor = useEditor();
+    const editorState = useEditorState();
 
     const selection = document.getSelection();
     const anchorNode = selection?.anchorNode ?? null;

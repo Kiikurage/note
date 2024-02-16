@@ -1,7 +1,7 @@
-import { DIContainer } from '../../lib/DIContainer';
 import { Logger } from '../../lib/logger';
 import { KeyEventsInterceptor } from '../KeyEventsInterceptor';
 import { Disposable } from '../../lib/Disposable';
+import { registerComponent } from '../../core/common/Editor';
 
 export interface IKeyboardEvent {
     key: string;
@@ -19,7 +19,7 @@ export interface KeyBindingEntry {
 }
 
 export class KeyBindingService extends Disposable {
-    static readonly ServiceKey = DIContainer.register(() => new KeyBindingService());
+    static readonly ComponentKey = registerComponent(() => new KeyBindingService());
 
     private readonly bindings: KeyBindingEntry[] = [];
     private readonly handlers = new Map<string, () => void>();

@@ -1,4 +1,3 @@
-import { DIContainer } from '../lib/DIContainer';
 import { extension } from '../extension/Extension';
 import { KeyBindingExtension } from '../keybinding';
 import { KeyBindingService } from '../keybinding/common/KeyBindingService';
@@ -6,15 +5,16 @@ import { CommandService } from '../command/CommandService';
 import { HistoryUndo } from './HistoryUndo';
 import { HistoryRedo } from './HistoryRedo';
 import { EditorHistory } from './EditorHistory';
+import { Editor } from '../core/common/Editor';
 
 export const HistoryExtension = extension({
     name: 'History',
     dependencies: [KeyBindingExtension],
-    setup(container: DIContainer) {
-        const historyService = container.get(EditorHistory.ServiceKey);
+    setup(editor: Editor) {
+        const historyService = editor.getComponent(EditorHistory.ComponentKey);
 
-        const keybindingService = container.get(KeyBindingService.ServiceKey);
-        const commandService = container.get(CommandService.ServiceKey);
+        const keybindingService = editor.getComponent(KeyBindingService.ComponentKey);
+        const commandService = editor.getComponent(CommandService.ComponentKey);
 
         keybindingService
             .registerBinding({ key: 'cmd+z', command: 'history.undo' })

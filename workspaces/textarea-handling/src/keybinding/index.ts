@@ -1,10 +1,10 @@
-import { DIContainer } from '../lib/DIContainer';
 import { extension } from '../extension/Extension';
 import { KeyBindingService } from './common/KeyBindingService';
+import { Editor } from '../core/common/Editor';
 
 export const KeyBindingExtension = extension({
     name: 'KeyBinding',
-    setup(container: DIContainer) {
-        container.get(KeyBindingService.ServiceKey);
+    setup(editor: Editor) {
+        editor.getComponent(KeyBindingService.ComponentKey);
     },
 });

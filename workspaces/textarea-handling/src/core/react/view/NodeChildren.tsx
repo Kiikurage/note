@@ -1,9 +1,9 @@
-import { useService } from '../DIContainerProvider';
+import { useService } from '../EditorContextProvider';
 import { ReactComponentTypeMap } from '../ReactComponentTypeMap';
 import { DocNode } from '../../common/node/DocNode';
 
 export const NodeChildren = ({ parent }: { parent: DocNode }) => {
-    const componentMap = useService(ReactComponentTypeMap.ServiceKey);
+    const componentMap = useService(ReactComponentTypeMap.ComponentKey);
 
     if (parent.children.length === 0) return <br />;
 

@@ -1,11 +1,8 @@
 import { EditorState } from '../core/common/EditorState';
-import { Editor } from '../core/common/Editor';
-import { DIContainer } from '../lib/DIContainer';
+import { Editor, registerComponent } from '../core/common/Editor';
 
 export class EditorHistory {
-    static readonly ServiceKey = DIContainer.register(
-        (container) => new EditorHistory(container.get(Editor.ServiceKey)),
-    );
+    static readonly ComponentKey = registerComponent((editor) => new EditorHistory(editor));
 
     constructor(
         private readonly editor: Editor,

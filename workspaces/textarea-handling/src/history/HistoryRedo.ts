@@ -4,6 +4,6 @@ import { EditorHistory } from './EditorHistory';
 
 export const HistoryRedo = Command.define('history.redo');
 
-CommandService.registerCommand(HistoryRedo, (command, container) => {
-    container.get(EditorHistory.ServiceKey).redo();
+CommandService.registerCommand(HistoryRedo, (command, editor) => {
+    editor.getComponent(EditorHistory.ComponentKey).redo();
 });

@@ -1,13 +1,25 @@
-import { DIContainer } from '../../lib/DIContainer';
 import { ComponentType, createElement, ReactNode } from 'react';
 import { DocNode, NodeConstructor, NodeTypeOf } from '../common/node/DocNode';
 import { throwError } from '../../lib/throwError';
+import { registerComponent } from '../common/Editor';
+import { TextNode } from '../common/node/TextNode';
+import { TextNodeView } from './view/TextNodeView';
+import { ParagraphNode } from '../common/node/ContainerNode';
+import { ParagraphNodeView } from './view/ParagraphNodeView';
+import { RootNode } from '../common/node/RootNode';
+import { RootNodeView } from './view/RootNodeView';
 
 export type ReactNodeComponentType<T extends DocNode = DocNode> = ComponentType<{ node: T }>;
 
 export class ReactComponentTypeMap {
     private readonly map = new Map<NodeConstructor, ReactNodeComponentType>();
-    static readonly ServiceKey = DIContainer.register(() => new ReactComponentTypeMap());
+    static readonly ComponentKey = registerComponent(() => new ReactComponentTypeMap());
+
+    constructor() {
+        this.register(TextNode, TextNodeView)
+            .register(ParagraphNode, ParagraphNodeView)
+            .register(RootNode, RootNodeView);
+    }
 
     register<T extends NodeConstructor>(
         nodeConstructor: T,
@@ -25,10 +37,6 @@ export class ReactComponentTypeMap {
     }
 
     renderChildren(node: DocNode): ReactNode[] {
-        // if (node.children.length === 0) return [JOINER];
-
         return node.children.map((node) => this.render(node));
     }
 }
-
-// const JOINER = '\u2060';

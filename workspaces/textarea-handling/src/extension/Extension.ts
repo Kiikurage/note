@@ -1,37 +1,26 @@
-import { DIContainer, serviceKey, ServiceKey } from '../lib/DIContainer';
-import { Logger } from '../lib/logger';
+import { ComponentKey, Editor, registerComponent } from '../core/common/Editor';
 
-const logger = new Logger('Extension');
-
-export interface Extension {
-    key: ServiceKey<Extension>;
-    dependencies?: Extension[];
-
-    setup(container: DIContainer): void;
+export abstract class Extension {
+    abstract readonly name: string;
 }
 
 export function extension(props: {
     name: string;
-    dependencies?: Extension[];
-    setup(container: DIContainer): void;
-}): Extension {
-    return {
-        key: serviceKey<Extension>(props.name),
-        dependencies: props.dependencies,
-        setup: props.setup,
-    };
-}
+    dependencies?: ComponentKey<Extension>[];
+    setup(editor: Editor): void;
+}): ComponentKey<Extension> {
+    const { name, dependencies = [], setup } = props;
 
-export function loadExtension(extension: Extension, container: DIContainer) {
-    if (container.has(extension.key)) return;
-    container.register(extension.key, extension);
+    const ExtensionClass = class extends Extension {
+        readonly name = name;
 
-    if (extension.dependencies !== undefined) {
-        for (const dependency of extension.dependencies) {
-            loadExtension(dependency, container);
+        constructor(editor: Editor) {
+            super();
+
+            for (const dependency of dependencies) editor.getComponent(dependency);
+            setup(editor);
         }
-    }
+    };
 
-    logger.info(`Loading extension ${extension.key.description}`);
-    extension.setup(container);
+    return registerComponent((editor) => new ExtensionClass(editor));
 }

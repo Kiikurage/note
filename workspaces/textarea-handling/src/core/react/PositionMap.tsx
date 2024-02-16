@@ -1,6 +1,6 @@
-import { DIContainer } from '../../lib/DIContainer';
 import { Position } from '../common/Position';
-import { Cursor } from '../common/Cursor';
+import { registerComponent } from '../common/Editor';
+import { DocNode } from '../common/node/DocNode';
 
 export interface PositionInDom {
     node: Node;
@@ -8,11 +8,11 @@ export interface PositionInDom {
 }
 
 export class PositionMap {
-    private readonly map = new Map<Node, Position>();
-    static readonly ServiceKey = DIContainer.register(() => new PositionMap());
+    private readonly map = new Map<Node, DocNode>();
+    static readonly ComponentKey = registerComponent(() => new PositionMap());
 
-    register(node: Node, position: Position) {
-        this.map.set(node, position);
+    register(domNode: Node, docNode: DocNode) {
+        this.map.set(domNode, docNode);
     }
 
     unregister(node: Node) {
@@ -20,33 +20,25 @@ export class PositionMap {
     }
 
     getPositionInDOM(positionInModel: Position): PositionInDom | null {
-        let best: PositionInDom | null = null;
-        for (const [htmlNode, { node, offset }] of this.map) {
+        let best: Node | null = null;
+        for (const [htmlNode, node] of this.map) {
             if (node !== positionInModel.node) continue;
-            if (offset > positionInModel.offset) continue;
-            if (best === null || best.offset < offset) {
-                best = { node: htmlNode, offset };
-            }
+            best = htmlNode;
         }
 
         if (best === null) return null;
 
-        return { node: best.node, offset: positionInModel.offset - best.offset };
+        return { node: best, offset: positionInModel.offset };
     }
 
-    getPositionInModel(node: Node, offset: number): Position | null {
-        let best: Position | null = null;
-        for (const entry of this.map) {
-            if (entry[0] !== node) continue;
-            if (entry[1].offset > offset) continue;
-            if (best === null || best.offset < entry[1].offset) {
-                best = entry[1];
-            }
+    getPositionInModel(domNode: Node, offset: number): Position | null {
+        let current: Node | null = domNode;
+        while (current !== null) {
+            const docNode = this.map.get(current);
+            if (docNode !== undefined) return Position.of(docNode, offset);
+            current = current.parentElement;
         }
-
-        if (best === null) return null;
-
-        return Position.of(best.node, best.offset + offset);
+        return null;
     }
 
     getSelection(): { anchor: Position; focus: Position } | null {

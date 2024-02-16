@@ -1,7 +1,7 @@
-import { DIContainer } from '../lib/DIContainer';
 import { extension } from '../extension/Extension';
+import { Editor } from '../core/common/Editor';
 
 export const DebugExtension = extension({
     name: 'Debug',
-    setup(container: DIContainer) {},
+    setup(editor: Editor) {},
 });

@@ -1,23 +1,23 @@
 import { Logger } from '../lib/logger';
 import { Command, CommandFactory, ICommand } from './Command';
-import { DIContainer } from '../lib/DIContainer';
 import { Disposable } from '../lib/Disposable';
 import { assert } from '../lib/assert';
+import { Editor, registerComponent } from '../core/common/Editor';
 
 class CommandMap extends Disposable {
     static readonly default = new CommandMap();
-    protected readonly handlers = new Map<string, (command: ICommand, container: DIContainer) => void>();
+    protected readonly handlers = new Map<string, (command: ICommand, editor: Editor) => void>();
 
     registerCommand<T extends string, P>(
         commandFactory: CommandFactory<T, P>,
-        handler: (command: Command<T, P>, container: DIContainer) => void,
+        handler: (command: Command<T, P>, editor: Editor) => void,
     ) {
-        this.handlers.set(commandFactory.type, (command, container) => {
+        this.handlers.set(commandFactory.type, (command, editor) => {
             assert(
                 commandFactory.isInstance(command),
                 `Command type mismatch: command:${command.type} !== handler:${commandFactory.type}`,
             );
-            handler(command, container);
+            handler(command, editor);
         });
     }
 
@@ -25,23 +25,23 @@ class CommandMap extends Disposable {
         this.handlers.clear();
     }
 
-    get(type: string): ((command: ICommand, container: DIContainer) => void) | undefined {
+    get(type: string): ((command: ICommand, editor: Editor) => void) | undefined {
         return this.handlers.get(type) ?? (this !== CommandMap.default ? CommandMap.default.get(type) : undefined);
     }
 }
 
 export class CommandService extends Disposable {
-    static readonly ServiceKey = DIContainer.register((container) => new CommandService(container));
+    static readonly ComponentKey = registerComponent((editor) => new CommandService(editor));
 
     private readonly handlers = new CommandMap();
 
-    constructor(protected readonly container: DIContainer) {
+    constructor(protected readonly editor: Editor) {
         super();
     }
 
     registerCommand<T extends string, P>(
         commandFactory: CommandFactory<T, P>,
-        handler: (command: Command<T, P>, container: DIContainer) => void,
+        handler: (command: Command<T, P>, editor: Editor) => void,
     ) {
         this.handlers.registerCommand(commandFactory, handler);
 
@@ -50,9 +50,9 @@ export class CommandService extends Disposable {
 
     static registerCommand<T extends string, P>(
         commandFactory: CommandFactory<T, P>,
-        handler: (command: Command<T, P>, container: DIContainer) => void,
+        editor: (command: Command<T, P>, editor: Editor) => void,
     ) {
-        CommandMap.default.registerCommand(commandFactory, handler);
+        CommandMap.default.registerCommand(commandFactory, editor);
     }
 
     dispose() {
@@ -66,7 +66,7 @@ export class CommandService extends Disposable {
             return;
         }
 
-        handler(command, this.container);
+        handler(command, this.editor);
     }
 }
 

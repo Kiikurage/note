@@ -10,9 +10,6 @@ export interface EditorState {
 export module EditorState {
     export function create(): EditorState {
         const root = new RootNode();
-        return {
-            root,
-            cursor: Cursor.of(root, 0),
-        };
+        return { root, cursor: Cursor.of(root, 0) };
     }
 }

@@ -73,24 +73,27 @@ function insertNodesAtPoint(point: Point, insertNodes: readonly DocNode[]): Poin
         point = splitNode(point.node, point.offset);
     }
 
-    const nodeBeforeInsertion = point.node.children[point.offset - 1] ?? null;
-    const nodeAfterInsertion = point.node.children[point.offset] ?? null;
-
     for (const insertNode of insertNodes) {
         point.node.insertChild(point.offset, insertNode);
         point.offset += 1;
     }
 
-    let result = createPoint(point.node, point.offset);
+    let result = createPoint(insertNodes[insertNodes.length - 1], insertNodes[insertNodes.length - 1].length);
     if (shouldMergeWithPrev) {
+        const nodeBeforeInsertion = insertNodes[0].prev;
         assert(nodeBeforeInsertion !== null, 'Node before insertion should not be null');
 
-        const mergeResult = nodeBeforeInsertion.mergeWithNext();
-        result = createPoint(mergeResult.mergedPoint.node, mergeResult.mergedPoint.node.length);
+        const nodeAfterInsertion = insertNodes[insertNodes.length - 1].next;
+
+        nodeBeforeInsertion.mergeWithNext();
+        const newLastInsertedNode =
+            nodeAfterInsertion === null ? point.node.children[point.node.length - 1] : nodeAfterInsertion.prev;
+        assert(newLastInsertedNode !== null, 'New last inserted node should not be null');
+
+        result = createPoint(newLastInsertedNode, newLastInsertedNode.length);
     }
     if (shouldMergeWithNext) {
-        assert(nodeAfterInsertion?.prev !== null, 'Node after insertion should have a prev node');
-        result = nodeAfterInsertion.prev.mergeWithNext().mergedPoint;
+        result = result.node.mergeWithNext().mergedPoint;
     }
 
     return result;

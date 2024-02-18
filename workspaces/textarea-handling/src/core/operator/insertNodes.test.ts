@@ -121,7 +121,119 @@ describe('insertNodes', () => {
             expect(paragraph1.children[0]).toBe(text1);
 
             expect(text1.text).toBe('text1text2');
-            expect(point).toEqual({ node: text1, offset: 10 });
+            expect(point).toEqual({ node: paragraph1, offset: 1 });
+        });
+    });
+
+    describe('insert block nodes into an inline node', () => {
+        it('insert at middle', () => {
+            const root = new RootNode();
+            const paragraph1 = new ParagraphNode();
+            const text1 = new TextNode('text1');
+            root.insertLast(paragraph1);
+            paragraph1.insertLast(text1);
+
+            const paragraph2 = new ParagraphNode();
+            const text2 = new TextNode('text2');
+            paragraph2.insertLast(text2);
+
+            const paragraph3 = new ParagraphNode();
+            const text3 = new TextNode('text3');
+            paragraph3.insertLast(text3);
+
+            const point = insertNodes(createPoint(text1, 2), [paragraph2, paragraph3]);
+
+            expect(root.children.length).toBe(2);
+
+            expect(root.children[0]).toBe(paragraph1);
+            expect(paragraph1.children.length).toBe(1);
+
+            expect(paragraph1.children[0]).toBe(text1);
+            expect(text1.text).toBe('tetext2');
+
+            const clonedParagraph3 = root.children[1];
+            assert(clonedParagraph3 instanceof ParagraphNode, 'clonedParagraph3 should be a ParagraphNode');
+            expect(clonedParagraph3.children.length).toBe(1);
+
+            const clonedText3 = clonedParagraph3.children[0];
+            assert(clonedText3 instanceof TextNode, 'clonedText3 should be a TextNode');
+            expect(clonedText3.text).toBe('text3xt1');
+
+            expect(point).toEqual({ node: clonedText3, offset: 5 });
+        });
+
+        it('insert at begin', () => {
+            const root = new RootNode();
+            const paragraph1 = new ParagraphNode();
+            const text1 = new TextNode('text1');
+            root.insertLast(paragraph1);
+            paragraph1.insertLast(text1);
+
+            const paragraph2 = new ParagraphNode();
+            const text2 = new TextNode('text2');
+            paragraph2.insertLast(text2);
+
+            const paragraph3 = new ParagraphNode();
+            const text3 = new TextNode('text3');
+            paragraph3.insertLast(text3);
+
+            const point = insertNodes(createPoint(text1, 0), [paragraph2, paragraph3]);
+
+            expect(root.children.length).toBe(2);
+
+            const clonedParagraph2 = root.children[0];
+            assert(clonedParagraph2 instanceof ParagraphNode, 'clonedParagraph2 should be a ParagraphNode');
+            expect(clonedParagraph2.children.length).toBe(1);
+
+            const clonedText2 = clonedParagraph2.children[0];
+            assert(clonedText2 instanceof TextNode, 'clonedText3 should be a TextNode');
+            expect(clonedText2.text).toBe('text2');
+
+            const clonedParagraph3 = root.children[1];
+            assert(clonedParagraph3 instanceof ParagraphNode, 'clonedParagraph3 should be a ParagraphNode');
+            expect(clonedParagraph3.children.length).toBe(1);
+
+            const clonedText3 = clonedParagraph3.children[0];
+            assert(clonedText3 instanceof TextNode, 'clonedText3 should be a TextNode');
+            expect(clonedText3.text).toBe('text3text1');
+
+            expect(point).toEqual({ node: clonedText3, offset: 5 });
+        });
+
+        it('insert at end', () => {
+            const root = new RootNode();
+            const paragraph1 = new ParagraphNode();
+            const text1 = new TextNode('text1');
+            root.insertLast(paragraph1);
+            paragraph1.insertLast(text1);
+
+            const paragraph2 = new ParagraphNode();
+            const text2 = new TextNode('text2');
+            paragraph2.insertLast(text2);
+
+            const paragraph3 = new ParagraphNode();
+            const text3 = new TextNode('text3');
+            paragraph3.insertLast(text3);
+
+            const point = insertNodes(createPoint(text1, 5), [paragraph2, paragraph3]);
+
+            expect(root.children.length).toBe(2);
+            expect(root.children[0]).toBe(paragraph1);
+
+            expect(paragraph1.children.length).toBe(1);
+            expect(paragraph1.children[0]).toBe(text1);
+
+            expect(text1.text).toBe('text1text2');
+
+            const clonedParagraph3 = root.children[1];
+            assert(clonedParagraph3 instanceof ParagraphNode, 'clonedParagraph3 should be a ParagraphNode');
+            expect(clonedParagraph3.children.length).toBe(1);
+
+            const clonedText3 = clonedParagraph3.children[0];
+            assert(clonedText3 instanceof TextNode, 'clonedText3 should be a TextNode');
+            expect(clonedText3.text).toBe('text3');
+
+            expect(point).toEqual({ node: clonedParagraph3, offset: 1 });
         });
     });
 
@@ -193,7 +305,7 @@ describe('insertNodes', () => {
 
             expect(text1.text).toBe('text1text3');
 
-            expect(point).toEqual({ node: text1, offset: 10 });
+            expect(point).toEqual({ node: paragraph1, offset: 1 });
         });
     });
 
@@ -265,7 +377,7 @@ describe('insertNodes', () => {
 
             expect(text2.text).toBe('text2');
 
-            expect(point).toEqual({ node: root, offset: 2 });
+            expect(point).toEqual({ node: paragraph, offset: 1 });
         });
 
         it('insert at begin', () => {
@@ -350,7 +462,7 @@ describe('insertNodes', () => {
             expect(paragraph1.children[0]).toBe(text1);
 
             expect(text1.text).toBe('text1text3');
-            expect(point).toEqual({ node: text1, offset: 10 });
+            expect(point).toEqual({ node: paragraph1, offset: 1 });
         });
 
         it('paragraph inserted at end should not be merged with the previous paragraph', () => {
@@ -385,7 +497,7 @@ describe('insertNodes', () => {
 
             expect(text2.text).toBe('text2');
 
-            expect(point).toEqual({ node: text1, offset: 10 });
+            expect(point).toEqual({ node: paragraph1, offset: 1 });
         });
     });
 });

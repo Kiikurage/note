@@ -32,15 +32,6 @@ export class CommandService {
 
     constructor(protected readonly editor: Editor) {}
 
-    registerCommand<T extends string, P>(
-        commandFactory: CommandFactory<T, P>,
-        handler: (command: Command<T, P>, editor: Editor) => void,
-    ) {
-        this.handlers.registerCommand(commandFactory, handler);
-
-        return this;
-    }
-
     static registerCommand<T extends string, P>(
         commandFactory: CommandFactory<T, P>,
         editor: (command: Command<T, P>, editor: Editor) => void,

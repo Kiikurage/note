@@ -1,49 +1,43 @@
-import { DocNode, MergeContentResult } from '../node/DocNode';
-import { dumpEditorState, EditorState } from '../EditorState';
+import { DocNode } from '../node/DocNode';
+import { EditorState } from '../EditorState';
 import { createPoint, Point } from '../Point';
 import { cloneTree } from './cloneTree';
 import { deleteSelectedRange } from './deleteSelectedRange';
 import { collapsed, createCursor } from '../Cursor';
 import { assert } from '../../lib/assert';
 import { ParagraphNode } from '../node/ContainerNode';
-import { Logger } from '../../lib/logger';
 
 /**
- * Insert nodes at the selected position
+ * Insert nodes intelligently at the selected position, with splitting the insert point
+ * and merging with surrounding contents, and update cursor position.
  */
-export function insertNodes(state: EditorState, nodes: readonly DocNode[]): EditorState;
-/**
- * Insert nodes at the given point and returns the end of inserted nodes
- */
-export function insertNodes(point: Point, nodes: readonly DocNode[]): Point;
-export function insertNodes(...args: unknown[]): unknown {
-    if (typeof args[0] === 'object' && args[0] !== null && 'root' in args[0]) {
-        const [state, nodes] = args as [EditorState, readonly DocNode[]];
-        return insertNodesForEditorState(state, nodes);
-    } else {
-        const [point, nodes] = args as [Point, DocNode[]];
-        return insertNodesAtPoint(point, nodes);
-    }
-}
-
-function insertNodesForEditorState(state: EditorState, nodes: readonly DocNode[]): EditorState {
+export function insertNodes(state: EditorState, nodes: readonly DocNode[]): EditorState {
     if (!collapsed(state.cursor)) state = deleteSelectedRange(state);
 
-    const point = insertNodesAtPoint(state.cursor.focus, nodes);
-    return { ...state, cursor: createCursor(point) };
+    const { insertedRangeTo } = insertNodesAtPoint(state.cursor.focus, nodes);
+    return { ...state, cursor: createCursor(insertedRangeTo) };
 }
 
-function insertNodesAtPoint(point: Point, insertNodes: readonly DocNode[]): Point {
-    if (insertNodes.length === 0) return point;
+/**
+ * Insert nodes intelligently at the selected position, with splitting the insert point
+ * and merging with surrounding contents, and returns the end point of inserted contents.
+ */
+export function insertNodesAtPoint(point: Point, insertNodes: readonly DocNode[]): InsertNodesResult {
+    if (insertNodes.length === 0)
+        return {
+            insertedRangeFrom: point,
+            insertedRangeTo: point,
+        };
 
     const insertInline = !point.node.isBlock() && insertNodes.every((node) => node.isInline());
 
     insertNodes = insertNodes.map((node) => cloneTree(node));
 
     if (!insertInline) {
+        // Wrap nodes by paragraph to ensure all insert nodes are block nodes
+        // TODO: Adjacent inline nodes, must be wrapped by a single paragraph
         insertNodes = insertNodes.map((node) => {
             if (node.isInline()) {
-                // Ensure all insert nodes are block nodes
                 const block = new ParagraphNode();
                 block.insertLast(node);
                 return block;
@@ -52,21 +46,22 @@ function insertNodesAtPoint(point: Point, insertNodes: readonly DocNode[]): Poin
             }
         });
 
+        // For block-level insertion, insert point must be block node
         while (!point.node.isBlock()) {
             point = splitNode(point.node, point.offset);
         }
     }
 
-    // If insert point is middle of the node, split the node. After insertion, merge the nodes if necessary.
-    let shouldMergeWithPrev: boolean = false;
-    let shouldMergeWithNext: boolean = false;
-    if (!(insertInline && point.node.isBlock()) && point.node.parent !== null) {
+    // If insert point is middle of non-root node, split that node, and after insertion, merge nodes if necessary.
+    let shouldMergeWithPrev = false;
+    let shouldMergeWithNext = false;
+    if (point.node.parent !== null) {
         shouldMergeWithPrev = point.offset > 0;
         shouldMergeWithNext = point.offset < point.node.length;
 
         if (point.node.length === 0) {
-            // When the node is empty, splitNode returns the beginning of that node.
-            // So, we should merge inserted nodes with this empty node, which are at the next of the inserted nodes.
+            // When the node is empty, splitNode returns the beginning of that node without any splitting.
+            // We should merge inserted nodes with this empty node, which are at the next of the inserted nodes.
             shouldMergeWithNext = true;
         }
 
@@ -78,25 +73,31 @@ function insertNodesAtPoint(point: Point, insertNodes: readonly DocNode[]): Poin
         point.offset += 1;
     }
 
-    let result = createPoint(insertNodes[insertNodes.length - 1], insertNodes[insertNodes.length - 1].length);
+    let insertedRangeFrom = createPoint(insertNodes[0], 0);
+    let insertedRangeTo = createPoint(insertNodes[insertNodes.length - 1], insertNodes[insertNodes.length - 1].length);
+
     if (shouldMergeWithPrev) {
-        const nodeBeforeInsertion = insertNodes[0].prev;
+        const nodeBeforeInsertion = insertedRangeFrom.node.prev;
         assert(nodeBeforeInsertion !== null, 'Node before insertion should not be null');
 
-        const nodeAfterInsertion = insertNodes[insertNodes.length - 1].next;
+        const nodeAfterInsertion = insertedRangeTo.node.next;
 
-        nodeBeforeInsertion.mergeWithNext();
+        insertedRangeFrom = nodeBeforeInsertion.mergeWithNext().mergedPoint;
+
         const newLastInsertedNode =
             nodeAfterInsertion === null ? point.node.children[point.node.length - 1] : nodeAfterInsertion.prev;
         assert(newLastInsertedNode !== null, 'New last inserted node should not be null');
 
-        result = createPoint(newLastInsertedNode, newLastInsertedNode.length);
+        insertedRangeTo = createPoint(newLastInsertedNode, newLastInsertedNode.length);
     }
     if (shouldMergeWithNext) {
-        result = result.node.mergeWithNext().mergedPoint;
+        insertedRangeTo = insertedRangeTo.node.mergeWithNext().mergedPoint;
     }
 
-    return result;
+    return {
+        insertedRangeFrom,
+        insertedRangeTo,
+    };
 }
 
 /**
@@ -119,4 +120,7 @@ function splitNode(node: DocNode, offset: number): Point {
     return createPoint(parent, offsetWithinParent + 1);
 }
 
-const logger = new Logger('insertNodes');
+export interface InsertNodesResult {
+    insertedRangeFrom: Point;
+    insertedRangeTo: Point;
+}

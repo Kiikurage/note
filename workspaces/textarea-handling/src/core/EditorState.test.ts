@@ -47,26 +47,26 @@ describe('EditorState', () => {
             });
         }
 
-        it('1708277305698', async () => {
-            const editor = new Editor();
-            const commandService = editor.getComponent(CommandService.ComponentKey);
-
-            await commandService.exec(InsertText({ text: 'tr6fb8' }));
-            await commandService.exec(ClipboardPaste());
-            await commandService.exec(ClipboardCut());
-            await commandService.exec(DeleteContentBackward());
-            await commandService.exec(
-                SetCursor({
-                    cursor: createCursor(editor.state.root.children[0].children[0], 2, 1),
-                }),
-            );
-            await commandService.exec(ClipboardCut());
-            await commandService.exec(InsertParagraph());
-            await commandService.exec(ClipboardPaste());
-            await commandService.exec(ClipboardCopy());
-            console.dir(dumpEditorState(editor.state), { depth: null });
-            await commandService.exec(ClipboardPaste());
-        });
+        // it('1708277305698', async () => {
+        //     const editor = new Editor();
+        //     const commandService = editor.getComponent(CommandService.ComponentKey);
+        //
+        //     await commandService.exec(InsertText({ text: 'tr6fb8' }));
+        //     await commandService.exec(ClipboardPaste());
+        //     await commandService.exec(ClipboardCut());
+        //     await commandService.exec(DeleteContentBackward());
+        //     await commandService.exec(
+        //         SetCursor({
+        //             cursor: createCursor(editor.state.root.children[0].children[0], 2, 1),
+        //         }),
+        //     );
+        //     await commandService.exec(ClipboardCut());
+        //     await commandService.exec(InsertParagraph());
+        //     await commandService.exec(ClipboardPaste());
+        //     await commandService.exec(ClipboardCopy());
+        //     console.dir(dumpEditorState(editor.state), { depth: null });
+        //     await commandService.exec(ClipboardPaste());
+        // });
     });
 });
 

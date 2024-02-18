@@ -2,7 +2,7 @@ import { TextNode } from './TextNode';
 import { assert } from '../../lib/assert';
 import { ContainerNode, ParagraphNode } from './ContainerNode';
 import { RootNode } from './RootNode';
-import { deleteContentBackward } from '../mutation/deleteContentBackward';
+import { deleteContentBackward } from '../operator/deleteContentBackward';
 
 describe('ContainerNode', () => {
     describe('insertText', () => {

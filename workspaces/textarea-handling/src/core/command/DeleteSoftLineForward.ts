@@ -1,13 +1,13 @@
 import { CommandService } from '../CommandService';
 import { Command } from '../Command';
-import { setCursor } from '../mutation/setCursor';
+import { setCursor } from '../operator/setCursor';
 import { createCursor } from '../Cursor';
-import { deleteContentForward } from '../mutation/deleteContentForward';
+import { deleteContentForward } from '../operator/deleteContentForward';
 import { PointMap } from '../../dom/PointMap';
 
 export const DeleteSoftLineForward = Command.define('contenteditable.deleteSoftLineForward');
 
-CommandService.registerCommand(DeleteSoftLineForward, async (command, editor) => {
+CommandService.registerCommand(DeleteSoftLineForward, (command, editor) => {
     const pointMap = editor.getComponent(PointMap.ComponentKey);
 
     const selection = pointMap.modifySelection('extend', 'forward', 'lineboundary');

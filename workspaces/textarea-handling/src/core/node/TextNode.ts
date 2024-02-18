@@ -8,6 +8,10 @@ export class TextNode extends DocNode {
         super();
     }
 
+    clone() {
+        return new TextNode(this.text);
+    }
+
     get length(): number {
         return this.text.length;
     }
@@ -87,5 +91,21 @@ export class TextNode extends DocNode {
         this.next.remove();
 
         return { mergedPoint: createPoint(this, originalLength) };
+    }
+
+    getLayoutLevel(): 'block' | 'inline' {
+        return 'inline';
+    }
+
+    canBeEmpty(): boolean {
+        return false;
+    }
+
+    dump(): unknown {
+        return {
+            id: this.id,
+            type: this.constructor.name,
+            text: this.text,
+        };
     }
 }

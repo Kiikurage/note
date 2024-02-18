@@ -1,15 +1,15 @@
 import { Logger } from '../lib/logger';
 import { Command, CommandFactory, ICommand } from './Command';
 import { assert } from '../lib/assert';
-import { Editor, registerComponent } from './Editor';
+import { Editor, defineComponent } from './Editor';
 
 class CommandMap {
     static readonly default = new CommandMap();
-    protected readonly handlers = new Map<string, (command: ICommand, editor: Editor) => void>();
+    protected readonly handlers = new Map<string, (command: ICommand, editor: Editor) => void | Promise<void>>();
 
     registerCommand<T extends string, P>(
         commandFactory: CommandFactory<T, P>,
-        handler: (command: Command<T, P>, editor: Editor) => void,
+        handler: (command: Command<T, P>, editor: Editor) => void | Promise<void>,
     ) {
         this.handlers.set(commandFactory.type, (command, editor) => {
             assert(
@@ -20,13 +20,13 @@ class CommandMap {
         });
     }
 
-    get(type: string): ((command: ICommand, editor: Editor) => void) | undefined {
+    get(type: string): ((command: ICommand, editor: Editor) => void | Promise<void>) | undefined {
         return this.handlers.get(type) ?? (this !== CommandMap.default ? CommandMap.default.get(type) : undefined);
     }
 }
 
 export class CommandService {
-    static readonly ComponentKey = registerComponent((editor) => new CommandService(editor));
+    static readonly ComponentKey = defineComponent((editor) => new CommandService(editor));
 
     private readonly handlers = new CommandMap();
 
@@ -55,7 +55,7 @@ export class CommandService {
             return;
         }
 
-        handler(command, this.editor);
+        return handler(command, this.editor);
     }
 }
 

@@ -1,4 +1,4 @@
-import { ComponentKey, Editor, registerComponent } from './Editor';
+import { ComponentKey, Editor, defineComponent } from './Editor';
 
 export abstract class Extension {
     abstract readonly name: string;
@@ -22,5 +22,5 @@ export function extension(props: {
         }
     };
 
-    return registerComponent((editor) => new ExtensionClass(editor));
+    return defineComponent((editor) => new ExtensionClass(editor));
 }

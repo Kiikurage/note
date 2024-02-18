@@ -1,7 +1,7 @@
 import { ComponentType, createElement, ReactNode } from 'react';
 import { DocNode, NodeConstructor, NodeTypeOf } from '../core/node/DocNode';
 import { throwError } from '../lib/throwError';
-import { registerComponent } from '../core/Editor';
+import { defineComponent } from '../core/Editor';
 import { TextNode } from '../core/node/TextNode';
 import { TextNodeView } from './view/TextNodeView';
 import { ParagraphNode } from '../core/node/ContainerNode';
@@ -13,7 +13,7 @@ export type ReactNodeComponentType<T extends DocNode = DocNode> = ComponentType<
 
 export class ReactComponentTypeMap {
     private readonly map = new Map<NodeConstructor, ReactNodeComponentType>();
-    static readonly ComponentKey = registerComponent(() => new ReactComponentTypeMap());
+    static readonly ComponentKey = defineComponent(() => new ReactComponentTypeMap());
 
     constructor() {
         this.register(TextNode, TextNodeView)

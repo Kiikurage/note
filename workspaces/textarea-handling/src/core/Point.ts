@@ -34,3 +34,7 @@ export function comparePoint(p1: Point, p2: Point): number {
 
     return points1.size - points2.size;
 }
+
+export function dumpPoint(point: Point) {
+    return `${point.node.id}:${point.offset}`;
+}

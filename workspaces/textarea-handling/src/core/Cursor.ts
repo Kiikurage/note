@@ -1,26 +1,21 @@
 import { DocNode } from './node/DocNode';
-import { comparePoint, createPoint, Point } from './Point';
-import { dataclass } from '../lib/dataclass';
+import { comparePoint, createPoint, dumpPoint, Point } from './Point';
 
-export class Cursor extends dataclass<{
+export interface Cursor {
     anchor: Point;
     focus: Point;
-}>() {
-    get from() {
-        return comparePoint(this.anchor, this.focus) <= 0 ? this.anchor : this.focus;
-    }
+}
 
-    get to() {
-        return comparePoint(this.anchor, this.focus) <= 0 ? this.focus : this.anchor;
-    }
+export function collapsed(cursor: Cursor) {
+    return cursor.anchor.node === cursor.focus.node && cursor.anchor.offset === cursor.focus.offset;
+}
 
-    get collapsed() {
-        return this.anchor.node === this.focus.node && this.anchor.offset === this.focus.offset;
-    }
+export function getCursorFrom(cursor: Cursor) {
+    return comparePoint(cursor.anchor, cursor.focus) <= 0 ? cursor.anchor : cursor.focus;
+}
 
-    toString() {
-        return `Cursor(${this.anchor.node.id}/${this.anchor.offset}, ${this.focus.node.id}/${this.focus.offset})`;
-    }
+export function getCursorTo(cursor: Cursor) {
+    return comparePoint(cursor.anchor, cursor.focus) <= 0 ? cursor.focus : cursor.anchor;
 }
 
 export function createCursor(point: Point): Cursor;
@@ -37,29 +32,33 @@ export function createCursor(...args: unknown[]): Cursor {
     switch (args.length) {
         case 1: {
             const [point] = args as [Point];
-            return new Cursor({ anchor: point, focus: point });
+            return { anchor: point, focus: point };
         }
         case 2: {
             if (typeof args[1] === 'number') {
                 const [node, offset] = args as [DocNode, number];
-                return new Cursor({ anchor: createPoint(node, offset), focus: createPoint(node, offset) });
+                return createCursor(createPoint(node, offset), createPoint(node, offset));
             } else {
                 const [anchor, focus] = args as [Point, Point];
-                return new Cursor({ anchor, focus });
+                return { anchor, focus };
             }
         }
         case 3: {
             const [node, anchorOffset, focusOffset] = args as [DocNode, number, number];
-            return new Cursor({ anchor: createPoint(node, anchorOffset), focus: createPoint(node, focusOffset) });
+            return createCursor(createPoint(node, anchorOffset), createPoint(node, focusOffset));
         }
         case 4: {
             const [anchorNode, anchorOffset, focusNode, focusOffset] = args as [DocNode, number, DocNode, number];
-            return new Cursor({
-                anchor: createPoint(anchorNode, anchorOffset),
-                focus: createPoint(focusNode, focusOffset),
-            });
+            return createCursor(createPoint(anchorNode, anchorOffset), createPoint(focusNode, focusOffset));
         }
         default:
             throw new Error('Invalid arguments');
     }
+}
+
+export function dumpCursor(cursor: Cursor) {
+    return {
+        anchor: dumpPoint(cursor.anchor),
+        focus: dumpPoint(cursor.focus),
+    };
 }

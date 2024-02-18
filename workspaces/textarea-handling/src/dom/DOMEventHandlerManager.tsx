@@ -1,7 +1,7 @@
 import { TextNode } from '../core/node/TextNode';
-import { insertText } from '../core/mutation/insertText';
+import { insertText } from '../core/operator/insertText';
 import { createCursor, Cursor } from '../core/Cursor';
-import { Editor, registerComponent } from '../core/Editor';
+import { Editor, defineComponent } from '../core/Editor';
 import { InsertText } from '../core/command/InsertText';
 import { CommandService } from '../core/CommandService';
 import { SetCursor } from '../core/command/SetCursor';
@@ -11,9 +11,12 @@ import { DeleteContentBackward } from '../core/command/DeleteContentBackward';
 import { DeleteContentForward } from '../core/command/DeleteContentForward';
 import { DeleteSoftLineBackward } from '../core/command/DeleteSoftLineBackward';
 import { DeleteSoftLineForward } from '../core/command/DeleteSoftLineForward';
+import { ClipboardCut } from '../core/command/ClipboardCut';
+import { ClipboardPaste } from '../core/command/ClipboardPaste';
+import { ClipboardCopy } from '../core/command/ClipboardCopy';
 
 export class DOMEventHandlerManager {
-    static readonly ComponentKey = registerComponent(
+    static readonly ComponentKey = defineComponent(
         (editor) =>
             new DOMEventHandlerManager(
                 editor,
@@ -55,12 +58,18 @@ export class DOMEventHandlerManager {
         rootElement.addEventListener('beforeinput', this.handleBeforeInput);
         rootElement.addEventListener('compositionstart', this.handleCompositionStart);
         rootElement.addEventListener('compositionend', this.handleCompositionEnd);
+        rootElement.addEventListener('cut', this.handleCut);
+        rootElement.addEventListener('copy', this.handleCopy);
+        rootElement.addEventListener('paste', this.handlePaste);
         ownerDocument.addEventListener('selectionchange', this.handleSelectionChange);
 
         return () => {
             rootElement.removeEventListener('beforeinput', this.handleBeforeInput);
             rootElement.removeEventListener('compositionstart', this.handleCompositionStart);
             rootElement.removeEventListener('compositionend', this.handleCompositionEnd);
+            rootElement.removeEventListener('cut', this.handleCut);
+            rootElement.removeEventListener('copy', this.handleCopy);
+            rootElement.removeEventListener('paste', this.handlePaste);
             ownerDocument.removeEventListener('selectionchange', this.handleSelectionChange);
         };
     }
@@ -69,6 +78,10 @@ export class DOMEventHandlerManager {
         if (ev.inputType === 'insertCompositionText') {
             ev.preventDefault();
             return;
+        }
+
+        if (!this.handlers.has(ev.inputType)) {
+            console.log(ev.inputType);
         }
 
         this.handlers.get(ev.inputType)?.(ev.data);
@@ -98,6 +111,18 @@ export class DOMEventHandlerManager {
         });
         this.composing = false;
         this.commandService.exec(InsertText({ text: ev.data ?? '' }));
+    };
+
+    private readonly handleCut = (ev: ClipboardEvent) => {
+        this.commandService.exec(ClipboardCut());
+    };
+
+    private readonly handleCopy = (ev: ClipboardEvent) => {
+        this.commandService.exec(ClipboardCopy());
+    };
+
+    private readonly handlePaste = (ev: ClipboardEvent) => {
+        this.commandService.exec(ClipboardPaste());
     };
 
     private readonly handleSelectionChange = () => {

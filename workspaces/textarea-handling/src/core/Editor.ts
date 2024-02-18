@@ -5,7 +5,7 @@ export interface ComponentKey<T> {
     instantiate: (editor: Editor) => T;
 }
 
-export function registerComponent<T>(factory: (editor: Editor) => T): ComponentKey<T> {
+export function defineComponent<T>(factory: (editor: Editor) => T): ComponentKey<T> {
     return { instantiate: factory };
 }
 

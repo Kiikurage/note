@@ -1,10 +1,17 @@
-import { DeleteContentResult, InsertContentResult } from './DocNode';
+import { DeleteContentResult, DocNode, InsertContentResult } from './DocNode';
 import { createPoint } from '../Point';
 import { ContainerNode, ParagraphNode } from './ContainerNode';
 
 export class RootNode extends ContainerNode {
+    clone(): DocNode {
+        return new RootNode();
+    }
+
+    deleteBegin(): DeleteContentResult {
+        return { pointAfterDeletion: createPoint(this, 0) };
+    }
+
     deleteEnd(): DeleteContentResult {
-        // Do nothing
         return { pointAfterDeletion: createPoint(this, this.length) };
     }
 

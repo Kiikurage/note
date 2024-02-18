@@ -14,7 +14,47 @@ export type NodeConstructor = new (...args: any[]) => DocNode;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type NodeTypeOf<T extends NodeConstructor> = T extends new (...args: any[]) => infer R ? R : never;
 
-export abstract class DocNode {
+export interface DocNodeDelegate {
+    /**
+     * Clone this node. Must NOT clone child nodes
+     */
+    clone(): DocNode;
+
+    insertText(offset: number, text: string): InsertContentResult;
+
+    insertParagraph(offset: number): InsertContentResult;
+
+    deleteContent(start: number, end: number): DeleteContentResult;
+
+    deleteContentBackward(offset: number): DeleteContentResult;
+
+    deleteContentForward(offset: number): DeleteContentResult;
+
+    deleteEnd(): DeleteContentResult;
+
+    deleteBegin(): DeleteContentResult;
+
+    mergeWithNext(): MergeContentResult;
+
+    /**
+     * Get the layout level of this node.
+     * - "block": This node is a block-level node. i.e. it can contain other block-level nodes and inline nodes.
+     * - "inline": This node is an inline-level node. i.e. it can only contain other inline-level nodes.
+     */
+    getLayoutLevel(): 'block' | 'inline';
+
+    /**
+     * Whether this node can be empty. i.e. it can contain no child nodes. TextNode.canBeEmpty() returns false.
+     */
+    canBeEmpty(): boolean;
+
+    /**
+     * Return JSON-serializable object for debugging
+     */
+    dump(): unknown;
+}
+
+export abstract class DocNode implements DocNodeDelegate {
     readonly id = nextNodeId();
     private _parent: DocNode | null = null;
     private _next: DocNode | null = null;
@@ -131,6 +171,16 @@ export abstract class DocNode {
         child._next = nextChild;
     }
 
+    isInline(): boolean {
+        return this.getLayoutLevel() === 'inline';
+    }
+
+    isBlock(): boolean {
+        return this.getLayoutLevel() === 'block';
+    }
+
+    abstract clone(): DocNode;
+
     abstract insertText(offset: number, text: string): InsertContentResult;
 
     abstract insertParagraph(offset: number): InsertContentResult;
@@ -146,6 +196,18 @@ export abstract class DocNode {
     abstract deleteBegin(): DeleteContentResult;
 
     abstract mergeWithNext(): MergeContentResult;
+
+    abstract getLayoutLevel(): 'block' | 'inline';
+
+    abstract canBeEmpty(): boolean;
+
+    dump(): unknown {
+        return {
+            id: this.id,
+            type: this.constructor.name,
+            children: this.children.map((child) => child.dump()),
+        };
+    }
 }
 
 export interface InsertContentResult {

@@ -1,8 +1,8 @@
 import { EditorState } from '../core/EditorState';
-import { Editor, registerComponent } from '../core/Editor';
+import { Editor, defineComponent } from '../core/Editor';
 
 export class EditorHistory {
-    static readonly ComponentKey = registerComponent((editor) => new EditorHistory(editor));
+    static readonly ComponentKey = defineComponent((editor) => new EditorHistory(editor));
 
     constructor(
         private readonly editor: Editor,

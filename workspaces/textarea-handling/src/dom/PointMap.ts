@@ -1,5 +1,5 @@
 import { createPoint, Point } from '../core/Point';
-import { registerComponent } from '../core/Editor';
+import { defineComponent } from '../core/Editor';
 import { DocNode } from '../core/node/DocNode';
 
 export interface DOMPoint {
@@ -9,7 +9,7 @@ export interface DOMPoint {
 
 export class PointMap {
     private readonly map = new Map<Node, DocNode>();
-    static readonly ComponentKey = registerComponent(() => new PointMap());
+    static readonly ComponentKey = defineComponent(() => new PointMap());
 
     register(domNode: Node, docNode: DocNode) {
         this.map.set(domNode, docNode);

@@ -4,6 +4,10 @@ import { TextNode } from './TextNode';
 import { createPoint } from '../Point';
 
 export class ContainerNode extends DocNode {
+    clone(): DocNode {
+        return new ContainerNode();
+    }
+
     insertText(offset: number, text: string): InsertContentResult {
         assert(offset >= 0 && offset <= this.children.length, 'Offset is out of range');
 
@@ -71,7 +75,7 @@ export class ContainerNode extends DocNode {
 
     mergeWithNext(): MergeContentResult {
         if (!this.next) return { mergedPoint: createPoint(this, this.length) };
-        if (this.constructor !== this.next.constructor) return { mergedPoint: createPoint(this, this.length) };
+        if (!(this.next instanceof ContainerNode)) return { mergedPoint: createPoint(this, this.length) };
 
         const originalLength = this.length;
         const originalLastChild = this.children.at(-1);
@@ -84,9 +88,21 @@ export class ContainerNode extends DocNode {
     insertParagraph(offset: number): InsertContentResult {
         return { pointAfterInsertion: createPoint(this, offset) };
     }
+
+    getLayoutLevel(): 'block' | 'inline' {
+        return 'block';
+    }
+
+    canBeEmpty(): boolean {
+        return true;
+    }
 }
 
 export class ParagraphNode extends ContainerNode {
+    clone() {
+        return new ParagraphNode();
+    }
+
     insertText(offset: number, text: string): InsertContentResult {
         assert(offset >= 0 && offset <= this.children.length, 'Offset is out of range');
 

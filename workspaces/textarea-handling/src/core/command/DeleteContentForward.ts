@@ -1,6 +1,6 @@
 import { Command } from '../Command';
 import { CommandService } from '../CommandService';
-import { deleteContentForward } from '../mutation/deleteContentForward';
+import { deleteContentForward } from '../operator/deleteContentForward';
 
 export const DeleteContentForward = Command.define('contenteditable.deleteContentForward');
 

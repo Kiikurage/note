@@ -1,6 +1,6 @@
 import { Command } from '../Command';
 import { CommandService } from '../CommandService';
-import { insertText } from '../mutation/insertText';
+import { insertText } from '../operator/insertText';
 
 export const InsertText = Command.define('contenteditable.insertText').withParams<{ text: string }>();
 

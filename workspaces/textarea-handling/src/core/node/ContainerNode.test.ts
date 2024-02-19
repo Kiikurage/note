@@ -18,7 +18,10 @@ describe('ContainerNode', () => {
             assert(textNode instanceof TextNode, `Expected a text node, but ${textNode.constructor.name}`);
             expect(textNode.text).toBe('world');
 
-            expect(result).toEqual({ pointAfterInsertion: { node: textNode, offset: 5 } });
+            expect(result).toEqual({
+                from: { node: textNode, offset: 0 },
+                to: { node: textNode, offset: 5 },
+            });
         });
 
         it('if next node is paragraph node, insert text there', () => {
@@ -33,7 +36,10 @@ describe('ContainerNode', () => {
             assert(textNode instanceof TextNode, `Expected a text node, but ${textNode.constructor.name}`);
             expect(textNode.text).toBe('world');
 
-            expect(result).toEqual({ pointAfterInsertion: { node: textNode, offset: 5 } });
+            expect(result).toEqual({
+                from: { node: textNode, offset: 0 },
+                to: { node: textNode, offset: 5 },
+            });
         });
 
         it('if both next and prev nodes are paragraph nodes, insert text to next node', () => {
@@ -51,7 +57,10 @@ describe('ContainerNode', () => {
             assert(textNode instanceof TextNode, `Expected a text node, but ${textNode.constructor.name}`);
             expect(textNode.text).toBe('world');
 
-            expect(result).toEqual({ pointAfterInsertion: { node: textNode, offset: 5 } });
+            expect(result).toEqual({
+                from: { node: textNode, offset: 0 },
+                to: { node: textNode, offset: 5 },
+            });
         });
 
         it('if no paragraph node around the point, create a new one', () => {
@@ -71,7 +80,10 @@ describe('ContainerNode', () => {
             assert(textNode instanceof TextNode, `Expected a paragraph node, but ${textNode.constructor.name}`);
 
             expect(textNode.text).toBe('world');
-            expect(result).toEqual({ pointAfterInsertion: { node: textNode, offset: 5 } });
+            expect(result).toEqual({
+                from: { node: textNode, offset: 0 },
+                to: { node: textNode, offset: 5 },
+            });
         });
     });
 
@@ -85,7 +97,7 @@ describe('ContainerNode', () => {
 
             const result = containerNode.deleteContentBackward(1);
             expect(textNode.text).toBe('hell');
-            expect(result).toEqual({ pointAfterDeletion: { node: textNode, offset: 4 } });
+            expect(result.point).toEqual({ node: textNode, offset: 4 });
         });
 
         it('delete at the begin will trigger deleteBegin', () => {
@@ -109,7 +121,7 @@ describe('ContainerNode', () => {
 
             const result = containerNode.deleteContentForward(0);
             expect(textNode.text).toBe('ello');
-            expect(result).toEqual({ pointAfterDeletion: { node: textNode, offset: 0 } });
+            expect(result.point).toEqual({ node: textNode, offset: 0 });
         });
 
         it('delete at the end will trigger deleteEnd', () => {
@@ -139,7 +151,7 @@ describe('ContainerNode', () => {
             const result = paragraphNode1.deleteEnd();
             expect(textNode1.text).toBe('hello world');
             expect(root.children).toEqual([paragraphNode1]);
-            expect(result).toEqual({ pointAfterDeletion: { node: textNode1, offset: 6 } });
+            expect(result.point).toEqual({ node: textNode1, offset: 6 });
         });
 
         it('if no next node, delegate to parent', () => {
@@ -162,13 +174,13 @@ describe('ContainerNode', () => {
             expect(textNode1.text).toBe('hello world');
             expect(root.children).toEqual([containerNode1]);
             expect(containerNode1.children).toEqual([paragraphNode1]);
-            expect(result).toEqual({ pointAfterDeletion: { node: textNode1, offset: 6 } });
+            expect(result.point).toEqual({ node: textNode1, offset: 6 });
         });
 
         it('if no previous node nor parent, do nothing', () => {
             const node = new ParagraphNode();
             const result = node.deleteEnd();
-            expect(result).toEqual({ pointAfterDeletion: { node, offset: 0 } });
+            expect(result.point).toEqual({ node, offset: 0 });
         });
     });
 
@@ -188,7 +200,7 @@ describe('ContainerNode', () => {
             const result = paragraphNode2.deleteBegin();
             expect(textNode1.text).toBe('hello world');
             expect(root.children).toEqual([paragraphNode1]);
-            expect(result).toEqual({ pointAfterDeletion: { node: textNode1, offset: 6 } });
+            expect(result.point).toEqual({ node: textNode1, offset: 6 });
         });
 
         it('if no previous node, delegate to parent', () => {
@@ -211,13 +223,78 @@ describe('ContainerNode', () => {
             expect(textNode1.text).toBe('hello world');
             expect(root.children).toEqual([containerNode1]);
             expect(containerNode1.children).toEqual([paragraphNode1]);
-            expect(result).toEqual({ pointAfterDeletion: { node: textNode1, offset: 6 } });
+            expect(result.point).toEqual({ node: textNode1, offset: 6 });
         });
 
         it('if no previous node nor parent, do nothing', () => {
             const node = new ParagraphNode();
             const result = node.deleteBegin();
-            expect(result).toEqual({ pointAfterDeletion: { node, offset: 0 } });
+            expect(result.point).toEqual({ node, offset: 0 });
+        });
+    });
+
+    describe('mergeWithNext', () => {
+        it('Merge containers with their contents', () => {
+            const root = new RootNode();
+            const paragraph1 = new ParagraphNode();
+            const paragraph2 = new ParagraphNode();
+            const text1 = new TextNode('01234');
+            const text2 = new TextNode('56789');
+
+            root.insertLast(paragraph1);
+            root.insertLast(paragraph2);
+            paragraph1.insertLast(text1);
+            paragraph2.insertLast(text2);
+
+            const result = paragraph1.mergeWithNext();
+
+            expect(root.children).toEqual([paragraph1]);
+            expect(paragraph1.children).toEqual([text1]);
+            expect(text1.text).toBe('0123456789');
+
+            expect(result.point).toEqual({ node: text1, offset: 5 });
+
+            expect(result.contents[0].dump()).toEqual({
+                id: expect.anything(),
+                type: 'ParagraphNode',
+                children: [{ id: expect.anything(), type: 'TextNode', text: '' }],
+            });
+            expect(result.contents[1].dump()).toEqual({
+                id: expect.anything(),
+                type: 'ParagraphNode',
+                children: [{ id: expect.anything(), type: 'TextNode', text: '' }],
+            });
+        });
+
+        it('Merge empty containers', () => {
+            const root = new RootNode();
+            const paragraph1 = new ParagraphNode();
+            const paragraph2 = new ParagraphNode();
+            const text = new TextNode('12345');
+
+            root.insertLast(paragraph1);
+            root.insertLast(paragraph2);
+            paragraph1.insertLast(text);
+
+            const result = paragraph1.mergeWithNext();
+
+            expect(root.children).toEqual([paragraph1]);
+            expect(paragraph1.children).toEqual([text]);
+
+            expect(result.point).toEqual({ node: text, offset: 5 });
+
+            // Paragraph2 is empty, so merging is not happened in inline contents
+            // and boundary nodes are not created neither
+            expect(result.contents[0].dump()).toEqual({
+                id: expect.anything(),
+                type: 'ParagraphNode',
+                children: [],
+            });
+            expect(result.contents[1].dump()).toEqual({
+                id: expect.anything(),
+                type: 'ParagraphNode',
+                children: [],
+            });
         });
     });
 });
@@ -231,7 +308,10 @@ describe('ParagraphNode', () => {
 
             const result = paragraphNode.insertText(1, 'world');
             expect(textNode.text).toBe('hello world');
-            expect(result).toEqual({ pointAfterInsertion: { node: textNode, offset: 11 } });
+            expect(result).toEqual({
+                from: { node: textNode, offset: 6 },
+                to: { node: textNode, offset: 11 },
+            });
         });
 
         it('if next node is text node, insert text there', () => {
@@ -241,7 +321,10 @@ describe('ParagraphNode', () => {
 
             const result = paragraphNode.insertText(0, 'world');
             expect(textNode.text).toBe('worldhello');
-            expect(result).toEqual({ pointAfterInsertion: { node: textNode, offset: 5 } });
+            expect(result).toEqual({
+                from: { node: textNode, offset: 0 },
+                to: { node: textNode, offset: 5 },
+            });
         });
 
         it('if both next and prev nodes are text nodes, insert text to next node', () => {
@@ -254,7 +337,10 @@ describe('ParagraphNode', () => {
             const result = paragraphNode.insertText(1, 'world');
             expect(prevTextNode.text).toBe('hello');
             expect(nextTextNode.text).toBe('worldhello');
-            expect(result).toEqual({ pointAfterInsertion: { node: nextTextNode, offset: 5 } });
+            expect(result).toEqual({
+                from: { node: nextTextNode, offset: 0 },
+                to: { node: nextTextNode, offset: 5 },
+            });
         });
 
         it('if no text node around the point, create a new one', () => {
@@ -267,7 +353,10 @@ describe('ParagraphNode', () => {
             assert(node instanceof TextNode, `Expected a text node, but ${node.constructor.name}`);
             expect(node.text).toBe('world');
 
-            expect(result).toEqual({ pointAfterInsertion: { node, offset: 5 } });
+            expect(result).toEqual({
+                from: { node, offset: 0 },
+                to: { node, offset: 5 },
+            });
         });
     });
 
@@ -289,7 +378,7 @@ describe('ParagraphNode', () => {
             expect(paragraphNode.children.length).toBe(1);
             expect(paragraphNode.children[0]).toBe(textNode);
             expect(paragraphNode.next).toBe(null);
-            expect(result).toEqual({ pointAfterDeletion: { node: textNode, offset: 6 } });
+            expect(result.point).toEqual({ node: textNode, offset: 6 });
         });
     });
 });

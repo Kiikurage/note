@@ -1,6 +1,6 @@
 import { assert } from '../../lib/assert';
 import { counter } from '../../lib/counter';
-import { Point } from '../Point';
+import { createPoint, Point } from '../Point';
 
 const nextNodeId = counter();
 
@@ -20,21 +20,56 @@ export interface DocNodeDelegate {
      */
     clone(): DocNode;
 
-    insertText(offset: number, text: string): InsertContentResult;
+    /**
+     * Insert text at the given offset and returns the range of the inserted contents. This
+     * range may include additional nodes that were created to accommodate the inserted text.
+     * deleteSelectedRange(returnedRange) must restore the original state.
+     */
+    insertText(offset: number, text: string): { from: Point; to: Point };
 
-    insertParagraph(offset: number): InsertContentResult;
+    /**
+     * Insert a new paragraph at the given offset and returns the range of the inserted contents.
+     * This range may include additional nodes that were created to accommodate the inserted
+     * paragraph. {@link deleteByRange}(returnedRange) must restore the original state.
+     */
+    insertParagraph(offset: number): { from: Point; to: Point };
 
-    deleteContent(start: number, end: number): DeleteContentResult;
+    /**
+     * Delete the content in the given range and returns the deleted contents and deletion point.
+     * This may causes additional deletion. e.g. deleting all contents in a node may cause deleting
+     * that container node too. {@link insertNodesAtPoint}(returnedPoint, returnedContents) must restore the original state.
+     */
+    deleteContent(start: number, end: number): { point: Point; contents: DocNode[] };
 
-    deleteContentBackward(offset: number): DeleteContentResult;
+    /**
+     * Delete one unit of content backwardly. Container nodes may delegate this operation to child
+     * node. {@link insertNodesAtPoint}(returnedPoint, returnedContents) must restore the original state.
+     */
+    deleteContentBackward(offset: number): { point: Point; contents: DocNode[] };
 
-    deleteContentForward(offset: number): DeleteContentResult;
+    /**
+     * Delete one unit of content forwardly. Container nodes may delegate this operation to child
+     * node. {@link insertNodesAtPoint}(returnedPoint, returnedContents) must restore the original state.
+     */
+    deleteContentForward(offset: number): { point: Point; contents: DocNode[] };
 
-    deleteEnd(): DeleteContentResult;
+    /**
+     * Delete end boundary of this node, typically triggers merging with the next node.
+     * {@link insertNodesAtPoint}(returnedPoint, returnedContents) must restore the original state.
+     */
+    deleteEnd(): { point: Point; contents: DocNode[] };
 
-    deleteBegin(): DeleteContentResult;
+    /**
+     * Delete begin boundary of this node, typically triggers merging with the next node.
+     * {@link insertNodesAtPoint}(returnedPoint, returnedContents) must restore the original state.
+     */
+    deleteBegin(): { point: Point; contents: DocNode[] };
 
-    mergeWithNext(): MergeContentResult;
+    /**
+     * Merge this node with {@link DocNode.next} node. i.e. {@link deleteByRange}(lastOfThisNode, firstOfNextNode).
+     * {@link insertNodesAtPoint}(returnedPoint, returnedContents) must restore the original state.
+     */
+    mergeWithNext(): { point: Point; contents: DocNode[] };
 
     /**
      * Get the layout level of this node.
@@ -44,9 +79,12 @@ export interface DocNodeDelegate {
     getLayoutLevel(): 'block' | 'inline';
 
     /**
-     * Whether this node can be empty. i.e. it can contain no child nodes. TextNode.canBeEmpty() returns false.
+     * Get the container type of this node.
+     *  - "void": This node cannot contain any child nodes
+     *  - "mayBeEmpty": This node can contain child nodes, but it's not required
+     *  - "mustNotBeEmpty": This node must contain at least one child node
      */
-    canBeEmpty(): boolean;
+    getContainerType(): 'void' | 'mayBeEmpty' | 'mustNotBeEmpty';
 
     /**
      * Return JSON-serializable object for debugging
@@ -179,27 +217,85 @@ export abstract class DocNode implements DocNodeDelegate {
         return this.getLayoutLevel() === 'block';
     }
 
+    mayBeEmpty(): boolean {
+        return this.getContainerType() === 'mayBeEmpty';
+    }
+
+    mustNotBeEmpty(): boolean {
+        return this.getContainerType() === 'mustNotBeEmpty';
+    }
+
+    void(): boolean {
+        return this.getContainerType() === 'void';
+    }
+
+    isContainer(): boolean {
+        return this.getContainerType() !== 'void';
+    }
+
+    /**
+     * Split the node at the given offset and returns the split point
+     */
+    splitNode(offset: number): Point {
+        assert(offset >= 0 && offset <= this.length, `Offset ${offset} is out of range: [0, ${this.length}]`);
+
+        const parent = this.parent;
+        assert(parent !== null, 'Node must have a parent');
+        const offsetWithinParent = this.offsetWithinParent();
+
+        if (offset === 0) return createPoint(parent, offsetWithinParent);
+        if (offset === this.length) return createPoint(parent, offsetWithinParent + 1);
+
+        const clone = this.cloneTree();
+        this.insertAfter(clone);
+
+        this.deleteContent(offset, this.length);
+        clone.deleteContent(0, offset);
+
+        return createPoint(parent, offsetWithinParent + 1);
+    }
+
+    offsetWithinParent() {
+        assert(this.parent !== null, 'Node must have a parent');
+        return this.parent.children.indexOf(this);
+    }
+
+    /**
+     * Clone this node and all descendants
+     */
+    cloneTree(cache?: Map<DocNode, DocNode>): DocNode {
+        let clone = cache?.get(this);
+        if (clone === undefined) {
+            clone = this.clone();
+            cache?.set(this, clone);
+            for (const child of this.children) {
+                clone.insertLast(child.cloneTree(cache));
+            }
+        }
+        return clone;
+    }
+
     abstract clone(): DocNode;
 
-    abstract insertText(offset: number, text: string): InsertContentResult;
+    abstract insertText(offset: number, text: string): { from: Point; to: Point };
 
-    abstract insertParagraph(offset: number): InsertContentResult;
+    abstract insertParagraph(offset: number): { from: Point; to: Point };
 
-    abstract deleteContent(start: number, end: number): DeleteContentResult;
+    abstract deleteContent(start: number, end: number): { point: Point; contents: DocNode[] };
 
-    abstract deleteContentBackward(offset: number): DeleteContentResult;
+    abstract deleteContentBackward(offset: number): { point: Point; contents: DocNode[] };
 
-    abstract deleteContentForward(offset: number): DeleteContentResult;
+    abstract deleteContentForward(offset: number): { point: Point; contents: DocNode[] };
 
-    abstract deleteEnd(): DeleteContentResult;
+    abstract deleteEnd(): { point: Point; contents: DocNode[] };
 
-    abstract deleteBegin(): DeleteContentResult;
+    abstract deleteBegin(): { point: Point; contents: DocNode[] };
 
-    abstract mergeWithNext(): MergeContentResult;
+    abstract mergeWithNext(): { point: Point; contents: DocNode[] };
 
     abstract getLayoutLevel(): 'block' | 'inline';
 
-    abstract canBeEmpty(): boolean;
+    abstract getContainerType(): 'void' | 'mayBeEmpty' | 'mustNotBeEmpty';
 
     dump(): unknown {
         return {
@@ -208,16 +304,4 @@ export abstract class DocNode implements DocNodeDelegate {
             children: this.children.map((child) => child.dump()),
         };
     }
-}
-
-export interface InsertContentResult {
-    pointAfterInsertion: Point;
-}
-
-export interface DeleteContentResult {
-    pointAfterDeletion: Point;
-}
-
-export interface MergeContentResult {
-    mergedPoint: Point;
 }

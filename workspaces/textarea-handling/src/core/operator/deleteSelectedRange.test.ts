@@ -3,7 +3,8 @@ import { ParagraphNode } from '../node/ContainerNode';
 import { TextNode } from '../node/TextNode';
 import { EditorState } from '../EditorState';
 import { createCursor } from '../Cursor';
-import { deleteSelectedRange } from './deleteSelectedRange';
+import { deleteByRange, deleteSelectedRange } from './deleteSelectedRange';
+import { createPoint } from '../Point';
 
 describe('deleteSelectedRange', () => {
     it('deletion makes "from" shifted', () => {

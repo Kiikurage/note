@@ -1,5 +1,5 @@
-import { DeleteContentResult, DocNode, InsertContentResult } from './DocNode';
-import { createPoint } from '../Point';
+import { DocNode } from './DocNode';
+import { createPoint, Point } from '../Point';
 import { ContainerNode, ParagraphNode } from './ContainerNode';
 
 export class RootNode extends ContainerNode {
@@ -7,15 +7,15 @@ export class RootNode extends ContainerNode {
         return new RootNode();
     }
 
-    deleteBegin(): DeleteContentResult {
-        return { pointAfterDeletion: createPoint(this, 0) };
+    deleteBegin(): { point: Point; contents: DocNode[] } {
+        return { point: createPoint(this, 0), contents: [] };
     }
 
-    deleteEnd(): DeleteContentResult {
-        return { pointAfterDeletion: createPoint(this, this.length) };
+    deleteEnd(): { point: Point; contents: DocNode[] } {
+        return { point: createPoint(this, this.length), contents: [] };
     }
 
-    insertParagraph(offset: number): InsertContentResult {
+    insertParagraph(offset: number): { from: Point; to: Point } {
         if (this.children.length === 0) {
             this.insertLast(new ParagraphNode());
             return this.insertParagraph(0);
@@ -23,6 +23,9 @@ export class RootNode extends ContainerNode {
 
         this.insertChild(offset, new ParagraphNode());
 
-        return { pointAfterInsertion: createPoint(this, offset + 1) };
+        return {
+            from: createPoint(this, offset),
+            to: createPoint(this, offset + 1),
+        };
     }
 }

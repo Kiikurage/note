@@ -6,8 +6,5 @@ export function deleteContentForward(state: EditorState): EditorState {
     if (!collapsed(state.cursor)) return deleteSelectedRange(state);
 
     const result = state.cursor.focus.node.deleteContentForward(state.cursor.focus.offset);
-    return {
-        ...state,
-        cursor: createCursor(result.pointAfterDeletion),
-    };
+    return { ...state, cursor: createCursor(result.point) };
 }

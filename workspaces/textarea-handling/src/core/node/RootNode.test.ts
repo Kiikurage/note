@@ -11,7 +11,10 @@ describe('RootNode', () => {
             expect(rootNode.children.length).toBe(2);
             expect(rootNode.children[0]).toBeInstanceOf(ParagraphNode);
             expect(rootNode.children[1]).toBeInstanceOf(ParagraphNode);
-            expect(result.pointAfterInsertion).toEqual(createPoint(rootNode, 1));
+            expect(result).toEqual({
+                from: createPoint(rootNode, 0),
+                to: createPoint(rootNode, 1),
+            });
         });
 
         it('When there is some content, insert 1 paragraph node and set cursor point after it', () => {
@@ -22,7 +25,10 @@ describe('RootNode', () => {
             expect(rootNode.children.length).toBe(2);
             expect(rootNode.children[0]).toBe(paragraph);
             expect(rootNode.children[1]).toBeInstanceOf(ParagraphNode);
-            expect(result.pointAfterInsertion).toEqual(createPoint(rootNode, 2));
+            expect(result).toEqual({
+                from: createPoint(rootNode, 1),
+                to: createPoint(rootNode, 2),
+            });
         });
     });
 
@@ -35,7 +41,7 @@ describe('RootNode', () => {
             rootNode.insertLast(paragraph);
 
             const result = rootNode.deleteEnd();
-            expect(result.pointAfterDeletion).toEqual(createPoint(rootNode, rootNode.length));
+            expect(result.point).toEqual(createPoint(rootNode, rootNode.length));
         });
     });
 });

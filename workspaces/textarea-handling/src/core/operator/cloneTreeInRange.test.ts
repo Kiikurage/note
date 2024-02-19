@@ -1,44 +1,15 @@
 import { TextNode } from '../node/TextNode';
-import { cloneTree } from './cloneTree';
 import { createPoint } from '../Point';
 import { ParagraphNode } from '../node/ContainerNode';
 import { RootNode } from '../node/RootNode';
 import { assert } from '../../lib/assert';
+import { cloneTreeInRange } from './cloneTreeInRange';
 
-describe('cloneTree', () => {
-    it('single node', () => {
-        const node = new TextNode('01234');
-
-        const clone = cloneTree(node);
-
-        assert(clone instanceof TextNode, 'clone should be a TextNode');
-        expect(clone.text).toBe('01234');
-    });
-
-    it('single node with children', () => {
-        const text1 = new TextNode('01234');
-        const text2 = new TextNode('56789');
-        const paragraph = new ParagraphNode();
-        paragraph.insertLast(text1);
-        paragraph.insertLast(text2);
-
-        const clonedParagraph = cloneTree(paragraph);
-        assert(clonedParagraph instanceof ParagraphNode, 'clonedParagraph should be a ParagraphNode');
-        expect(clonedParagraph.children.length).toBe(2);
-
-        const clonedText1 = clonedParagraph.children[0];
-        assert(clonedText1 instanceof TextNode, 'clonedText1 should be a TextNode');
-        expect(clonedText1.text).toBe('01234');
-
-        const clonedText2 = clonedParagraph.children[1];
-        assert(clonedText2 instanceof TextNode, 'clonedText2 should be a TextNode');
-        expect(clonedText2.text).toBe('56789');
-    });
-
+describe('cloneTreeInRange', () => {
     it('range for a single node', () => {
         const node = new TextNode('01234');
 
-        const clones = cloneTree(createPoint(node, 1), createPoint(node, 3));
+        const clones = cloneTreeInRange(createPoint(node, 1), createPoint(node, 3));
         expect(clones.length).toBe(1);
 
         const clonedNode = clones[0];
@@ -53,7 +24,7 @@ describe('cloneTree', () => {
         paragraph.insertLast(text1);
         paragraph.insertLast(text2);
 
-        const clones = cloneTree(createPoint(text1, 1), createPoint(text2, 3));
+        const clones = cloneTreeInRange(createPoint(text1, 1), createPoint(text2, 3));
         expect(clones.length).toBe(2);
 
         const clonedText1 = clones[0];
@@ -80,7 +51,7 @@ describe('cloneTree', () => {
         paragraph2.insertLast(text2);
         paragraph3.insertLast(text3);
 
-        const clones = cloneTree(createPoint(text1, 1), createPoint(text3, 3));
+        const clones = cloneTreeInRange(createPoint(text1, 1), createPoint(text3, 3));
         expect(clones.length).toBe(3);
 
         const clonedParagraph1 = clones[0];
@@ -123,7 +94,7 @@ describe('cloneTree', () => {
         paragraph2.insertLast(text2);
         paragraph3.insertLast(text3);
 
-        const clones = cloneTree(createPoint(text1, 1), createPoint(paragraph2, 1));
+        const clones = cloneTreeInRange(createPoint(text1, 1), createPoint(paragraph2, 1));
         expect(clones.length).toBe(2);
 
         const clonedParagraph1 = clones[0];
@@ -158,7 +129,7 @@ describe('cloneTree', () => {
         paragraph2.insertLast(text2);
         paragraph3.insertLast(text3);
 
-        const clones = cloneTree(createPoint(text1, 1), createPoint(paragraph1, 1));
+        const clones = cloneTreeInRange(createPoint(text1, 1), createPoint(paragraph1, 1));
         expect(clones.length).toBe(1);
 
         const clonedText1 = clones[0];

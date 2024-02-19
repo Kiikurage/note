@@ -1,24 +1,8 @@
-import { assert } from '../../lib/assert';
 import { ContainerNode } from './ContainerNode';
-
-const notImplemented = (...args: never[]): never => {
-    assert(false, 'not implemented');
-};
-
-class DocNodeImpl extends ContainerNode {
-    readonly insertText = notImplemented;
-    readonly insertParagraph = notImplemented;
-    readonly deleteContent = notImplemented;
-    readonly deleteContentBackward = notImplemented;
-    readonly deleteContentForward = notImplemented;
-    readonly deleteEnd = notImplemented;
-    readonly deleteBegin = notImplemented;
-    readonly mergeWithNext = notImplemented;
-}
 
 describe('DocNode', () => {
     it('constructor', () => {
-        const node = new DocNodeImpl();
+        const node = new ContainerNode();
         expect(node.parent).toBe(null);
         expect(node.children).toEqual([]);
         expect(node.next).toBe(null);
@@ -27,8 +11,8 @@ describe('DocNode', () => {
 
     describe('insertChild', () => {
         it('insert a new child', () => {
-            const parent = new DocNodeImpl();
-            const child = new DocNodeImpl();
+            const parent = new ContainerNode();
+            const child = new ContainerNode();
 
             parent.insertChild(0, child);
 
@@ -44,9 +28,9 @@ describe('DocNode', () => {
         });
 
         it('insert 2 children', () => {
-            const parent = new DocNodeImpl();
-            const child1 = new DocNodeImpl();
-            const child2 = new DocNodeImpl();
+            const parent = new ContainerNode();
+            const child1 = new ContainerNode();
+            const child2 = new ContainerNode();
 
             parent.insertChild(0, child1);
             parent.insertChild(1, child2);
@@ -68,10 +52,10 @@ describe('DocNode', () => {
         });
 
         it('insert 3 children', () => {
-            const parent = new DocNodeImpl();
-            const child1 = new DocNodeImpl();
-            const child2 = new DocNodeImpl();
-            const child3 = new DocNodeImpl();
+            const parent = new ContainerNode();
+            const child1 = new ContainerNode();
+            const child2 = new ContainerNode();
+            const child3 = new ContainerNode();
 
             parent.insertChild(0, child1);
             parent.insertChild(1, child2);
@@ -99,10 +83,10 @@ describe('DocNode', () => {
         });
 
         it('insert a child between other children', () => {
-            const parent = new DocNodeImpl();
-            const child1 = new DocNodeImpl();
-            const child2 = new DocNodeImpl();
-            const child3 = new DocNodeImpl();
+            const parent = new ContainerNode();
+            const child1 = new ContainerNode();
+            const child2 = new ContainerNode();
+            const child3 = new ContainerNode();
 
             parent.insertChild(0, child1);
             parent.insertChild(1, child2);
@@ -130,18 +114,18 @@ describe('DocNode', () => {
         });
 
         it('invalid insert point', () => {
-            const parent = new DocNodeImpl();
-            const child = new DocNodeImpl();
+            const parent = new ContainerNode();
+            const child = new ContainerNode();
 
             expect(() => parent.insertChild(4, child)).toThrow();
         });
 
         it('insert a sub tree', () => {
-            const node1 = new DocNodeImpl();
-            const node2 = new DocNodeImpl();
-            const node3 = new DocNodeImpl();
-            const node4 = new DocNodeImpl();
-            const node5 = new DocNodeImpl();
+            const node1 = new ContainerNode();
+            const node2 = new ContainerNode();
+            const node3 = new ContainerNode();
+            const node4 = new ContainerNode();
+            const node5 = new ContainerNode();
 
             node1.insertLast(node2);
             node2.insertLast(node3);
@@ -166,9 +150,9 @@ describe('DocNode', () => {
 
     describe('insertFirst', () => {
         it('insert a new child at first', () => {
-            const parent = new DocNodeImpl();
-            const child1 = new DocNodeImpl();
-            const child2 = new DocNodeImpl();
+            const parent = new ContainerNode();
+            const child1 = new ContainerNode();
+            const child2 = new ContainerNode();
 
             parent.insertChild(0, child1);
             parent.insertFirst(child2);
@@ -179,9 +163,9 @@ describe('DocNode', () => {
 
     describe('insertLast', () => {
         it('insert a new child at last', () => {
-            const parent = new DocNodeImpl();
-            const child1 = new DocNodeImpl();
-            const child2 = new DocNodeImpl();
+            const parent = new ContainerNode();
+            const child1 = new ContainerNode();
+            const child2 = new ContainerNode();
 
             parent.insertChild(0, child1);
             parent.insertLast(child2);
@@ -192,9 +176,9 @@ describe('DocNode', () => {
 
     describe('insertBefore', () => {
         it('insert a new sibling', () => {
-            const parent = new DocNodeImpl();
-            const child1 = new DocNodeImpl();
-            const child2 = new DocNodeImpl();
+            const parent = new ContainerNode();
+            const child1 = new ContainerNode();
+            const child2 = new ContainerNode();
 
             parent.insertLast(child1);
             child1.insertBefore(child2);
@@ -203,8 +187,8 @@ describe('DocNode', () => {
         });
 
         it('if the node is floated, insertBefore should be failed', () => {
-            const child1 = new DocNodeImpl();
-            const child2 = new DocNodeImpl();
+            const child1 = new ContainerNode();
+            const child2 = new ContainerNode();
 
             expect(() => child1.insertBefore(child2)).toThrow();
         });
@@ -212,9 +196,9 @@ describe('DocNode', () => {
 
     describe('insertAfter', () => {
         it('insert a new sibling', () => {
-            const parent = new DocNodeImpl();
-            const child1 = new DocNodeImpl();
-            const child2 = new DocNodeImpl();
+            const parent = new ContainerNode();
+            const child1 = new ContainerNode();
+            const child2 = new ContainerNode();
 
             parent.insertLast(child1);
             child1.insertAfter(child2);
@@ -223,8 +207,8 @@ describe('DocNode', () => {
         });
 
         it('if the node is floated, insertAfter should be failed', () => {
-            const child1 = new DocNodeImpl();
-            const child2 = new DocNodeImpl();
+            const child1 = new ContainerNode();
+            const child2 = new ContainerNode();
 
             expect(() => child1.insertAfter(child2)).toThrow();
         });
@@ -232,10 +216,10 @@ describe('DocNode', () => {
 
     describe('remove', () => {
         it('remove a child', () => {
-            const parent = new DocNodeImpl();
-            const child1 = new DocNodeImpl();
-            const child2 = new DocNodeImpl();
-            const child3 = new DocNodeImpl();
+            const parent = new ContainerNode();
+            const child1 = new ContainerNode();
+            const child2 = new ContainerNode();
+            const child3 = new ContainerNode();
 
             parent.insertLast(child1);
             parent.insertLast(child2);
@@ -265,9 +249,37 @@ describe('DocNode', () => {
         });
 
         it('remove a floated node cause nothing', () => {
-            const child = new DocNodeImpl();
+            const child = new ContainerNode();
             child.remove();
             expect(child.parent).toBe(null);
+        });
+    });
+
+    describe('cloneTree', () => {
+        it('single node', () => {
+            const node = new ContainerNode();
+
+            const clone = node.cloneTree();
+
+            expect(clone).not.toBe(node);
+        });
+
+        it('single node with children', () => {
+            const child1 = new ContainerNode();
+            const child2 = new ContainerNode();
+            const parent = new ContainerNode();
+            parent.insertLast(child1);
+            parent.insertLast(child2);
+
+            const clonedParent = parent.cloneTree();
+            expect(clonedParent).not.toBe(parent);
+            expect(clonedParent.children.length).toBe(2);
+
+            const clonedChild1 = clonedParent.children[0];
+            expect(clonedChild1).not.toBe(child1);
+
+            const clonedChild2 = clonedParent.children[1];
+            expect(clonedChild2).not.toBe(child2);
         });
     });
 });

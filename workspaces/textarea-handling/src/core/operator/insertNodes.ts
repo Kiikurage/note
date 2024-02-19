@@ -1,7 +1,6 @@
 import { DocNode } from '../node/DocNode';
 import { EditorState } from '../EditorState';
 import { createPoint, Point } from '../Point';
-import { cloneTree } from './cloneTree';
 import { deleteSelectedRange } from './deleteSelectedRange';
 import { collapsed, createCursor } from '../Cursor';
 import { assert } from '../../lib/assert';
@@ -31,7 +30,7 @@ export function insertNodesAtPoint(point: Point, insertNodes: readonly DocNode[]
 
     const insertInline = !point.node.isBlock() && insertNodes.every((node) => node.isInline());
 
-    insertNodes = insertNodes.map((node) => cloneTree(node));
+    insertNodes = insertNodes.map((node) => node.cloneTree());
 
     if (!insertInline) {
         // Wrap nodes by paragraph to ensure all insert nodes are block nodes
@@ -48,7 +47,7 @@ export function insertNodesAtPoint(point: Point, insertNodes: readonly DocNode[]
 
         // For block-level insertion, insert point must be block node
         while (!point.node.isBlock()) {
-            point = splitNode(point.node, point.offset);
+            point = point.node.splitNode(point.offset);
         }
     }
 
@@ -65,7 +64,7 @@ export function insertNodesAtPoint(point: Point, insertNodes: readonly DocNode[]
             shouldMergeWithNext = true;
         }
 
-        point = splitNode(point.node, point.offset);
+        point = point.node.splitNode(point.offset);
     }
 
     for (const insertNode of insertNodes) {
@@ -82,7 +81,7 @@ export function insertNodesAtPoint(point: Point, insertNodes: readonly DocNode[]
 
         const nodeAfterInsertion = insertedRangeTo.node.next;
 
-        insertedRangeFrom = nodeBeforeInsertion.mergeWithNext().mergedPoint;
+        insertedRangeFrom = nodeBeforeInsertion.mergeWithNext().point;
 
         const newLastInsertedNode =
             nodeAfterInsertion === null ? point.node.children[point.node.length - 1] : nodeAfterInsertion.prev;
@@ -91,33 +90,13 @@ export function insertNodesAtPoint(point: Point, insertNodes: readonly DocNode[]
         insertedRangeTo = createPoint(newLastInsertedNode, newLastInsertedNode.length);
     }
     if (shouldMergeWithNext) {
-        insertedRangeTo = insertedRangeTo.node.mergeWithNext().mergedPoint;
+        insertedRangeTo = insertedRangeTo.node.mergeWithNext().point;
     }
 
     return {
         insertedRangeFrom,
         insertedRangeTo,
     };
-}
-
-/**
- * Split the node at the given offset and returns the split point
- */
-function splitNode(node: DocNode, offset: number): Point {
-    const parent = node.parent;
-    assert(parent !== null, 'Node must have a parent');
-    const offsetWithinParent = parent.children.indexOf(node);
-
-    if (offset === 0) return createPoint(parent, offsetWithinParent);
-    if (offset === node.length) return createPoint(parent, offsetWithinParent + 1);
-
-    const clone = cloneTree(node);
-    node.insertAfter(clone);
-
-    node.deleteContent(offset, node.length);
-    clone.deleteContent(0, offset);
-
-    return createPoint(parent, offsetWithinParent + 1);
 }
 
 export interface InsertNodesResult {

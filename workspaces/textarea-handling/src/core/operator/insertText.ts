@@ -8,6 +8,6 @@ export function insertText(state: EditorState, text: string): EditorState {
     const result = state.cursor.focus.node.insertText(state.cursor.focus.offset, text);
     return {
         ...state,
-        cursor: createCursor(result.pointAfterInsertion),
+        cursor: createCursor(result.to),
     };
 }

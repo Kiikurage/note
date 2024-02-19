@@ -8,6 +8,6 @@ export function insertParagraph(state: EditorState): EditorState {
     const result = state.cursor.focus.node.insertParagraph(state.cursor.focus.offset);
     return {
         ...state,
-        cursor: createCursor(result.pointAfterInsertion),
+        cursor: createCursor(result.to),
     };
 }

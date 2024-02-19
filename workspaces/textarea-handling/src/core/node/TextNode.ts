@@ -1,6 +1,6 @@
-import { DeleteContentResult, DocNode, InsertContentResult, MergeContentResult } from './DocNode';
+import { DocNode } from './DocNode';
 import { assert } from '../../lib/assert';
-import { createPoint } from '../Point';
+import { createPoint, Point } from '../Point';
 import { ParagraphNode } from './ContainerNode';
 
 export class TextNode extends DocNode {
@@ -16,16 +16,23 @@ export class TextNode extends DocNode {
         return this.text.length;
     }
 
-    insertText(offset: number, text: string): InsertContentResult {
+    insertText(offset: number, text: string): { from: Point; to: Point } {
         assert(offset >= 0 && offset <= this.text.length, 'Offset is out of range');
         this.text = this.text.substring(0, offset) + text + this.text.substring(offset);
 
-        return { pointAfterInsertion: createPoint(this, offset + text.length) };
+        return {
+            from: createPoint(this, offset),
+            to: createPoint(this, offset + text.length),
+        };
     }
 
-    insertParagraph(offset: number): InsertContentResult {
+    insertParagraph(offset: number): { from: Point; to: Point } {
         const paragraph = this.findAncestor((node) => node instanceof ParagraphNode);
-        if (paragraph === null) return { pointAfterInsertion: createPoint(this, offset) };
+        if (paragraph === null)
+            return {
+                from: createPoint(this, offset),
+                to: createPoint(this, offset),
+            };
 
         const textNodeOffset = paragraph.children.indexOf(this);
         assert(textNodeOffset !== -1, 'Text node should be a child of paragraph');
@@ -41,10 +48,13 @@ export class TextNode extends DocNode {
         paragraph.insertAfter(newParagraph);
         paragraph.children.slice(textNodeOffset + 1).forEach((child) => newParagraph.insertLast(child));
 
-        return { pointAfterInsertion: createPoint(newText, 0) };
+        return {
+            from: createPoint(this, offset),
+            to: createPoint(newText, 0),
+        };
     }
 
-    deleteContent(start: number, end: number): DeleteContentResult {
+    deleteContent(start: number, end: number): { point: Point; contents: DocNode[] } {
         assert(start >= 0 && start <= this.text.length, `Start:${start} is out of range:[0, ${this.text.length}}`);
         assert(end >= 0 && end <= this.text.length, `End:${end} is out of range:[0, ${this.text.length}}`);
         assert(start <= end, `Start:${start} is greater than end:${end}`);
@@ -54,51 +64,52 @@ export class TextNode extends DocNode {
             return this.parent.deleteContent(offset, offset + 1);
         }
 
+        const deletedText = this.text.substring(start, end);
         this.text = this.text.substring(0, start) + this.text.substring(end);
-        return { pointAfterDeletion: createPoint(this, start) };
+        return { point: createPoint(this, start), contents: [new TextNode(deletedText)] };
     }
 
-    deleteContentBackward(offset: number): DeleteContentResult {
+    deleteContentBackward(offset: number): { point: Point; contents: DocNode[] } {
         assert(offset >= 0 && offset <= this.length, `Offset ${offset} is out of range: [0, ${this.length}]`);
         return offset === 0 ? this.deleteBegin() : this.deleteContent(offset - 1, offset);
     }
 
-    deleteContentForward(offset: number): DeleteContentResult {
+    deleteContentForward(offset: number): { point: Point; contents: DocNode[] } {
         assert(offset >= 0 && offset <= this.length, `Offset ${offset} is out of range: [0, ${this.length}]`);
         return offset === this.length ? this.deleteEnd() : this.deleteContent(offset, offset + 1);
     }
 
-    deleteEnd(): DeleteContentResult {
+    deleteEnd(): { point: Point; contents: DocNode[] } {
         return (
             this.next?.deleteContentForward(0) ??
-            this.parent?.deleteEnd() ?? { pointAfterDeletion: createPoint(this, this.length) }
+            this.parent?.deleteEnd() ?? { point: createPoint(this, this.length), contents: [] }
         );
     }
 
-    deleteBegin(): DeleteContentResult {
+    deleteBegin(): { point: Point; contents: DocNode[] } {
         return (
             this.prev?.deleteContentBackward(this.prev.length) ??
-            this.parent?.deleteBegin() ?? { pointAfterDeletion: createPoint(this, 0) }
+            this.parent?.deleteBegin() ?? { point: createPoint(this, 0), contents: [] }
         );
     }
 
-    mergeWithNext(): MergeContentResult {
-        if (!this.next) return { mergedPoint: createPoint(this, this.length) };
-        if (!(this.next instanceof TextNode)) return { mergedPoint: createPoint(this, this.length) };
+    mergeWithNext(): { point: Point; contents: DocNode[] } {
+        if (!this.next) return { point: createPoint(this, this.length), contents: [] };
+        if (!(this.next instanceof TextNode)) return { point: createPoint(this, this.length), contents: [] };
 
         const originalLength = this.length;
         this.text = this.text + this.next.text;
         this.next.remove();
 
-        return { mergedPoint: createPoint(this, originalLength) };
+        return { point: createPoint(this, originalLength), contents: [new TextNode(''), new TextNode('')] };
     }
 
     getLayoutLevel(): 'block' | 'inline' {
         return 'inline';
     }
 
-    canBeEmpty(): boolean {
-        return false;
+    getContainerType(): 'void' | 'mayBeEmpty' | 'mustNotBeEmpty' {
+        return 'void';
     }
 
     dump(): unknown {

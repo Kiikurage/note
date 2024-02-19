@@ -24,6 +24,11 @@ const App = () => {
                 gridTemplateColumns: '50% 50%',
                 gap: 32,
                 padding: 32,
+
+                '@media (max-width: 800px)': {
+                    gridTemplateColumns: '1fr',
+                    gridTemplateRows: '50% 50%',
+                },
             }}
         >
             <div
